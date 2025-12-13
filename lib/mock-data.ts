@@ -184,7 +184,7 @@ export const MOCK_COURSE = {
       pageNumber: 15,
       title: '',
       content: JSON.stringify({
-        type: 'qr-upload',
+        type: 'photo-upload',
       }),
       tips: JSON.stringify([]),
     },
@@ -235,7 +235,7 @@ export const MOCK_COURSE = {
       pageNumber: 20,
       title: '',
       content: JSON.stringify({
-        type: 'qr-upload',
+        type: 'photo-upload',
       }),
       tips: JSON.stringify([
         'W ustawieniach aparatu możesz włączyć siatkę w której znajduje się opcja żyroskopu pokazująca przechył telefonu',
@@ -335,7 +335,7 @@ export const MOCK_COURSE = {
       pageNumber: 29,
       title: '',
       content: JSON.stringify({
-        type: 'qr-upload',
+        type: 'photo-upload',
       }),
       tips: JSON.stringify([
         'W ustawieniach aparatu na twoim telefonie włącz siatkę trójpodziału - ułatwi to znacząco fotografowanie',
@@ -403,7 +403,7 @@ export const MOCK_COURSE = {
       pageNumber: 35,
       title: '',
       content: JSON.stringify({
-        type: 'qr-upload',
+        type: 'photo-upload',
       }),
       tips: JSON.stringify([]),
     },
@@ -456,7 +456,7 @@ export const MOCK_COURSE = {
       pageNumber: 40,
       title: '',
       content: JSON.stringify({
-        type: 'qr-upload',
+        type: 'photo-upload',
       }),
       tips: JSON.stringify([]),
     },
@@ -560,7 +560,7 @@ export const MOCK_COURSE = {
       pageNumber: 49,
       title: '',
       content: JSON.stringify({
-        type: 'qr-upload',
+        type: 'photo-upload',
       }),
       tips: JSON.stringify([]),
     },
