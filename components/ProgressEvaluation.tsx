@@ -6,6 +6,52 @@ interface ProgressEvaluationProps {
   pageNumber: number
 }
 
+const evaluationPages = [16, 21, 30, 36, 41, 50]
+const STORAGE_KEY = 'progressEvaluations'
+
+type StoredEvaluation = {
+  pageNumber: number
+  evaluation: number
+}
+
+function loadLocalEvaluations(): StoredEvaluation[] {
+  if (typeof window === 'undefined') return []
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+function saveLocalEvaluation(newEntry: StoredEvaluation) {
+  if (typeof window === 'undefined') return
+  const stored = loadLocalEvaluations().filter(
+    (item) => item.pageNumber !== newEntry.pageNumber
+  )
+  stored.push(newEntry)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
+}
+
+function calculateCumulative(
+  evaluations: Array<{ pageNumber: number; evaluation: number }>,
+  currentPageNumber: number
+) {
+  const currentPageIndex = evaluationPages.indexOf(currentPageNumber)
+  let cumulative = 0
+
+  for (let i = 0; i < currentPageIndex; i++) {
+    const prevPage = evaluationPages[i]
+    const prevEvaluation = evaluations.find(
+      (e) => e.pageNumber === prevPage
+    )
+    if (prevEvaluation) {
+      cumulative += prevEvaluation.evaluation
+    }
+  }
+
+  return cumulative
+}
+
 export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
   const [value, setValue] = useState(0) // -1 = gorzej, 0 = tak samo, 1 = lepiej
   const [cumulativeScore, setCumulativeScore] = useState(0) // Skumulowany wynik
@@ -15,54 +61,55 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
 
   // Pobierz poprzednie oceny i oblicz skumulowany wynik
   useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    const applyEvaluations = (
+      evaluations: Array<{ pageNumber: number; evaluation: number }>
+    ) => {
+      const cumulative = calculateCumulative(evaluations, pageNumber)
+      setCumulativeScore(cumulative)
+
+      const currentEvaluation = evaluations.find(
+        (e) => e.pageNumber === pageNumber
+      )
+      if (currentEvaluation) {
+        setValue(currentEvaluation.evaluation)
+        setSaved(true)
+      } else {
+        setValue(0)
+        setSaved(false)
+      }
+    }
+
     const fetchEvaluations = async () => {
       try {
-        const token = localStorage.getItem('token')
         if (!token) {
+          const localEvaluations = loadLocalEvaluations()
+          applyEvaluations(localEvaluations)
           setLoading(false)
           return
         }
 
-        // Pobierz wszystkie poprzednie oceny
         const response = await fetch('/api/progress-evaluations', {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         })
 
         if (!response.ok) {
+          const localEvaluations = loadLocalEvaluations()
+          applyEvaluations(localEvaluations)
           setLoading(false)
           return
         }
 
         const data = await response.json()
-        
-        // Oblicz skumulowany wynik z poprzednich ocen
-        let cumulative = 0
-        const evaluationPages = [16, 21, 30, 36, 41, 50]
-        const currentPageIndex = evaluationPages.indexOf(pageNumber)
-        
-        // Sumuj wszystkie poprzednie oceny (przed aktualną stroną)
-        for (let i = 0; i < currentPageIndex; i++) {
-          const prevPage = evaluationPages[i]
-          const prevEvaluation = data.evaluations?.find((e: any) => e.pageNumber === prevPage)
-          if (prevEvaluation) {
-            cumulative += prevEvaluation.evaluation
-          }
-        }
-
-        setCumulativeScore(cumulative)
-
-        // Sprawdź, czy aktualna strona ma już zapisaną ocenę
-        const currentEvaluation = data.evaluations?.find((e: any) => e.pageNumber === pageNumber)
-        if (currentEvaluation) {
-          setValue(currentEvaluation.evaluation)
-          setSaved(true)
-        }
-
+        applyEvaluations(data.evaluations || [])
         setLoading(false)
       } catch (error) {
         console.error('Error fetching evaluations:', error)
+        const localEvaluations = loadLocalEvaluations()
+        applyEvaluations(localEvaluations)
         setLoading(false)
       }
     }
@@ -75,34 +122,35 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
     setSaved(false)
 
     // Oblicz nowy skumulowany wynik
-    const evaluationPages = [16, 21, 30, 36, 41, 50]
-    const currentPageIndex = evaluationPages.indexOf(pageNumber)
     let newCumulative = 0
+    let previousEvaluations: Array<{ pageNumber: number; evaluation: number }> =
+      []
 
-    // Sumuj wszystkie poprzednie oceny
     try {
       const token = localStorage.getItem('token')
-      if (!token) return
 
-      const response = await fetch('/api/progress-evaluations', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      if (token) {
+        const response = await fetch('/api/progress-evaluations', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-      if (response.ok) {
-        const data = await response.json()
-        for (let i = 0; i < currentPageIndex; i++) {
-          const prevPage = evaluationPages[i]
-          const prevEvaluation = data.evaluations?.find((e: any) => e.pageNumber === prevPage)
-          if (prevEvaluation) {
-            newCumulative += prevEvaluation.evaluation
-          }
+        if (response.ok) {
+          const data = await response.json()
+          previousEvaluations = data.evaluations || []
+        } else {
+          previousEvaluations = loadLocalEvaluations()
         }
+      } else {
+        previousEvaluations = loadLocalEvaluations()
       }
     } catch (error) {
       console.error('Error calculating cumulative:', error)
+      previousEvaluations = loadLocalEvaluations()
     }
+
+    newCumulative = calculateCumulative(previousEvaluations, pageNumber)
 
     // Dodaj aktualną ocenę
     newCumulative += newValue
@@ -112,27 +160,27 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
     setSaving(true)
     try {
       const token = localStorage.getItem('token')
-      if (!token) {
-        setSaving(false)
-        return
+      if (token) {
+        const response = await fetch('/api/progress-evaluations', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pageNumber,
+            evaluation: newValue,
+            cumulativeScore: newCumulative,
+          }),
+        })
+
+        if (response.ok) {
+          setSaved(true)
+        }
       }
 
-      const response = await fetch('/api/progress-evaluations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pageNumber,
-          evaluation: newValue,
-          cumulativeScore: newCumulative,
-        }),
-      })
-
-      if (response.ok) {
-        setSaved(true)
-      }
+      // Zawsze zapisuj lokalnie, aby zachować stan również bez tokenu
+      saveLocalEvaluation({ pageNumber, evaluation: newValue })
     } catch (error) {
       console.error('Error saving evaluation:', error)
     } finally {

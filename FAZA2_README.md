@@ -1,8 +1,8 @@
-# Faza 2: Backend + baza danych (MySQL + Prisma)
+# Faza 2: Backend + baza danych (PostgreSQL + Prisma)
 
 ## ✅ Co zostało wdrożone
 
-- **MySQL + Prisma** – wszystkie API korzystają ponownie z bazy danych.
+- **PostgreSQL + Prisma** – wszystkie API korzystają ponownie z bazy danych (Vercel Postgres).
 - **Rejestracja i logowanie** – `POST /api/auth/register` i `POST /api/auth/login` zapisują użytkowników, walidują hasła i zwracają token JWT.
 - **Webhook Lemon Squeezy** – `POST /api/webhooks/lemonsqueezy` weryfikuje podpis, zapisuje zamówienia i wysyła link rejestracyjny.
 - **Kurs z bazy danych** – `CourseViewer` pobiera dane przez `/api/courses/[slug]`, a `prisma/seed.ts` importuje wszystkie strony z `lib/mock-data`.
@@ -16,7 +16,7 @@
    cp .env.example .env
    ```
    Najważniejsze zmienne:
-   - `DATABASE_URL` – np. `mysql://user:password@host:3306/database?schema=public`
+   - `DATABASE_URL` – connection string z Vercel Postgres (zobacz `VERCEL_POSTGRES_SETUP.md`)
    - `JWT_SECRET` – silny sekret dla JWT
    - `LEMON_SQUEEZY_WEBHOOK_SECRET`
    - `NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL`
@@ -52,7 +52,7 @@
    - `NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL`
    - `NEXT_PUBLIC_APP_URL`
 
-2. Jeżeli baza MySQL jest zewnętrzna, upewnij się, że Vercel ma do niej dostęp (publiczny host / tunel / Neon/Turso).
+2. Utwórz bazę Vercel Postgres (zobacz `VERCEL_POSTGRES_SETUP.md` dla szczegółowych instrukcji).
 
 3. Deploy:
    ```bash

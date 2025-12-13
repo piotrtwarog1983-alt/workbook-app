@@ -47,13 +47,17 @@ async function main() {
       where: {
         term_language: {
           term: term.term,
-          language: term.language,
+          language: 'pl', // Domyślny język dla wszystkich terminów
         },
       },
       update: {
         definition: term.definition,
       },
-      create: term,
+      create: {
+        term: term.term,
+        definition: term.definition,
+        language: 'pl', // Domyślny język dla wszystkich terminów
+      },
     })
   }
 

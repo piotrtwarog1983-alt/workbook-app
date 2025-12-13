@@ -19,7 +19,7 @@ Platforma do sprzedaży i dostarczania kursu fotografii kulinarnej.
 
 - Next.js 14 (App Router)
 - TypeScript
-- Prisma (MySQL 8.0)
+- Prisma (PostgreSQL - Vercel Postgres)
 - Tailwind CSS
 - JWT Authentication
 - Lemon Squeezy Integration
@@ -37,7 +37,7 @@ cp .env.example .env
 ```
 
 Edytuj `.env` i uzupełnij:
-- `DATABASE_URL` - URL do bazy danych MySQL (np. `mysql://user:password@host:3306/database?schema=public`)
+- `DATABASE_URL` - Connection string z Vercel Postgres (zobacz `VERCEL_POSTGRES_SETUP.md` dla instrukcji)
 - `JWT_SECRET` - Sekretny klucz JWT
 - `LEMON_SQUEEZY_WEBHOOK_SECRET` - Secret z Lemon Squeezy
 - `NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL` - URL do checkoutu Lemon Squeezy
