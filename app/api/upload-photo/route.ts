@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
-import { prisma } from '@/lib/prisma'
 import { getUserFromToken } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
-    const user = await getUserFromToken(token || null)
+    const token =
+      request.headers.get('authorization')?.replace('Bearer ', '') || null
+    const user = await getUserFromToken(token)
 
     const formData = await request.formData()
     const file = formData.get('image') as File
@@ -29,7 +32,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Jeśli użytkownik jest zalogowany, sprawdź czy uploadId pasuje do jego konta
     if (user) {
       if (user.uploadId !== uploadId) {
         return NextResponse.json(
@@ -38,7 +40,6 @@ export async function POST(request: NextRequest) {
         )
       }
     } else {
-      // Jeśli użytkownik nie jest zalogowany, sprawdź czy uploadId istnieje w bazie
       const userWithUploadId = await prisma.user.findUnique({
         where: { uploadId },
       })
@@ -51,29 +52,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Utwórz folder dla uploadów użytkownika
-    const uploadDir = join(process.cwd(), 'public', 'uploads', uploadId, `page-${pageNumber}`)
+    const uploadDir = join(
+      process.cwd(),
+      'public',
+      'uploads',
+      uploadId,
+      `page-${pageNumber}`
+    )
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true })
     }
 
-    // Generuj unikalną nazwę pliku
     const timestamp = Date.now()
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
     const fileName = `${timestamp}-${originalName}`
     const filePath = join(uploadDir, fileName)
 
-    // Zapisz plik
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     await writeFile(filePath, buffer)
 
-    // Zwróć URL do przesłanego zdjęcia
     const imageUrl = `/uploads/${uploadId}/page-${pageNumber}/${fileName}`
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      imageUrl 
+      imageUrl,
     })
   } catch (error) {
     console.error('Upload error:', error)
@@ -83,4 +86,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

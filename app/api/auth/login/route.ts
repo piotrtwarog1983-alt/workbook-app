@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { verifyPassword, generateToken } from '@/lib/auth'
-import { z } from 'zod'
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string(),
+  password: z.string().min(8),
 })
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { email, password } = loginSchema.parse(body)
 
-    // Find user
     const user = await prisma.user.findUnique({
       where: { email },
     })
@@ -25,16 +26,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify password
-    const isValid = await verifyPassword(password, user.password)
-    if (!isValid) {
+    const isPasswordValid = await verifyPassword(password, user.password)
+    if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Nieprawidłowy email lub hasło' },
         { status: 401 }
       )
     }
 
-    // Generate JWT token
     const token = generateToken({
       userId: user.id,
       email: user.email,
@@ -47,6 +46,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
+        uploadId: user.uploadId,
       },
     })
   } catch (error) {

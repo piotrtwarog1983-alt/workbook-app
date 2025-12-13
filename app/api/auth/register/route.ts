@@ -10,12 +10,13 @@ const registerSchema = z.object({
   name: z.string().optional(),
 })
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { token, email, password, name } = registerSchema.parse(body)
 
-    // Verify registration token
     const registrationToken = await prisma.registrationToken.findUnique({
       where: { token },
     })
@@ -48,7 +49,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     })
@@ -60,37 +60,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user
     const hashedPassword = await hashPassword(password)
+
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name: name || email.split('@')[0],
+        name: name?.trim() || email.split('@')[0],
       },
     })
 
-    // Mark token as used
     await prisma.registrationToken.update({
       where: { id: registrationToken.id },
       data: { used: true, userId: user.id },
     })
 
-    // Enroll user in course (default course)
     const defaultCourse = await prisma.course.findFirst({
       where: { slug: 'fotografia-kulinarna' },
     })
 
     if (defaultCourse) {
-      await prisma.enrollment.create({
-        data: {
+      await prisma.enrollment.upsert({
+        where: {
+          userId_courseId: {
+            userId: user.id,
+            courseId: defaultCourse.id,
+          },
+        },
+        update: {},
+        create: {
           userId: user.id,
           courseId: defaultCourse.id,
         },
       })
     }
 
-    // Generate JWT token
     const jwtToken = generateToken({
       userId: user.id,
       email: user.email,
@@ -103,6 +107,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
+        uploadId: user.uploadId,
       },
     })
   } catch (error) {

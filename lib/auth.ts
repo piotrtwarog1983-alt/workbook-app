@@ -32,16 +32,21 @@ export function verifyToken(token: string): TokenPayload | null {
   }
 }
 
+// FAZA 1: Wersja bez bazy danych - zwraca null (logowanie będzie w Fazie 2+)
 export async function getUserFromToken(token: string | null) {
   if (!token) return null
-  
+
   const payload = verifyToken(token)
   if (!payload) return null
 
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-  })
-
-  return user
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    })
+    return user
+  } catch (error) {
+    console.error('getUserFromToken error:', error)
+    return null
+  }
 }
 

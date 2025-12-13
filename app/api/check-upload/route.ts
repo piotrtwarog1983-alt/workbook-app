@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { readdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import { prisma } from '@/lib/prisma'
 
-// FAZA 1: Wersja bez bazy danych - sprawdza tylko pliki, bez weryfikacji w bazie
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -17,22 +19,36 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // W fazie 1 pomijamy sprawdzanie w bazie danych
-    // Sprawdź tylko, czy istnieje plik dla tego uploadId i strony
-    const uploadDir = join(process.cwd(), 'public', 'uploads', uploadId, `page-${pageNumber}`)
-    
+    const uploadOwner = await prisma.user.findUnique({
+      where: { uploadId },
+    })
+
+    if (!uploadOwner) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowy identyfikator uploadu' },
+        { status: 403 }
+      )
+    }
+
+    const uploadDir = join(
+      process.cwd(),
+      'public',
+      'uploads',
+      uploadId,
+      `page-${pageNumber}`
+    )
+
     if (!existsSync(uploadDir)) {
       return NextResponse.json({ uploaded: false })
     }
 
     const files = await readdir(uploadDir)
-    // Zwróć najnowszy plik
     const latestFile = files.sort().reverse()[0]
 
     if (latestFile) {
       return NextResponse.json({
         uploaded: true,
-        imageUrl: `/uploads/${uploadId}/page-${pageNumber}/${latestFile}`
+        imageUrl: `/uploads/${uploadId}/page-${pageNumber}/${latestFile}`,
       })
     }
 

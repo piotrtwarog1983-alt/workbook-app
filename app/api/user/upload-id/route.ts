@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getUserFromToken } from '@/lib/auth'
 
-// FAZA 1: Wersja bez bazy danych - zwraca mock uploadId
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
-    // W fazie 1 zwracamy mock uploadId
-    // W produkcji będzie to pobierane z bazy danych użytkownika
-    const mockUploadId = 'mock-upload-id-' + Date.now()
-    
+    const token =
+      request.headers.get('authorization')?.replace('Bearer ', '') || null
+    const user = await getUserFromToken(token)
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Brak dostępu' },
+        { status: 401 }
+      )
+    }
+
     return NextResponse.json({
-      uploadId: mockUploadId,
+      uploadId: user.uploadId,
     })
   } catch (error) {
     console.error('Get upload ID error:', error)

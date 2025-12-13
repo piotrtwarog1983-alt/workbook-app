@@ -19,7 +19,7 @@ Platforma do sprzedaży i dostarczania kursu fotografii kulinarnej.
 
 - Next.js 14 (App Router)
 - TypeScript
-- Prisma (PostgreSQL)
+- Prisma (MySQL 8.0)
 - Tailwind CSS
 - JWT Authentication
 - Lemon Squeezy Integration
@@ -31,13 +31,13 @@ Platforma do sprzedaży i dostarczania kursu fotografii kulinarnej.
 npm install
 ```
 
-2. Skonfiguruj zmienne środowiskowe:
+2. Skonfiguruj zmienne środowiskowe (szablon znajdziesz w `.env.example`):
 ```bash
 cp .env.example .env
 ```
 
 Edytuj `.env` i uzupełnij:
-- `DATABASE_URL` - URL do bazy danych PostgreSQL
+- `DATABASE_URL` - URL do bazy danych MySQL (np. `mysql://user:password@host:3306/database?schema=public`)
 - `JWT_SECRET` - Sekretny klucz JWT
 - `LEMON_SQUEEZY_WEBHOOK_SECRET` - Secret z Lemon Squeezy
 - `NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL` - URL do checkoutu Lemon Squeezy
