@@ -1,0 +1,4 @@
+TEGO UNIKAJ!!!
+
+Kiedy danie przesuwa się zbyt w jedną ze stron, pozostawia pustą, niezagospodarowaną przestrzeń.
+

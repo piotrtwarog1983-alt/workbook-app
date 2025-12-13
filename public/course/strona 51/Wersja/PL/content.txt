@@ -1,0 +1,12 @@
+**Flat lay**
+Zdjęcie zrobione z góry.
+
+**Trójkąt ekspozycji**
+Trzy elementy, które razem decydują o jasności zdjęcia:
+- czas naświetlania (jak długo kamera rejestruje światło - dłużej = jaśniej)
+- ISO (jak bardzo aparat wzmacnia jasność - wyżej = jaśniej)
+- przysłona (jak szeroko otwiera się obiektyw i ile światła wpada do środka)
+...
+
+
+

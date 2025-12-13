@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Custom styles for course platform */
+.course-container {
+  position: relative !important;
+  display: block !important;
+  margin: 0 auto !important;
+  background: white !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile: square container using aspect-ratio */
+@media (max-width: 1023px) {
+  .course-container {
+    width: 100% !important;
+    max-width: calc(100vw - 2rem) !important;
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Desktop: fixed 855x855 square */
+@media (min-width: 1024px) {
+  .course-container {
+    width: 855px !important;
+    height: 855px !important;
+    max-width: 855px !important;
+    max-height: 855px !important;
+    min-width: 855px !important;
+    min-height: 855px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.tip-cloud {
+  position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tip-cloud::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid white;
+}

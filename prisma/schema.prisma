@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  uploadId      String    @unique @default(cuid()) // Unikalny identyfikator do uploadu zdjęć
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  enrollments   Enrollment[]
+  registrationTokens RegistrationToken[]
+  progressEvaluations ProgressEvaluation[]
+}
+
+model Course {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  slug        String      @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  enrollments Enrollment[]
+  pages       CoursePage[]
+}
+
+model CoursePage {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  pageNumber  Int
+  title       String?
+  content     String?  // JSON content
+  imageUrl    String?
+  tips        String?  // JSON array of tips
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([courseId, pageNumber])
+  @@index([courseId])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  progress  Json?    // Store progress data
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model RegistrationToken {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  email     String
+  courseId  String?
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  lemonSqueezyOrder LemonSqueezyOrder?
+
+  @@index([token])
+  @@index([email])
+}
+
+model LemonSqueezyOrder {
+  id              String   @id @default(cuid())
+  orderId         String   @unique // Lemon Squeezy order ID
+  customerEmail   String
+  status          String
+  total           Float?
+  currency        String?
+  orderData       Json     // Full webhook data
+  registrationTokenId String? @unique
+  registrationToken RegistrationToken? @relation(fields: [registrationTokenId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([customerEmail])
+}
+
+model GlossaryTerm {
+  id          String   @id @default(cuid())
+  term        String
+  definition  String
+  language    String   @default("pl")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([term, language])
+  @@index([language])
+}
+
+model ProgressEvaluation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pageNumber Int     // Numer strony oceny (16, 21, 30, 36, 41, 50)
+  evaluation Int     // -1 = gorzej, 0 = tak samo, 1 = lepiej
+  cumulativeScore Int // Skumulowany wynik względem punktu odniesienia (-6 do +6)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, pageNumber])
+  @@index([userId])
+  @@index([pageNumber])
+}
+
