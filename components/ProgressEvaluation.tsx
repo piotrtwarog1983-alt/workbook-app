@@ -121,8 +121,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
     setValue(newValue)
     setSaved(false)
 
-    // Oblicz nowy skumulowany wynik
-    let newCumulative = 0
+    // Oblicz nowy skumulowany wynik TYLKO z poprzednich stron
     let previousEvaluations: Array<{ pageNumber: number; evaluation: number }> =
       []
 
@@ -150,11 +149,9 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
       previousEvaluations = loadLocalEvaluations()
     }
 
-    newCumulative = calculateCumulative(previousEvaluations, pageNumber)
-
-    // Dodaj aktualną ocenę
-    newCumulative += newValue
-    setCumulativeScore(newCumulative)
+    // Oblicz cumulative TYLKO z poprzednich stron (bez aktualnej)
+    const cumulativeFromPrevious = calculateCumulative(previousEvaluations, pageNumber)
+    setCumulativeScore(cumulativeFromPrevious)
 
     // Zapisz ocenę
     setSaving(true)
@@ -170,7 +167,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
           body: JSON.stringify({
             pageNumber,
             evaluation: newValue,
-            cumulativeScore: newCumulative,
+            cumulativeScore: cumulativeFromPrevious + newValue, // Zapisz łączny wynik z aktualną oceną
           }),
         })
 
