@@ -20,3 +20,4 @@ export async function notifyPhotoUploaded(uploadId: string, pageNumber: number, 
     console.error('Pusher error:', error)
   }
 }
+

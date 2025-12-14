@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Pusher from 'pusher-js'
 
 interface ProgressGalleryProps {
   uploadId?: string
@@ -103,8 +104,45 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     }
   }
 
+  // Pusher - nasłuchuj na nowe zdjęcia z telefonu (real-time)
+  useEffect(() => {
+    if (!currentUploadId) return
+
+    // Inicjalizacja Pusher
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    })
+
+    // Subskrybuj kanał dla tego uploadId
+    const channel = pusher.subscribe(`upload-${currentUploadId}`)
+
+    // Nasłuchuj na event przesłania zdjęcia
+    channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
+      // Sprawdź czy to strona z postępami
+      if (progressPages.includes(data.pageNumber)) {
+        // Dodaj nowe zdjęcie do galerii
+        setProgressImages(prev => {
+          // Unikaj duplikatów
+          if (prev.includes(data.imageUrl)) return prev
+          const newImages = [...prev, data.imageUrl]
+          // Przejdź do nowego zdjęcia
+          setCurrentIndex(newImages.length - 1)
+          return newImages
+        })
+      }
+    })
+
+    // Cleanup przy odmontowaniu
+    return () => {
+      channel.unbind_all()
+      channel.unsubscribe()
+      pusher.disconnect()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUploadId])
+
   // Odśwież zdjęcia gdy użytkownik wraca na kartę (visibility API)
-  // Brak pollingu - oszczędność operacji
+  // Backup dla przypadków gdy Pusher nie zadziała
   useEffect(() => {
     if (!currentUploadId) return
 
