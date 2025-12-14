@@ -67,66 +67,71 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
     setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`)
   }
 
-  // Sprawdzaj co 15 sekund, czy zdjęcie zostało przesłane z telefonu (tylko gdy karta jest widoczna)
+  // Long-polling - czekaj na upload z telefonu (bez ciągłego odpytywania)
+  // Server czeka max 25 sekund na zdjęcie, potem zwraca found: false
   useEffect(() => {
     if (!currentUploadId || uploadedImage) return
 
-    let intervalId: NodeJS.Timeout | null = null
+    let abortController: AbortController | null = null
+    let isActive = true
 
-    const checkForUpload = async () => {
-      if (document.visibilityState !== 'visible' || uploadedImage) return
-      
+    const waitForUpload = async () => {
+      if (!isActive || uploadedImage) return
+
+      abortController = new AbortController()
+
       try {
-        const token = localStorage.getItem('token')
-        const response = await fetch(`/api/check-upload?page=${pageNumber}&uploadId=${currentUploadId}`, {
-          headers: token ? {
-            'Authorization': `Bearer ${token}`,
-          } : {},
-        })
+        const response = await fetch(
+          `/api/wait-for-upload?uploadId=${currentUploadId}&page=${pageNumber}`,
+          { signal: abortController.signal }
+        )
         const data = await response.json()
-        if (data.uploaded && data.imageUrl) {
+
+        if (data.found && data.imageUrl) {
+          // Zdjęcie przesłane - pokaż i zakończ
           setUploadedImage(data.imageUrl)
-          // Zatrzymaj polling po znalezieniu zdjęcia
-          if (intervalId) {
-            clearInterval(intervalId)
-            intervalId = null
+          isActive = false
+        } else if (isActive && !uploadedImage) {
+          // Timeout - spróbuj ponownie (tylko jeśli karta jest widoczna)
+          if (document.visibilityState === 'visible') {
+            waitForUpload()
           }
         }
-      } catch (error) {
-        console.error('Error checking upload:', error)
-      }
-    }
-
-    const startPolling = () => {
-      if (intervalId) return
-      intervalId = setInterval(checkForUpload, 15000) // Co 15 sekund
-    }
-
-    const stopPolling = () => {
-      if (intervalId) {
-        clearInterval(intervalId)
-        intervalId = null
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Error waiting for upload:', error)
+          // Przy błędzie spróbuj ponownie po 5 sekundach
+          if (isActive && !uploadedImage) {
+            setTimeout(() => {
+              if (isActive && !uploadedImage && document.visibilityState === 'visible') {
+                waitForUpload()
+              }
+            }, 5000)
+          }
+        }
       }
     }
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkForUpload() // Sprawdź od razu
-        startPolling()
-      } else {
-        stopPolling()
+      if (document.visibilityState === 'visible' && isActive && !uploadedImage) {
+        // Wróciła karta - rozpocznij long-polling
+        waitForUpload()
+      } else if (document.visibilityState === 'hidden') {
+        // Karta w tle - anuluj request
+        abortController?.abort()
       }
     }
 
-    // Uruchom polling jeśli karta jest widoczna
+    // Rozpocznij long-polling jeśli karta jest widoczna
     if (document.visibilityState === 'visible') {
-      startPolling()
+      waitForUpload()
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
-      stopPolling()
+      isActive = false
+      abortController?.abort()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [currentUploadId, pageNumber, uploadedImage])
