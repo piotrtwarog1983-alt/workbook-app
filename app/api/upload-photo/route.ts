@@ -59,6 +59,18 @@ export async function POST(request: NextRequest) {
     // Ścieżka w Blob Storage: uploads/{uploadId}/page-{pageNumber}/{fileName}
     const blobPath = `uploads/${uploadId}/page-${pageNumber}/${fileName}`
 
+    // Sprawdź konfigurację Blob Storage
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('Brak zmiennej środowiskowej BLOB_READ_WRITE_TOKEN')
+      return NextResponse.json(
+        {
+          error:
+            'Brak konfiguracji Blob Storage. Skontaktuj się z administratorem.',
+        },
+        { status: 500 }
+      )
+    }
+
     // Upload do Vercel Blob Storage
     const blob = await put(blobPath, file, {
       access: 'public', // Plik będzie publicznie dostępny
@@ -68,10 +80,12 @@ export async function POST(request: NextRequest) {
       success: true,
       imageUrl: blob.url, // URL z Blob Storage
     })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Upload error:', error)
+    const message =
+      error instanceof Error ? error.message : 'Nieznany błąd serwera'
     return NextResponse.json(
-      { error: 'Błąd podczas przesyłania pliku' },
+      { error: `Błąd podczas przesyłania pliku: ${message}` },
       { status: 500 }
     )
   }
