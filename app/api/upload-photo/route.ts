@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { put } from '@vercel/blob'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -32,6 +30,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Weryfikacja uploadId
     if (user) {
       if (user.uploadId !== uploadId) {
         return NextResponse.json(
@@ -52,31 +51,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const uploadDir = join(
-      process.cwd(),
-      'public',
-      'uploads',
-      uploadId,
-      `page-${pageNumber}`
-    )
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
+    // Generuj unikalną nazwę pliku
     const timestamp = Date.now()
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
     const fileName = `${timestamp}-${originalName}`
-    const filePath = join(uploadDir, fileName)
+    
+    // Ścieżka w Blob Storage: uploads/{uploadId}/page-{pageNumber}/{fileName}
+    const blobPath = `uploads/${uploadId}/page-${pageNumber}/${fileName}`
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
-
-    const imageUrl = `/uploads/${uploadId}/page-${pageNumber}/${fileName}`
+    // Upload do Vercel Blob Storage
+    const blob = await put(blobPath, file, {
+      access: 'public', // Plik będzie publicznie dostępny
+    })
 
     return NextResponse.json({
       success: true,
-      imageUrl,
+      imageUrl: blob.url, // URL z Blob Storage
     })
   } catch (error) {
     console.error('Upload error:', error)

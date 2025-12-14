@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 
-export default function UploadPage() {
+function UploadContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pageNumber = searchParams.get('page')
@@ -208,3 +208,21 @@ export default function UploadPage() {
   )
 }
 
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Ładowanie...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function UploadPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <UploadContent />
+    </Suspense>
+  )
+}

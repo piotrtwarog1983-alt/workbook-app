@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { list } from '@vercel/blob'
+import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    const token =
+      request.headers.get('authorization')?.replace('Bearer ', '') || null
+    const user = await getUserFromToken(token)
+
     const searchParams = request.nextUrl.searchParams
     const uploadId = searchParams.get('uploadId')
     const pageNumber = searchParams.get('page')
@@ -19,43 +22,51 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const uploadOwner = await prisma.user.findUnique({
-      where: { uploadId },
-    })
+    // Weryfikacja uploadId
+    if (user) {
+      if (user.uploadId !== uploadId) {
+        return NextResponse.json(
+          { error: 'Nieprawidłowy identyfikator uploadu' },
+          { status: 403 }
+        )
+      }
+    } else {
+      const userWithUploadId = await prisma.user.findUnique({
+        where: { uploadId },
+      })
 
-    if (!uploadOwner) {
-      return NextResponse.json(
-        { error: 'Nieprawidłowy identyfikator uploadu' },
-        { status: 403 }
-      )
+      if (!userWithUploadId) {
+        return NextResponse.json(
+          { error: 'Nieprawidłowy identyfikator uploadu' },
+          { status: 403 }
+        )
+      }
     }
 
-    const uploadDir = join(
-      process.cwd(),
-      'public',
-      'uploads',
-      uploadId,
-      `page-${pageNumber}`
-    )
+    // Sprawdź pliki w Blob Storage
+    const prefix = `uploads/${uploadId}/page-${pageNumber}/`
+    
+    const { blobs } = await list({
+      prefix,
+    })
 
-    if (!existsSync(uploadDir)) {
+    if (blobs.length === 0) {
       return NextResponse.json({ uploaded: false })
     }
 
-    const files = await readdir(uploadDir)
-    const latestFile = files.sort().reverse()[0]
+    // Znajdź najnowszy plik (sortuj po dacie utworzenia)
+    const latestBlob = blobs.sort((a, b) => {
+      const timeA = new Date(a.uploadedAt).getTime()
+      const timeB = new Date(b.uploadedAt).getTime()
+      return timeB - timeA
+    })[0]
 
-    if (latestFile) {
-      return NextResponse.json({
-        uploaded: true,
-        imageUrl: `/uploads/${uploadId}/page-${pageNumber}/${latestFile}`,
-      })
-    }
-
-    return NextResponse.json({ uploaded: false })
+    return NextResponse.json({
+      uploaded: true,
+      imageUrl: latestBlob.url,
+    })
   } catch (error) {
     console.error('Check upload error:', error)
     return NextResponse.json({ uploaded: false })
   }
 }
-

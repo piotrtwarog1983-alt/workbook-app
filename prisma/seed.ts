@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client'
+import * as crypto from 'crypto'
 import { MOCK_COURSE, MOCK_GLOSSARY_TERMS } from '../lib/mock-data'
 
 const prisma = new PrismaClient()
+
+// Email administratora - tylko ten email może się zarejestrować bez płatności
+const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
 
 async function main() {
   const course = await prisma.course.upsert({
@@ -59,6 +63,55 @@ async function main() {
         language: 'pl', // Domyślny język dla wszystkich terminów
       },
     })
+  }
+
+  // Sprawdź, czy administrator już istnieje
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: ADMIN_EMAIL },
+  })
+
+  if (existingAdmin) {
+    console.log(`\n✅ Administrator już istnieje: ${ADMIN_EMAIL}`)
+  } else {
+    // Sprawdź, czy istnieje aktywny token dla administratora
+    const existingToken = await prisma.registrationToken.findFirst({
+      where: {
+        email: ADMIN_EMAIL,
+        used: false,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    })
+
+    if (existingToken) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      console.log(`\n✅ Token rejestracyjny dla administratora już istnieje!`)
+      console.log(`📧 Email: ${ADMIN_EMAIL}`)
+      console.log(`🔗 Link do rejestracji: ${appUrl}/signup?token=${existingToken.token}`)
+      console.log(`📅 Ważny do: ${existingToken.expiresAt.toLocaleDateString('pl-PL')}`)
+    } else {
+      // Utwórz nowy token rejestracyjny dla administratora
+      const adminToken = crypto.randomBytes(32).toString('hex')
+      const expiresAt = new Date()
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1) // Token ważny przez 1 rok
+
+      await prisma.registrationToken.create({
+        data: {
+          token: adminToken,
+          email: ADMIN_EMAIL,
+          expiresAt,
+          courseId: course.id,
+        },
+      })
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      console.log(`\n✅ Token rejestracyjny dla administratora utworzony!`)
+      console.log(`📧 Email: ${ADMIN_EMAIL}`)
+      console.log(`🔗 Link do rejestracji: ${appUrl}/signup?token=${adminToken}`)
+      console.log(`📅 Ważny do: ${expiresAt.toLocaleDateString('pl-PL')}`)
+      console.log(`\n⚠️  ZAPISZ TEN LINK - będzie potrzebny do rejestracji administratora!\n`)
+    }
   }
 
   console.log(`Seed completed successfully for course ${course.slug}`)
