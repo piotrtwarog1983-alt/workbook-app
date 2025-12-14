@@ -17,16 +17,13 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
   const [uploadUrl, setUploadUrl] = useState<string | null>(null)
-  const [checkInterval, setCheckInterval] = useState<NodeJS.Timeout | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const currentUploadIdRef = useRef<string | null>(uploadId || null)
 
   // Pobierz uploadId użytkownika, jeśli nie został przekazany
   useEffect(() => {
     const fetchUploadId = async () => {
       if (currentUploadId) {
         // uploadId już jest dostępny
-        currentUploadIdRef.current = currentUploadId
         generateQRCode(currentUploadId)
         return
       }
@@ -51,7 +48,6 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
         const data = await response.json()
         if (data.uploadId) {
           setCurrentUploadId(data.uploadId)
-          currentUploadIdRef.current = data.uploadId
           generateQRCode(data.uploadId)
         }
       } catch (error) {
@@ -69,48 +65,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
     const url = `${window.location.origin}/upload?page=${pageNumber}&uploadId=${uploadIdValue}`
     setUploadUrl(url)
     setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`)
-
-    // Sprawdzaj co 2 sekundy, czy zdjęcie zostało przesłane z telefonu
-    if (checkInterval) {
-      clearInterval(checkInterval)
-    }
-
-    const interval = setInterval(async () => {
-      const uploadIdToCheck = currentUploadIdRef.current
-      if (!uploadedImage && uploadIdToCheck) {
-        try {
-          const token = localStorage.getItem('token')
-          const response = await fetch(`/api/check-upload?page=${pageNumber}&uploadId=${uploadIdToCheck}`, {
-            headers: token ? {
-              'Authorization': `Bearer ${token}`,
-            } : {},
-          })
-          const data = await response.json()
-          if (data.uploaded && data.imageUrl) {
-            setUploadedImage(data.imageUrl)
-            clearInterval(interval)
-            setCheckInterval(null)
-          }
-        } catch (error) {
-          console.error('Error checking upload:', error)
-        }
-      } else if (uploadedImage) {
-        // Jeśli zdjęcie już jest, zatrzymaj sprawdzanie
-        clearInterval(interval)
-        setCheckInterval(null)
-      }
-    }, 2000)
-
-    setCheckInterval(interval)
   }
-
-  useEffect(() => {
-    return () => {
-      if (checkInterval) {
-        clearInterval(checkInterval)
-      }
-    }
-  }, [checkInterval])
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -148,19 +103,13 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
 
       const data = await response.json()
       setUploadedImage(data.imageUrl)
-      
-      // Zatrzymaj sprawdzanie
-      if (checkInterval) {
-        clearInterval(checkInterval)
-        setCheckInterval(null)
-      }
     } catch (error: any) {
       setUploadError(error.message || 'Nie udało się przesłać zdjęcia. Spróbuj ponownie.')
       console.error('Upload error:', error)
     } finally {
       setIsUploading(false)
     }
-  }, [pageNumber, currentUploadId, checkInterval])
+  }, [pageNumber, currentUploadId])
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -314,11 +263,6 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                 <p className="text-sm text-gray-600 text-center max-w-md">
                   Zeskanuj kod QR telefonem, aby otworzyć stronę do przesłania zdjęcia bezpośrednio z urządzenia mobilnego
                 </p>
-                {!uploadedImage && (
-                  <p className="text-xs text-gray-500 text-center">
-                    Czekam na przesłanie zdjęcia z telefonu...
-                  </p>
-                )}
               </>
             ) : (
               <p className="text-sm text-gray-500 text-center">
