@@ -72,24 +72,39 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
   useEffect(() => {
     if (!currentUploadId || uploadedImage) return
 
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+
+    // Sprawdź czy Pusher jest skonfigurowany
+    if (!pusherKey || !pusherCluster) {
+      console.warn('Pusher nie skonfigurowany - brak NEXT_PUBLIC_PUSHER_KEY lub NEXT_PUBLIC_PUSHER_CLUSTER')
+      return
+    }
+
+    console.log('PhotoUpload: Inicjalizacja Pusher...')
+
     // Inicjalizacja Pusher
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    const pusher = new Pusher(pusherKey, {
+      cluster: pusherCluster,
     })
 
     // Subskrybuj kanał dla tego uploadId
     const channel = pusher.subscribe(`upload-${currentUploadId}`)
+    console.log('PhotoUpload: Subskrybowano kanał upload-' + currentUploadId)
 
     // Nasłuchuj na event przesłania zdjęcia
     channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
+      console.log('PhotoUpload: Otrzymano event photo-uploaded:', data)
       // Sprawdź czy to zdjęcie dla tej strony
       if (data.pageNumber === pageNumber) {
         setUploadedImage(data.imageUrl)
+        console.log('PhotoUpload: Ustawiono zdjęcie')
       }
     })
 
     // Cleanup przy odmontowaniu
     return () => {
+      console.log('PhotoUpload: Rozłączanie Pusher...')
       channel.unbind_all()
       channel.unsubscribe()
       pusher.disconnect()

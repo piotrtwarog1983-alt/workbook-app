@@ -104,20 +104,33 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     }
   }
 
-  // Pusher - nasłuchuj na nowe zdjęcia z telefonu (real-time)
+  // Pusher - nasłuchuj na nowe zdjęcia z telefonu (real-time, bez pollingu)
   useEffect(() => {
     if (!currentUploadId) return
 
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+
+    // Sprawdź czy Pusher jest skonfigurowany
+    if (!pusherKey || !pusherCluster) {
+      console.warn('Pusher nie skonfigurowany - brak NEXT_PUBLIC_PUSHER_KEY lub NEXT_PUBLIC_PUSHER_CLUSTER')
+      return
+    }
+
+    console.log('ProgressGallery: Inicjalizacja Pusher...')
+    
     // Inicjalizacja Pusher
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    const pusher = new Pusher(pusherKey, {
+      cluster: pusherCluster,
     })
 
     // Subskrybuj kanał dla tego uploadId
     const channel = pusher.subscribe(`upload-${currentUploadId}`)
+    console.log('ProgressGallery: Subskrybowano kanał upload-' + currentUploadId)
 
     // Nasłuchuj na event przesłania zdjęcia
     channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
+      console.log('ProgressGallery: Otrzymano event photo-uploaded:', data)
       // Sprawdź czy to strona z postępami
       if (progressPages.includes(data.pageNumber)) {
         // Dodaj nowe zdjęcie do galerii
@@ -127,6 +140,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
           const newImages = [...prev, data.imageUrl]
           // Przejdź do nowego zdjęcia
           setCurrentIndex(newImages.length - 1)
+          console.log('ProgressGallery: Dodano nowe zdjęcie, łącznie:', newImages.length)
           return newImages
         })
       }
@@ -134,6 +148,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
 
     // Cleanup przy odmontowaniu
     return () => {
+      console.log('ProgressGallery: Rozłączanie Pusher...')
       channel.unbind_all()
       channel.unsubscribe()
       pusher.disconnect()
@@ -141,25 +156,8 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUploadId])
 
-  // Odśwież zdjęcia gdy użytkownik wraca na kartę (visibility API)
-  // Backup dla przypadków gdy Pusher nie zadziała
-  useEffect(() => {
-    if (!currentUploadId) return
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Użytkownik wrócił na kartę - odśwież zdjęcia
-        fetchProgressImages(currentUploadId)
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUploadId])
+  // UWAGA: Usunięto visibility API polling - używamy tylko Pusher
+  // Zdjęcia są ładowane raz przy pierwszym renderze (fetchProgressImages w pierwszym useEffect)
 
   // Nawigacja klawiszami
   useEffect(() => {
