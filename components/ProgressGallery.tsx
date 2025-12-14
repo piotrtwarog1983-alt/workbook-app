@@ -146,7 +146,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
             updated = [...prev, { pageNumber: data.pageNumber, imageUrl: data.imageUrl }]
           }
           // Sortuj według kolejności stron postępów
-          const pageOrder = new Map(PROGRESS_PAGES.map((p, i) => [p, i]))
+          const pageOrder = new Map<number, number>(PROGRESS_PAGES.map((p, i) => [p, i]))
           updated.sort((a, b) => (pageOrder.get(a.pageNumber) ?? 0) - (pageOrder.get(b.pageNumber) ?? 0))
           const newIndex = updated.findIndex((img) => img.pageNumber === data.pageNumber)
           setCurrentIndex(newIndex >= 0 ? newIndex : updated.length - 1)
