@@ -203,10 +203,10 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-[1500px] mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Gallery z postępami - po lewej stronie */}
-          <div className="w-full lg:w-64 order-1 lg:order-0 flex-shrink-0">
+          <div className="w-full lg:w-[32rem] order-1 lg:order-0 flex-shrink-0">
             <ProgressGallery />
           </div>
 

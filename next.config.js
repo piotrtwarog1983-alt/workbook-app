@@ -12,6 +12,10 @@ const nextConfig = {
         hostname: '*.public.blob.vercel-storage.com',
       },
       {
+        protocol: 'https',
+        hostname: 'api.qrserver.com',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
       },

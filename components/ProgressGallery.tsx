@@ -152,7 +152,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
 
   if (loading) {
     return (
-      <div className="w-full lg:w-64 bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
+      <div className="w-full lg:w-[32rem] bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Twoje postępy</h3>
         <div className="text-center py-8 text-gray-500">Ładowanie...</div>
       </div>
@@ -161,7 +161,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
 
   if (progressImages.length === 0) {
     return (
-      <div className="w-full lg:w-64 bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
+      <div className="w-full lg:w-[32rem] bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Twoje postępy</h3>
         <div className="text-center py-8 text-gray-500 text-sm">
           Brak zdjęć z postępami.<br />
@@ -172,7 +172,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
   }
 
   return (
-    <div className="w-full lg:w-64 bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
+    <div className="w-full lg:w-[32rem] bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Twoje postępy</h3>
       
       {/* Kontener ze zdjęciem */}
