@@ -2,7 +2,20 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+    ],
     unoptimized: false,
   },
   // FAZA 1: Wyłącz Prisma podczas build jeśli nie ma DATABASE_URL

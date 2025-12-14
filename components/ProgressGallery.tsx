@@ -11,7 +11,8 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
   const [progressImages, setProgressImages] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(-1) // -1 oznacza "jeszcze nie ustawiono"
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
 
   // Strony, z których pobieramy zdjęcia z postępami
   const progressPages = [7, 15, 20, 29, 35, 40, 49]
@@ -85,9 +86,16 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
       setProgressImages(images)
       setLoading(false)
       
-      // Jeśli dodano nowe zdjęcie, przejdź do ostatniego
-      if (images.length > previousLength && images.length > 0) {
-        setCurrentIndex(images.length - 1)
+      // Przy pierwszym załadowaniu lub gdy dodano nowe zdjęcie - pokaż ostatnie
+      if (images.length > 0) {
+        if (isFirstLoad) {
+          // Pierwsze załadowanie - zawsze pokaż ostatnie zdjęcie
+          setCurrentIndex(images.length - 1)
+          setIsFirstLoad(false)
+        } else if (images.length > previousLength) {
+          // Dodano nowe zdjęcie - przejdź do niego
+          setCurrentIndex(images.length - 1)
+        }
       }
     } catch (error) {
       console.error('Error fetching progress images:', error)
@@ -169,16 +177,18 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
       
       {/* Kontener ze zdjęciem */}
       <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100">
-        <Image
-          src={progressImages[currentIndex]}
-          alt={`Zdjęcie postępu ${currentIndex + 1}`}
-          fill
-          className="object-contain"
-          sizes="(max-width: 1024px) 100vw, 256px"
-        />
+        {currentIndex >= 0 && progressImages[currentIndex] && (
+          <Image
+            src={progressImages[currentIndex]}
+            alt={`Zdjęcie postępu ${currentIndex + 1}`}
+            fill
+            className="object-contain"
+            sizes="(max-width: 1024px) 100vw, 256px"
+          />
+        )}
 
         {/* Strzałka w lewo */}
-        {currentIndex > 0 && (
+        {currentIndex > 0 && progressImages.length > 1 && (
           <button
             onClick={goToPrevious}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
@@ -225,9 +235,11 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
       </div>
 
       {/* Wskaźnik (np. 1/7) */}
-      <div className="mt-3 text-center text-sm text-gray-600">
-        {currentIndex + 1} / {progressImages.length}
-      </div>
+      {currentIndex >= 0 && (
+        <div className="mt-3 text-center text-sm text-gray-600">
+          {currentIndex + 1} / {progressImages.length}
+        </div>
+      )}
 
       {/* Miniaturki pod zdjęciem (opcjonalnie) */}
       {progressImages.length > 1 && (
