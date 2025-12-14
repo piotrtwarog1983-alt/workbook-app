@@ -94,10 +94,10 @@ function UploadContent() {
 
   if (!pageNumber || !uploadId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center">
-          <p className="text-red-600">Błąd: Nieprawidłowy link</p>
-          <p className="text-sm text-gray-600 mt-2">
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md text-center border border-gray-800">
+          <p className="text-red-400">Błąd: Nieprawidłowy link</p>
+          <p className="text-sm text-gray-400 mt-2">
             Link do uploadu jest nieprawidłowy. Sprawdź kod QR ponownie.
           </p>
         </div>
@@ -106,19 +106,19 @@ function UploadContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md border border-gray-800">
+        <h1 className="text-2xl font-bold text-center mb-6 text-white">
           Prześlij zdjęcie
         </h1>
 
         {uploadSuccess ? (
           <div className="text-center space-y-4">
             <div className="text-green-500 text-5xl mb-4">✓</div>
-            <p className="text-lg font-semibold text-gray-900">
+            <p className="text-lg font-semibold text-white">
               Zdjęcie zostało przesłane pomyślnie!
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Możesz zamknąć to okno.
             </p>
           </div>
@@ -135,7 +135,7 @@ function UploadContent() {
               
               {preview ? (
                 <div className="space-y-4">
-                  <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-200">
+                  <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-700">
                     <Image
                       src={preview}
                       alt="Podgląd"
@@ -151,7 +151,7 @@ function UploadContent() {
                         fileInputRef.current.value = ''
                       }
                     }}
-                    className="w-full text-sm text-gray-600 underline"
+                    className="w-full text-sm text-gray-400 hover:text-gray-300 underline"
                   >
                     Wybierz inne zdjęcie
                   </button>
@@ -159,7 +159,7 @@ function UploadContent() {
               ) : (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors"
+                  className="w-full border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-primary-400 transition-colors"
                 >
                   <div className="space-y-2">
                     <svg
@@ -175,7 +175,7 @@ function UploadContent() {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <p className="text-gray-700 font-medium">
+                    <p className="text-gray-300 font-medium">
                       Wybierz zdjęcie z galerii
                     </p>
                     <p className="text-sm text-gray-500">
@@ -187,7 +187,7 @@ function UploadContent() {
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+              <div className="p-3 bg-red-900/50 border border-red-700 rounded text-red-200 text-sm">
                 {error}
               </div>
             )}
@@ -210,10 +210,10 @@ function UploadContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md text-center border border-gray-800">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Ładowanie...</p>
+        <p className="text-white">Ładowanie...</p>
       </div>
     </div>
   )

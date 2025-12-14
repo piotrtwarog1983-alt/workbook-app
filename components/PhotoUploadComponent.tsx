@@ -202,9 +202,9 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
 
   if (!isPageAllowed) {
     return (
-      <div className="relative w-full h-full flex flex-col p-8 bg-white overflow-y-auto">
-        <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col items-center justify-center text-center text-gray-600">
-          <h2 className="text-2xl font-serif text-gray-900 mb-4">Przesyłanie zdjęć</h2>
+      <div className="relative w-full h-full flex flex-col p-8 bg-black overflow-y-auto">
+        <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col items-center justify-center text-center text-gray-400">
+          <h2 className="text-2xl font-serif text-white mb-4">Przesyłanie zdjęć</h2>
           <p>Ta strona nie posiada sekcji postępów. Wysyłanie zdjęć jest dostępne tylko dla stron: 7, 15, 20, 29, 35, 40 oraz 49.</p>
         </div>
       </div>
@@ -212,9 +212,9 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
   }
 
   return (
-    <div className="relative w-full h-full flex flex-col p-8 bg-white overflow-y-auto">
+    <div className="relative w-full h-full flex flex-col p-8 bg-black overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col">
-        <h2 className="text-2xl md:text-3xl font-serif text-gray-900 text-center mb-6">
+        <h2 className="text-2xl md:text-3xl font-serif text-white text-center mb-6">
           Prześlij swoje zdjęcie
         </h2>
 
@@ -229,10 +229,10 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
               relative border-2 border-dashed rounded-lg p-12 text-center cursor-pointer w-full
               transition-all duration-200
               ${isDragging 
-                ? 'border-primary-500 bg-primary-50' 
-                : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+                ? 'border-primary-500 bg-primary-900/30' 
+                : 'border-gray-700 hover:border-primary-400 hover:bg-gray-900/50'
               }
-              ${uploadedImage ? 'border-green-500 bg-green-50' : ''}
+              ${uploadedImage ? 'border-green-500 bg-green-900/20' : ''}
             `}
           >
             <input
@@ -253,13 +253,13 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                     className="object-contain"
                   />
                 </div>
-                <p className="text-green-600 font-semibold">Zdjęcie zostało przesłane pomyślnie!</p>
+                <p className="text-green-400 font-semibold">Zdjęcie zostało przesłane pomyślnie!</p>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     setUploadedImage(null)
                   }}
-                  className="text-primary-600 hover:text-primary-700 underline"
+                  className="text-primary-400 hover:text-primary-300 underline"
                 >
                   Prześlij inne zdjęcie
                 </button>
@@ -269,7 +269,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                 {isUploading ? (
                   <div className="space-y-2">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-                    <p className="text-gray-600">Przesyłanie zdjęcia...</p>
+                    <p className="text-gray-400">Przesyłanie zdjęcia...</p>
                   </div>
                 ) : (
                   <>
@@ -287,7 +287,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                       />
                     </svg>
                     <div>
-                      <p className="text-lg font-semibold text-gray-700">
+                      <p className="text-lg font-semibold text-gray-300">
                         Przeciągnij zdjęcie tutaj lub kliknij, aby wybrać
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
@@ -300,7 +300,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
             )}
 
             {uploadError && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+              <div className="mt-4 p-3 bg-red-900/50 border border-red-700 rounded text-red-200 text-sm">
                 {uploadError}
               </div>
             )}
@@ -308,8 +308,8 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
         </div>
 
         {/* QR kod do przesłania z telefonu - na dole kontenera */}
-        <div className="border-t pt-6 mt-6">
-          <h3 className="text-lg font-semibold text-gray-900 text-center mb-4">
+        <div className="border-t border-gray-800 pt-6 mt-6">
+          <h3 className="text-lg font-semibold text-white text-center mb-4">
             Lub prześlij z telefonu:
           </h3>
           <div className="flex flex-col items-center space-y-4">
@@ -319,7 +319,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                   href={uploadUrl || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-colors"
+                  className="p-4 bg-gray-800 rounded-lg border-2 border-gray-700 hover:border-primary-400 transition-colors"
                 >
                   <Image
                     src={qrCodeUrl}
@@ -329,7 +329,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                     className="rounded"
                   />
                 </a>
-                <p className="text-sm text-gray-600 text-center max-w-md">
+                <p className="text-sm text-gray-400 text-center max-w-md">
                   Zeskanuj kod QR telefonem, aby otworzyć stronę do przesłania zdjęcia bezpośrednio z urządzenia mobilnego.
                   Nowe zdjęcie zawsze zastąpi poprzednie na tej stronie.
                 </p>

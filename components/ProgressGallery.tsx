@@ -206,18 +206,18 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
 
   if (loading) {
     return (
-      <div className="w-full lg:w-[32rem] bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Twoje postępy</h3>
-        <div className="text-center py-8 text-gray-500">Ładowanie...</div>
+      <div className="w-full lg:w-[32rem] bg-gray-900 border-2 border-gray-800 rounded-lg p-4 shadow-lg">
+        <h3 className="text-lg font-semibold text-white mb-4">Twoje postępy</h3>
+        <div className="text-center py-8 text-gray-400">Ładowanie...</div>
       </div>
     )
   }
 
   if (progressImages.length === 0) {
     return (
-      <div className="w-full lg:w-[32rem] bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Twoje postępy</h3>
-        <div className="text-center py-8 text-gray-500 text-sm">
+      <div className="w-full lg:w-[32rem] bg-gray-900 border-2 border-gray-800 rounded-lg p-4 shadow-lg">
+        <h3 className="text-lg font-semibold text-white mb-4">Twoje postępy</h3>
+        <div className="text-center py-8 text-gray-400 text-sm">
           Brak zdjęć z postępami.<br />
           Prześlij zdjęcia używając kodów QR.
         </div>
@@ -226,11 +226,11 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
   }
 
   return (
-    <div className="w-full lg:w-[32rem] bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Twoje postępy</h3>
+    <div className="w-full lg:w-[32rem] bg-gray-900 border-2 border-gray-800 rounded-lg p-4 shadow-lg">
+      <h3 className="text-lg font-semibold text-white mb-4">Twoje postępy</h3>
       
       {/* Kontener ze zdjęciem */}
-      <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100">
+      <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-700 bg-gray-800">
         {currentIndex >= 0 && progressImages[currentIndex] && (
           <Image
             src={progressImages[currentIndex].imageUrl}
@@ -245,11 +245,11 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
         {currentIndex > 0 && progressImages.length > 1 && (
           <button
             onClick={goToPrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-800/90 hover:bg-gray-800 rounded-full p-2 shadow-lg transition-all z-10"
             aria-label="Poprzednie zdjęcie"
           >
             <svg
-              className="w-6 h-6 text-gray-700"
+              className="w-6 h-6 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -268,11 +268,11 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
         {currentIndex < progressImages.length - 1 && (
           <button
             onClick={goToNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-800/90 hover:bg-gray-800 rounded-full p-2 shadow-lg transition-all z-10"
             aria-label="Następne zdjęcie"
           >
             <svg
-              className="w-6 h-6 text-gray-700"
+              className="w-6 h-6 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -290,7 +290,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
 
       {/* Wskaźnik (np. 1/7) */}
       {currentIndex >= 0 && (
-        <div className="mt-3 text-center text-sm text-gray-600">
+        <div className="mt-3 text-center text-sm text-gray-400">
           {currentIndex + 1} / {progressImages.length}
         </div>
       )}
@@ -304,8 +304,8 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
               onClick={() => setCurrentIndex(index)}
               className={`relative w-12 h-12 rounded overflow-hidden border-2 flex-shrink-0 transition-all ${
                 index === currentIndex
-                  ? 'border-primary-500 ring-2 ring-primary-200'
-                  : 'border-gray-300 opacity-60 hover:opacity-100'
+                  ? 'border-primary-500 ring-2 ring-primary-700'
+                  : 'border-gray-700 opacity-60 hover:opacity-100'
               }`}
             >
               <Image

@@ -39,14 +39,14 @@ export function Dictionary({ onClose }: DictionaryProps) {
   )
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col border border-gray-800">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold">Słownik pojęć</h2>
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+          <h2 className="text-2xl font-bold text-white">Słownik pojęć</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-gray-400 hover:text-white text-2xl"
             aria-label="Zamknij"
           >
             ×
@@ -54,20 +54,20 @@ export function Dictionary({ onClose }: DictionaryProps) {
         </div>
 
         {/* Search */}
-        <div className="p-6 border-b">
+        <div className="p-6 border-b border-gray-800">
           <input
             type="text"
             placeholder="Szukaj pojęcia..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
         {/* Terms list */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <div className="text-center py-8">Ładowanie...</div>
+            <div className="text-center py-8 text-gray-400">Ładowanie...</div>
           ) : filteredTerms.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               {searchTerm ? 'Nie znaleziono pojęć' : 'Brak pojęć w słowniku'}
@@ -75,9 +75,9 @@ export function Dictionary({ onClose }: DictionaryProps) {
           ) : (
             <div className="space-y-4">
               {filteredTerms.map((term) => (
-                <div key={term.id} className="border-b pb-4 last:border-0">
-                  <h3 className="font-semibold text-lg mb-2">{term.term}</h3>
-                  <p className="text-gray-700">{term.definition}</p>
+                <div key={term.id} className="border-b border-gray-800 pb-4 last:border-0">
+                  <h3 className="font-semibold text-lg mb-2 text-white">{term.term}</h3>
+                  <p className="text-gray-300">{term.definition}</p>
                 </div>
               ))}
             </div>

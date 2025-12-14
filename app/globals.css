@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
 }
 
 body {
@@ -23,7 +23,7 @@ body {
   position: relative !important;
   display: block !important;
   margin: 0 auto !important;
-  background: white !important;
+  background: #111827 !important; /* gray-900 */
   box-sizing: border-box !important;
 }
 
@@ -52,10 +52,10 @@ body {
 
 .tip-cloud {
   position: relative;
-  background: white;
+  background: #1f2937; /* gray-800 */
   border-radius: 20px;
   padding: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .tip-cloud::before {
@@ -67,5 +67,5 @@ body {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid white;
+  border-top: 10px solid #1f2937; /* gray-800 */
 }
