@@ -103,20 +103,49 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     }
   }
 
-  // Odśwież zdjęcia gdy użytkownik wraca na kartę (visibility API)
+  // Odśwież zdjęcia automatycznie co 15 sekund, ale tylko gdy karta jest widoczna
+  // To pozwala na automatyczne wykrycie zdjęć przesłanych z telefonu przez QR kod
   useEffect(() => {
     if (!currentUploadId) return
 
+    let intervalId: NodeJS.Timeout | null = null
+
+    const startPolling = () => {
+      if (intervalId) return // Już działa
+      intervalId = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchProgressImages(currentUploadId)
+        }
+      }, 15000) // Co 15 sekund
+    }
+
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+    }
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Użytkownik wrócił na kartę - odśwież zdjęcia
+        // Użytkownik wrócił na kartę - odśwież od razu i uruchom polling
         fetchProgressImages(currentUploadId)
+        startPolling()
+      } else {
+        // Karta w tle - zatrzymaj polling
+        stopPolling()
       }
+    }
+
+    // Uruchom polling jeśli karta jest widoczna
+    if (document.visibilityState === 'visible') {
+      startPolling()
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
+      stopPolling()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

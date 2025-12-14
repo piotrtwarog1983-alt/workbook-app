@@ -67,6 +67,70 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
     setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`)
   }
 
+  // Sprawdzaj co 15 sekund, czy zdjęcie zostało przesłane z telefonu (tylko gdy karta jest widoczna)
+  useEffect(() => {
+    if (!currentUploadId || uploadedImage) return
+
+    let intervalId: NodeJS.Timeout | null = null
+
+    const checkForUpload = async () => {
+      if (document.visibilityState !== 'visible' || uploadedImage) return
+      
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch(`/api/check-upload?page=${pageNumber}&uploadId=${currentUploadId}`, {
+          headers: token ? {
+            'Authorization': `Bearer ${token}`,
+          } : {},
+        })
+        const data = await response.json()
+        if (data.uploaded && data.imageUrl) {
+          setUploadedImage(data.imageUrl)
+          // Zatrzymaj polling po znalezieniu zdjęcia
+          if (intervalId) {
+            clearInterval(intervalId)
+            intervalId = null
+          }
+        }
+      } catch (error) {
+        console.error('Error checking upload:', error)
+      }
+    }
+
+    const startPolling = () => {
+      if (intervalId) return
+      intervalId = setInterval(checkForUpload, 15000) // Co 15 sekund
+    }
+
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkForUpload() // Sprawdź od razu
+        startPolling()
+      } else {
+        stopPolling()
+      }
+    }
+
+    // Uruchom polling jeśli karta jest widoczna
+    if (document.visibilityState === 'visible') {
+      startPolling()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      stopPolling()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [currentUploadId, pageNumber, uploadedImage])
+
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
       setUploadError('Proszę wybrać plik graficzny')
