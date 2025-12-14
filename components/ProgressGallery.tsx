@@ -103,15 +103,22 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     }
   }
 
-  // Odśwież zdjęcia co 3 sekundy
+  // Odśwież zdjęcia gdy użytkownik wraca na kartę (visibility API)
   useEffect(() => {
     if (!currentUploadId) return
 
-    const interval = setInterval(() => {
-      fetchProgressImages(currentUploadId)
-    }, 3000)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Użytkownik wrócił na kartę - odśwież zdjęcia
+        fetchProgressImages(currentUploadId)
+      }
+    }
 
-    return () => clearInterval(interval)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUploadId])
 
