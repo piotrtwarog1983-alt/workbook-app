@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { notifyPhotoUploaded } from '@/lib/pusher'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,6 +112,10 @@ export async function POST(request: NextRequest) {
       access: 'public',
     })
     console.log('✓ Upload zakończony sukcesem:', blob.url)
+
+    // Powiadom desktop przez Pusher (real-time)
+    await notifyPhotoUploaded(uploadId, parseInt(pageNumber), blob.url)
+    console.log('✓ Pusher notification wysłany')
 
     return NextResponse.json({
       success: true,

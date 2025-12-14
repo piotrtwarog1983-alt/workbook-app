@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
+import Pusher from 'pusher-js'
 
 interface PhotoUploadComponentProps {
   pageNumber: number
@@ -67,72 +68,31 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
     setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`)
   }
 
-  // Long-polling - czekaj na upload z telefonu (bez ciągłego odpytywania)
-  // Server czeka max 25 sekund na zdjęcie, potem zwraca found: false
+  // Pusher - nasłuchuj na event z telefonu (real-time, bez pollingu)
   useEffect(() => {
     if (!currentUploadId || uploadedImage) return
 
-    let abortController: AbortController | null = null
-    let isActive = true
+    // Inicjalizacja Pusher
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    })
 
-    const waitForUpload = async () => {
-      if (!isActive || uploadedImage) return
+    // Subskrybuj kanał dla tego uploadId
+    const channel = pusher.subscribe(`upload-${currentUploadId}`)
 
-      abortController = new AbortController()
-
-      try {
-        const response = await fetch(
-          `/api/wait-for-upload?uploadId=${currentUploadId}&page=${pageNumber}`,
-          { signal: abortController.signal }
-        )
-        const data = await response.json()
-
-        if (data.found && data.imageUrl) {
-          // Zdjęcie przesłane - pokaż i zakończ
-          setUploadedImage(data.imageUrl)
-          isActive = false
-        } else if (isActive && !uploadedImage) {
-          // Timeout - spróbuj ponownie (tylko jeśli karta jest widoczna)
-          if (document.visibilityState === 'visible') {
-            waitForUpload()
-          }
-        }
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          console.error('Error waiting for upload:', error)
-          // Przy błędzie spróbuj ponownie po 5 sekundach
-          if (isActive && !uploadedImage) {
-            setTimeout(() => {
-              if (isActive && !uploadedImage && document.visibilityState === 'visible') {
-                waitForUpload()
-              }
-            }, 5000)
-          }
-        }
+    // Nasłuchuj na event przesłania zdjęcia
+    channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
+      // Sprawdź czy to zdjęcie dla tej strony
+      if (data.pageNumber === pageNumber) {
+        setUploadedImage(data.imageUrl)
       }
-    }
+    })
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isActive && !uploadedImage) {
-        // Wróciła karta - rozpocznij long-polling
-        waitForUpload()
-      } else if (document.visibilityState === 'hidden') {
-        // Karta w tle - anuluj request
-        abortController?.abort()
-      }
-    }
-
-    // Rozpocznij long-polling jeśli karta jest widoczna
-    if (document.visibilityState === 'visible') {
-      waitForUpload()
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
+    // Cleanup przy odmontowaniu
     return () => {
-      isActive = false
-      abortController?.abort()
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      channel.unbind_all()
+      channel.unsubscribe()
+      pusher.disconnect()
     }
   }, [currentUploadId, pageNumber, uploadedImage])
 
