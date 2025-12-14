@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npx prisma generate",
+    "postinstall": "prisma generate || echo 'Prisma generate skipped'",
     "git:add-essential": "git add app/ components/ lib/ scripts/ prisma/schema.prisma prisma/seed.ts package.json package-lock.json tsconfig.json next.config.js tailwind.config.js postcss.config.js vercel.json middleware.ts public/ README.md FAZA1_README.md FAZA2_README.md DEPLOY_CHECKLIST.md SETUP.md MYSQL_SETUP.md QUICK_FIX.md .env.example .gitignore"
   },
   "prisma": {
