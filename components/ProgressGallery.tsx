@@ -3,20 +3,23 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Pusher from 'pusher-js'
+import { PROGRESS_PAGES } from '@/lib/progress-pages'
 
 interface ProgressGalleryProps {
   uploadId?: string
 }
 
+interface ProgressImage {
+  pageNumber: number
+  imageUrl: string
+}
+
 export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
-  const [progressImages, setProgressImages] = useState<string[]>([])
+  const [progressImages, setProgressImages] = useState<ProgressImage[]>([])
   const [loading, setLoading] = useState(true)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
   const [currentIndex, setCurrentIndex] = useState(-1) // -1 oznacza "jeszcze nie ustawiono"
   const [isFirstLoad, setIsFirstLoad] = useState(true)
-
-  // Strony, z których pobieramy zdjęcia z postępami
-  const progressPages = [7, 15, 20, 29, 35, 40, 49]
 
   // Pobierz uploadId użytkownika, jeśli nie został przekazany
   useEffect(() => {
@@ -64,11 +67,11 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
   const fetchProgressImages = async (uploadIdValue: string) => {
     try {
       const token = localStorage.getItem('token')
-      const images: string[] = []
+      const images: ProgressImage[] = []
       const previousLength = progressImages.length
 
       // Sprawdź każdą stronę z postępami
-      for (const pageNumber of progressPages) {
+      for (const pageNumber of PROGRESS_PAGES) {
         try {
           const response = await fetch(`/api/check-upload?page=${pageNumber}&uploadId=${uploadIdValue}`, {
             headers: token ? {
@@ -77,7 +80,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
           })
           const data = await response.json()
           if (data.uploaded && data.imageUrl) {
-            images.push(data.imageUrl)
+            images.push({ pageNumber, imageUrl: data.imageUrl })
           }
         } catch (error) {
           console.error(`Error checking upload for page ${pageNumber}:`, error)
@@ -132,16 +135,24 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
       console.log('ProgressGallery: Otrzymano event photo-uploaded:', data)
       // Sprawdź czy to strona z postępami
-      if (progressPages.includes(data.pageNumber)) {
-        // Dodaj nowe zdjęcie do galerii
-        setProgressImages(prev => {
-          // Unikaj duplikatów
-          if (prev.includes(data.imageUrl)) return prev
-          const newImages = [...prev, data.imageUrl]
-          // Przejdź do nowego zdjęcia
-          setCurrentIndex(newImages.length - 1)
-          console.log('ProgressGallery: Dodano nowe zdjęcie, łącznie:', newImages.length)
-          return newImages
+      if (PROGRESS_PAGES.includes(data.pageNumber)) {
+        setProgressImages((prev) => {
+          const existingIndex = prev.findIndex((img) => img.pageNumber === data.pageNumber)
+          let updated: ProgressImage[]
+          if (existingIndex !== -1) {
+            updated = [...prev]
+            updated[existingIndex] = { pageNumber: data.pageNumber, imageUrl: data.imageUrl }
+          } else {
+            updated = [...prev, { pageNumber: data.pageNumber, imageUrl: data.imageUrl }]
+          }
+          updated.sort(
+            (a, b) =>
+              PROGRESS_PAGES.indexOf(a.pageNumber) - PROGRESS_PAGES.indexOf(b.pageNumber)
+          )
+          const newIndex = updated.findIndex((img) => img.pageNumber === data.pageNumber)
+          setCurrentIndex(newIndex >= 0 ? newIndex : updated.length - 1)
+          console.log('ProgressGallery: Zmieniono zdjęcie dla strony', data.pageNumber)
+          return updated
         })
       }
     })
@@ -223,8 +234,8 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
       <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100">
         {currentIndex >= 0 && progressImages[currentIndex] && (
           <Image
-            src={progressImages[currentIndex]}
-            alt={`Zdjęcie postępu ${currentIndex + 1}`}
+            src={progressImages[currentIndex].imageUrl}
+            alt={`Zdjęcie postępu ze strony ${progressImages[currentIndex].pageNumber}`}
             fill
             className="object-contain"
             sizes="(max-width: 1024px) 100vw, 256px"
@@ -288,9 +299,9 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
       {/* Miniaturki pod zdjęciem (opcjonalnie) */}
       {progressImages.length > 1 && (
         <div className="mt-3 flex gap-2 justify-center overflow-x-auto pb-2">
-          {progressImages.map((imageUrl, index) => (
+          {progressImages.map((progressImage, index) => (
             <button
-              key={index}
+              key={progressImage.pageNumber}
               onClick={() => setCurrentIndex(index)}
               className={`relative w-12 h-12 rounded overflow-hidden border-2 flex-shrink-0 transition-all ${
                 index === currentIndex
@@ -299,12 +310,15 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
               }`}
             >
               <Image
-                src={imageUrl}
-                alt={`Miniatura ${index + 1}`}
+                src={progressImage.imageUrl}
+                alt={`Miniatura strony ${progressImage.pageNumber}`}
                 fill
                 className="object-cover"
                 sizes="48px"
               />
+              <span className="absolute bottom-0 right-0 text-[10px] font-semibold bg-white/80 px-1 rounded-tl">
+                {progressImage.pageNumber}
+              </span>
             </button>
           ))}
         </div>

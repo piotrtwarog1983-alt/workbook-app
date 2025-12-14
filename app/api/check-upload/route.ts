@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { list } from '@vercel/blob'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { PROGRESS_PAGES_SET } from '@/lib/progress-pages'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,14 @@ export async function GET(request: NextRequest) {
     if (!uploadId || !pageNumber) {
       return NextResponse.json(
         { error: 'Brak wymaganych parametrów' },
+        { status: 400 }
+      )
+    }
+
+    const numericPage = parseInt(pageNumber, 10)
+    if (!Number.isFinite(numericPage) || !PROGRESS_PAGES_SET.has(numericPage)) {
+      return NextResponse.json(
+        { error: 'Strona nie obsługuje galerii postępów' },
         { status: 400 }
       )
     }
@@ -44,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Sprawdź pliki w Blob Storage
-    const prefix = `uploads/${uploadId}/page-${pageNumber}/`
+    const prefix = `uploads/${uploadId}/page-${numericPage}/`
     
     const { blobs } = await list({
       prefix,

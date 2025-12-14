@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import Pusher from 'pusher-js'
+import { PROGRESS_PAGES_SET } from '@/lib/progress-pages'
 
 interface PhotoUploadComponentProps {
   pageNumber: number
@@ -20,8 +21,15 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
   const [uploadUrl, setUploadUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const isPageAllowed = PROGRESS_PAGES_SET.has(pageNumber)
+
   // Pobierz uploadId użytkownika, jeśli nie został przekazany
   useEffect(() => {
+    if (!isPageAllowed) {
+      setUploadError('Ta strona nie obsługuje przesyłania zdjęć w sekcji "Twoje postępy".')
+      return
+    }
+
     const fetchUploadId = async () => {
       if (currentUploadId) {
         // uploadId już jest dostępny
@@ -58,10 +66,11 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
     }
 
     fetchUploadId()
-  }, [])
+  }, [isPageAllowed])
 
   // Generuj QR kod
   const generateQRCode = (uploadIdValue: string) => {
+    if (!isPageAllowed) return
     // Link otwiera się w nowym oknie
     const url = `${window.location.origin}/upload?page=${pageNumber}&uploadId=${uploadIdValue}`
     setUploadUrl(url)
@@ -70,7 +79,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
 
   // Pusher - nasłuchuj na event z telefonu (real-time, bez pollingu)
   useEffect(() => {
-    if (!currentUploadId || uploadedImage) return
+    if (!isPageAllowed || !currentUploadId || uploadedImage) return
 
     const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
     const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
@@ -109,9 +118,14 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
       channel.unsubscribe()
       pusher.disconnect()
     }
-  }, [currentUploadId, pageNumber, uploadedImage])
+  }, [currentUploadId, pageNumber, uploadedImage, isPageAllowed])
 
   const handleFile = useCallback(async (file: File) => {
+    if (!isPageAllowed) {
+      setUploadError('Ta strona nie obsługuje przesyłania zdjęć.')
+      return
+    }
+
     if (!file.type.startsWith('image/')) {
       setUploadError('Proszę wybrać plik graficzny')
       return
@@ -185,6 +199,17 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
   const handleClick = useCallback(() => {
     fileInputRef.current?.click()
   }, [])
+
+  if (!isPageAllowed) {
+    return (
+      <div className="relative w-full h-full flex flex-col p-8 bg-white overflow-y-auto">
+        <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col items-center justify-center text-center text-gray-600">
+          <h2 className="text-2xl font-serif text-gray-900 mb-4">Przesyłanie zdjęć</h2>
+          <p>Ta strona nie posiada sekcji postępów. Wysyłanie zdjęć jest dostępne tylko dla stron: 7, 15, 20, 29, 35, 40 oraz 49.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full h-full flex flex-col p-8 bg-white overflow-y-auto">
@@ -288,7 +313,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
             Lub prześlij z telefonu:
           </h3>
           <div className="flex flex-col items-center space-y-4">
-            {qrCodeUrl ? (
+                {qrCodeUrl ? (
               <>
                 <a
                   href={uploadUrl || '#'}
@@ -305,7 +330,8 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                   />
                 </a>
                 <p className="text-sm text-gray-600 text-center max-w-md">
-                  Zeskanuj kod QR telefonem, aby otworzyć stronę do przesłania zdjęcia bezpośrednio z urządzenia mobilnego
+                  Zeskanuj kod QR telefonem, aby otworzyć stronę do przesłania zdjęcia bezpośrednio z urządzenia mobilnego.
+                  Nowe zdjęcie zawsze zastąpi poprzednie na tej stronie.
                 </p>
               </>
             ) : (

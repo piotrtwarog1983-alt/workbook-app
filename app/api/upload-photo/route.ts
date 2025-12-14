@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { put, list, del } from '@vercel/blob'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyPhotoUploaded } from '@/lib/pusher'
+import { PROGRESS_PAGES_SET } from '@/lib/progress-pages'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,6 +62,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const numericPage = parseInt(pageNumber, 10)
+    if (!Number.isFinite(numericPage) || !PROGRESS_PAGES_SET.has(numericPage)) {
+      console.error('PageNumber nie jest dozwolony dla postępów:', pageNumber)
+      return NextResponse.json(
+        { error: 'Ta strona nie obsługuje przesyłania zdjęć.' },
+        { status: 400 }
+      )
+    }
+
     // Weryfikacja uploadId
     console.log('Weryfikacja uploadId...')
     if (user) {
@@ -103,8 +113,22 @@ export async function POST(request: NextRequest) {
     const fileName = `${timestamp}-${originalName}`
     
     // Ścieżka w Blob Storage: uploads/{uploadId}/page-{pageNumber}/{fileName}
-    const blobPath = `uploads/${uploadId}/page-${pageNumber}/${fileName}`
+    const pagePrefix = `uploads/${uploadId}/page-${numericPage}/`
+    const blobPath = `${pagePrefix}${fileName}`
     console.log('Ścieżka pliku w Blob:', blobPath)
+
+    // Usuń poprzednie zdjęcia dla tej strony (utrzymujemy max 1)
+    console.log('Sprawdzam istniejące zdjęcia dla tej strony...')
+    const existingPhotos = await list({ prefix: pagePrefix })
+    if (existingPhotos.blobs.length > 0) {
+      console.log(`Znaleziono ${existingPhotos.blobs.length} zdjęć - usuwam stare wersje`)
+      await Promise.all(
+        existingPhotos.blobs.map(async (blob) => {
+          await del(blob.url)
+          console.log('Usunięto stare zdjęcie:', blob.url)
+        })
+      )
+    }
 
     // Upload do Vercel Blob Storage
     console.log('Rozpoczynam upload do Vercel Blob...')
@@ -114,7 +138,7 @@ export async function POST(request: NextRequest) {
     console.log('✓ Upload zakończony sukcesem:', blob.url)
 
     // Powiadom desktop przez Pusher (real-time)
-    await notifyPhotoUploaded(uploadId, parseInt(pageNumber), blob.url)
+    await notifyPhotoUploaded(uploadId, numericPage, blob.url)
     console.log('✓ Pusher notification wysłany')
 
     return NextResponse.json({
