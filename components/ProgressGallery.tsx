@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Pusher from 'pusher-js'
-import { PROGRESS_PAGES } from '@/lib/progress-pages'
+import { PROGRESS_PAGES, PROGRESS_PAGES_SET } from '@/lib/progress-pages'
 
 interface ProgressGalleryProps {
   uploadId?: string
@@ -135,7 +135,7 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
     channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
       console.log('ProgressGallery: Otrzymano event photo-uploaded:', data)
       // Sprawdź czy to strona z postępami
-      if (PROGRESS_PAGES.includes(data.pageNumber)) {
+      if (PROGRESS_PAGES_SET.has(data.pageNumber)) {
         setProgressImages((prev) => {
           const existingIndex = prev.findIndex((img) => img.pageNumber === data.pageNumber)
           let updated: ProgressImage[]
@@ -145,10 +145,9 @@ export function ProgressGallery({ uploadId }: ProgressGalleryProps) {
           } else {
             updated = [...prev, { pageNumber: data.pageNumber, imageUrl: data.imageUrl }]
           }
-          updated.sort(
-            (a, b) =>
-              PROGRESS_PAGES.indexOf(a.pageNumber) - PROGRESS_PAGES.indexOf(b.pageNumber)
-          )
+          // Sortuj według kolejności stron postępów
+          const pageOrder = new Map(PROGRESS_PAGES.map((p, i) => [p, i]))
+          updated.sort((a, b) => (pageOrder.get(a.pageNumber) ?? 0) - (pageOrder.get(b.pageNumber) ?? 0))
           const newIndex = updated.findIndex((img) => img.pageNumber === data.pageNumber)
           setCurrentIndex(newIndex >= 0 ? newIndex : updated.length - 1)
           console.log('ProgressGallery: Zmieniono zdjęcie dla strony', data.pageNumber)
