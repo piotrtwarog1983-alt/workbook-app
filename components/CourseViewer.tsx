@@ -1479,13 +1479,13 @@ useEffect(() => {
               </button>
             </div>
             
-            {/* Kontener z przełączanymi widokami */}
-            <div className="mt-4 min-h-[500px]">
+            {/* Kontener z przełączanymi widokami - stała wysokość */}
+            <div className="mt-4 h-[600px] overflow-hidden">
               {activePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
               {activePanel === 'dictionary' && (
-                <div className="w-full lg:w-[32rem] p-4 panel-elegant panel-glow">
+                <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto">
                   <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Słownik pojęć</h3>
                   <DictionaryInline />
                 </div>
