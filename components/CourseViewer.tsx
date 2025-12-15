@@ -9,6 +9,7 @@ import { PhotoUploadComponent } from './PhotoUploadComponent'
 import { QRCodeUpload } from './QRCodeUpload'
 import { ProgressGallery } from './ProgressGallery'
 import { ProgressEvaluation } from './ProgressEvaluation'
+import { ProgressTimeline } from './ProgressTimeline'
 import { MOCK_COURSE } from '@/lib/mock-data'
 
 interface CoursePage {
@@ -35,6 +36,10 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [showDictionary, setShowDictionary] = useState(false)
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
+  const [completedPages, setCompletedPages] = useState<number[]>([])
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null)
+  const [animationClass, setAnimationClass] = useState<string>('')
 
   // Funkcja wylogowania
   const handleLogout = () => {
@@ -88,16 +93,39 @@ useEffect(() => {
 
     const pages = course.pages || []
     const handleKeyPress = (e: KeyboardEvent) => {
+      if (isTransitioning) return
       if (e.key === 'ArrowLeft' && currentPageIndex > 0) {
-        setCurrentPageIndex(currentPageIndex - 1)
+        setTransitionDirection('up')
+        setIsTransitioning(true)
+        setAnimationClass('course-container-slide-out-up')
+        setTimeout(() => {
+          setCurrentPageIndex(currentPageIndex - 1)
+          setAnimationClass('course-container-slide-in-up')
+          setTimeout(() => {
+            setIsTransitioning(false)
+            setTransitionDirection(null)
+            setAnimationClass('')
+          }, 800)
+        }, 800)
       } else if (e.key === 'ArrowRight' && currentPageIndex < pages.length - 1) {
-        setCurrentPageIndex(currentPageIndex + 1)
+        setTransitionDirection('down')
+        setIsTransitioning(true)
+        setAnimationClass('course-container-slide-out-down')
+        setTimeout(() => {
+          setCurrentPageIndex(currentPageIndex + 1)
+          setAnimationClass('course-container-slide-in-down')
+          setTimeout(() => {
+            setIsTransitioning(false)
+            setTransitionDirection(null)
+            setAnimationClass('')
+          }, 800)
+        }, 800)
       }
     }
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [currentPageIndex, course])
+  }, [currentPageIndex, course, isTransitioning, transitionDirection, animationClass])
 
   // Wczytaj tekst z pliku dla strony z overlay lub quote-text
   useEffect(() => {
@@ -148,21 +176,77 @@ useEffect(() => {
   const currentPage = pages[currentPageIndex]
 
   const nextPage = () => {
-    if (currentPageIndex < pages.length - 1) {
-      setCurrentPageIndex(currentPageIndex + 1)
+    if (currentPageIndex < pages.length - 1 && !isTransitioning) {
+      setTransitionDirection('down')
+      setIsTransitioning(true)
+      setAnimationClass('course-container-slide-out-down')
+      setTimeout(() => {
+        setCurrentPageIndex(currentPageIndex + 1)
+        setAnimationClass('course-container-slide-in-down')
+        setTimeout(() => {
+          setIsTransitioning(false)
+          setTransitionDirection(null)
+          setAnimationClass('')
+        }, 800)
+      }, 800)
     }
   }
 
   const prevPage = () => {
-    if (currentPageIndex > 0) {
-      setCurrentPageIndex(currentPageIndex - 1)
+    if (currentPageIndex > 0 && !isTransitioning) {
+      setTransitionDirection('up')
+      setIsTransitioning(true)
+      setAnimationClass('course-container-slide-out-up')
+      setTimeout(() => {
+        setCurrentPageIndex(currentPageIndex - 1)
+        setAnimationClass('course-container-slide-in-up')
+        setTimeout(() => {
+          setIsTransitioning(false)
+          setTransitionDirection(null)
+          setAnimationClass('')
+        }, 800)
+      }, 800)
     }
   }
 
   const goToLastPage = () => {
-    if (pages.length > 0) {
-      setCurrentPageIndex(pages.length - 1)
+    if (pages.length > 0 && !isTransitioning) {
+      setTransitionDirection('down')
+      setIsTransitioning(true)
+      setAnimationClass('course-container-slide-out-down')
+      setTimeout(() => {
+        setCurrentPageIndex(pages.length - 1)
+        setAnimationClass('course-container-slide-in-down')
+        setTimeout(() => {
+          setIsTransitioning(false)
+          setTransitionDirection(null)
+          setAnimationClass('')
+        }, 800)
+      }, 800)
     }
+  }
+
+  // Nawigacja do konkretnej strony po numerze strony
+  const goToPage = (pageNumber: number) => {
+    if (isTransitioning) return
+    
+    const targetIndex = pages.findIndex((p: CoursePage) => p.pageNumber === pageNumber)
+    if (targetIndex === -1 || targetIndex === currentPageIndex) return
+    
+    const direction = targetIndex > currentPageIndex ? 'down' : 'up'
+    setTransitionDirection(direction)
+    setIsTransitioning(true)
+    setAnimationClass(direction === 'down' ? 'course-container-slide-out-down' : 'course-container-slide-out-up')
+    
+    setTimeout(() => {
+      setCurrentPageIndex(targetIndex)
+      setAnimationClass(direction === 'down' ? 'course-container-slide-in-down' : 'course-container-slide-in-up')
+      setTimeout(() => {
+        setIsTransitioning(false)
+        setTransitionDirection(null)
+        setAnimationClass('')
+      }, 800)
+    }, 800)
   }
 
   const parseTips = (tipsJson?: string): string[] => {
@@ -209,46 +293,35 @@ useEffect(() => {
   const isTwoImagesTopText = content?.type === 'two-images-top-text'
   const isThreeImagesTopText = content?.type === 'three-images-top-text'
 
+  // Strony, które mają mieć czarny tekst zamiast białego
+  const pagesWithBlackText = new Set([3, 8, 12, 13, 18, 31, 45, 46, 47, 51])
+  const shouldUseBlackText = pagesWithBlackText.has(currentPage.pageNumber)
+
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header z przyciskiem wylogowania */}
-      <header className="bg-gray-900 border-b border-gray-800 shadow-sm">
-        <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-white">
-            WorkBook - Kurs Fotografii Kulinarnej
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            Wyloguj
-          </button>
-        </div>
-      </header>
-
-      <div className="max-w-[1500px] mx-auto px-4 py-8">
+    <div className="min-h-screen" style={{ background: '#1a1d24' }}>
+      <div className="max-w-[1700px] mx-auto px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* Gallery z postępami - po lewej stronie */}
-          <div className="w-full lg:w-[32rem] order-1 lg:order-0 flex-shrink-0">
-            <ProgressGallery />
-          </div>
+          {/* Left side - Tips and course content */}
+          <div className="w-full lg:flex-1 order-1 lg:order-0 flex-shrink-0">
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              {/* Tips - po lewej stronie */}
+              <div className="w-full lg:w-64 lg:flex-shrink-0">
+                {tips.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Tipy</h3>
+                    {tips.map((tip, index) => (
+                      <TipCloud key={index} tip={tip} />
+                    ))}
+                  </div>
+                )}
+              </div>
 
-          {/* Square container for course content */}
-          <div className="w-full lg:w-[855px] order-2 lg:order-1 flex-shrink-0">
-            <div className="course-container bg-gray-900 border-2 border-gray-800 rounded-lg overflow-hidden relative shadow-lg">
+              {/* Square container for course content */}
+              <div className="w-full lg:w-[855px] flex-shrink-0 relative p-4 rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div className="relative overflow-hidden rounded-xl">
+                  <div 
+                    className={`course-container bg-white overflow-hidden relative ${animationClass}`}
+                  >
                 {isGridLayout ? (
                   // Layout 2x2 dla pierwszej strony
                   <div className="grid grid-cols-2 grid-rows-2 w-full h-full relative">
@@ -268,8 +341,8 @@ useEffect(() => {
                         ) : panel.type === 'text' ? (
                           <div className={`w-full h-full flex items-center justify-center p-6 ${
                             panel.backgroundColor === 'dark' 
-                              ? 'bg-gray-900 text-white' 
-                              : 'bg-gray-800 text-white'
+                              ? 'bg-gray-900 text-white'
+                              : 'bg-white text-gray-900'
                           }`}>
                             <div className="text-center">
                               <div className="text-xs md:text-sm font-sans mb-2 tracking-wider">
@@ -378,17 +451,17 @@ useEffect(() => {
                                 const author = authorMatch[1]
                                 return (
                                   <>
-                                    <div className="text-xl md:text-2xl lg:text-3xl font-serif font-bold text-white leading-relaxed mb-4">
+                                    <div className={`text-xl md:text-2xl lg:text-3xl font-serif font-bold leading-relaxed mb-4 ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                                       {quote}
                                     </div>
-                                    <div className="text-base md:text-lg lg:text-xl font-serif text-white text-right pr-8 md:pr-12 lg:pr-16">
+                                    <div className={`text-base md:text-lg lg:text-xl font-serif text-right pr-8 md:pr-12 lg:pr-16 ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                                       - {author}
                                     </div>
                                   </>
                                 )
                               }
                               return (
-                                <div className="text-xl md:text-2xl lg:text-3xl font-serif font-bold text-white leading-relaxed">
+                                <div className={`text-xl md:text-2xl lg:text-3xl font-serif font-bold leading-relaxed ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                                   {quoteText}
                                 </div>
                               )
@@ -398,14 +471,14 @@ useEffect(() => {
                         {/* Tekst poniżej - wyśrodkowany */}
                         {overlayText.includes('---') && (
                           <div className="w-full max-w-4xl text-center">
-                            <div className="text-base md:text-lg lg:text-xl font-serif text-white leading-relaxed whitespace-pre-line">
+                            <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                               {overlayText.split('---')[1]?.trim()}
                             </div>
                           </div>
                         )}
                         {!overlayText.includes('---') && (
                           <div className="text-center w-full">
-                            <div className="text-base md:text-lg lg:text-xl font-serif text-white leading-relaxed whitespace-pre-line">
+                            <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                               {overlayText}
                             </div>
                           </div>
@@ -580,13 +653,13 @@ useEffect(() => {
                     />
                   </div>
                 ) : isSimpleText ? (
-                  // Prosty tekst wyśrodkowany na ciemnym tle
-                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900">
+                  // Prosty tekst wyśrodkowany na białym tle
+                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-white">
                     {loadingText ? (
                       <div className="text-gray-400">Ładowanie...</div>
                     ) : (
                       <div className="text-center w-full">
-                        <div className="font-serif whitespace-pre-line text-white leading-relaxed">
+                        <div className="font-serif whitespace-pre-line text-gray-900 leading-relaxed">
                           {(overlayText || content.text || '').split('\n').map((line: string, index: number) => (
                           <div 
                             key={index} 
@@ -611,12 +684,12 @@ useEffect(() => {
                   </div>
                 ) : isFormattedText ? (
                   // Tekst z formatowaniem (pogrubione nagłówki)
-                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900 overflow-y-auto">
+                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
                     {loadingText ? (
                       <div className="text-gray-400">Ładowanie...</div>
                     ) : (
                       <div className="w-full max-w-3xl">
-                        <div className="text-base md:text-lg lg:text-xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                        <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
                           {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => {
                             // Sprawdź czy akapit zaczyna się od ** (pogrubiony nagłówek)
                             const isBold = paragraph.trim().startsWith('**') && paragraph.trim().endsWith('**')
@@ -658,11 +731,11 @@ useEffect(() => {
                   <ProgressEvaluation pageNumber={currentPage.pageNumber} />
                 ) : isForm ? (
                   // Formularz oceny zdjęcia
-                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900 overflow-y-auto">
+                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
                     <div className="w-full max-w-2xl space-y-6">
                       {/* Ocena ogólna */}
                       <div>
-                        <label className="block text-base md:text-lg font-serif mb-3 text-white">
+                        <label className="block text-base md:text-lg font-serif mb-3 text-gray-900">
                           Ocena ogólna zdjęcia:
                         </label>
                         <div className="flex gap-2 flex-wrap">
@@ -670,9 +743,9 @@ useEffect(() => {
                             <label key={num} className="flex items-center cursor-pointer">
                               <input
                                 type="checkbox"
-                                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
                               />
-                              <span className="ml-2 text-white">{num}</span>
+                              <span className="ml-2 text-gray-900">{num}</span>
                             </label>
                           ))}
                         </div>
@@ -680,7 +753,7 @@ useEffect(() => {
 
                       {/* Jasność */}
                       <div>
-                        <label className="block text-base md:text-lg font-serif mb-3 text-white">
+                        <label className="block text-base md:text-lg font-serif mb-3 text-gray-900">
                           jasność
                         </label>
                         <div className="flex gap-4">
@@ -692,7 +765,7 @@ useEffect(() => {
                                 value={option}
                                 className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
                               />
-                              <span className="ml-2 text-white">{option}</span>
+                              <span className="ml-2 text-gray-900">{option}</span>
                             </label>
                           ))}
                         </div>
@@ -700,7 +773,7 @@ useEffect(() => {
 
                       {/* Czy zdjęcie jest proste? */}
                       <div>
-                        <label className="block text-base md:text-lg font-serif mb-3 text-white">
+                        <label className="block text-base md:text-lg font-serif mb-3 text-gray-900">
                           Czy zdjęcie jest proste?
                         </label>
                         <div className="flex gap-4">
@@ -712,7 +785,7 @@ useEffect(() => {
                                 value={option}
                                 className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
                               />
-                              <span className="ml-2 text-white">{option}</span>
+                              <span className="ml-2 text-gray-900">{option}</span>
                             </label>
                           ))}
                         </div>
@@ -720,7 +793,7 @@ useEffect(() => {
 
                       {/* Czy potrawa jest w dobrym miejscu? */}
                       <div>
-                        <label className="block text-base md:text-lg font-serif mb-3 text-white">
+                        <label className="block text-base md:text-lg font-serif mb-3 text-gray-900">
                           Czy potrawa jest w dobrym miejscu na zdjęciu?
                         </label>
                         <div className="flex gap-4">
@@ -732,7 +805,7 @@ useEffect(() => {
                                 value={option}
                                 className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
                               />
-                              <span className="ml-2 text-white">{option}</span>
+                              <span className="ml-2 text-gray-900">{option}</span>
                             </label>
                           ))}
                         </div>
@@ -740,7 +813,7 @@ useEffect(() => {
 
                       {/* Kąt kadrowania */}
                       <div>
-                        <label className="block text-base md:text-lg font-serif mb-3 text-white">
+                        <label className="block text-base md:text-lg font-serif mb-3 text-gray-900">
                           Kąt kadrowania: Czy kąt pasuje do potrawy i pokazuje ją dobrze?
                         </label>
                         <div className="flex gap-4">
@@ -752,7 +825,7 @@ useEffect(() => {
                                 value={option}
                                 className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
                               />
-                              <span className="ml-2 text-white">{option}</span>
+                              <span className="ml-2 text-gray-900">{option}</span>
                             </label>
                           ))}
                         </div>
@@ -760,7 +833,7 @@ useEffect(() => {
 
                       {/* Naturalność proporcji */}
                       <div>
-                        <label className="block text-base md:text-lg font-serif mb-3 text-white">
+                        <label className="block text-base md:text-lg font-serif mb-3 text-gray-900">
                           Naturalność proporcji: Czy talerz i potrawa wyglądają naturalnie (proporcje nie są „dziwne")?
                         </label>
                         <div className="flex gap-4">
@@ -772,7 +845,7 @@ useEffect(() => {
                                 value={option}
                                 className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
                               />
-                              <span className="ml-2 text-white">{option}</span>
+                              <span className="ml-2 text-gray-900">{option}</span>
                             </label>
                           ))}
                         </div>
@@ -793,10 +866,10 @@ useEffect(() => {
                     {/* Tekst nałożony na zdjęcie na górze */}
                     <div className="absolute inset-0 flex items-start justify-center pt-16 md:pt-20 lg:pt-24 px-6 md:px-8 lg:px-12">
                       {loadingText ? (
-                        <div className="text-white">Ładowanie...</div>
+                        <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
                       ) : (
                         <div className="w-full max-w-3xl">
-                          <div className="text-base md:text-lg lg:text-xl font-serif text-white leading-relaxed whitespace-pre-line">
+                          <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -825,10 +898,12 @@ useEffect(() => {
                         style={{ top: currentPage.pageNumber === 42 ? '15%' : '15%' }}
                       >
                         {loadingText ? (
-                          <div className="text-white text-center">Ładowanie...</div>
+                          <div className={shouldUseBlackText ? "text-gray-900 text-center" : "text-white text-center"}>Ładowanie...</div>
                         ) : (
                           <div
-                            className={`font-serif text-white leading-relaxed whitespace-pre-line text-center ${
+                            className={`font-serif leading-relaxed whitespace-pre-line text-center ${
+                              shouldUseBlackText ? 'text-gray-900' : 'text-white'
+                            } ${
                               currentPage.pageNumber === 42
                                 ? 'text-4xl md:text-5xl lg:text-6xl xl:text-7xl'
                                 : currentPage.pageNumber === 45
@@ -875,10 +950,10 @@ useEffect(() => {
                           : 'px-6 md:px-8 lg:px-12'
                       }`}>
                         {loadingText ? (
-                          <div className="text-white">Ładowanie...</div>
+                          <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
                         ) : (
                           <div className={`w-full ${content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'max-w-2xl' : 'max-w-3xl'}`}>
-                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-white leading-relaxed whitespace-pre-line text-center`}>
+                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif leading-relaxed whitespace-pre-line text-center ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -893,17 +968,17 @@ useEffect(() => {
                     {currentPage.pageNumber === 45 && (
                       <div className="absolute bottom-0 left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12 pb-6 md:pb-8 lg:pb-12">
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             kontury tracą wyrazistość, a danie jest za jasne, nie widać wielu elementów
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             idealnie wyważone, talerz i jego struktura jest zachowana, a danie widoczne
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             właśnie tak najczęściej wygląda zdjęcie bez obróbki na telefonie. Wystarczy je lekko rozjaśnić, aby nabrało szlachetności
                           </p>
                         </div>
@@ -913,17 +988,17 @@ useEffect(() => {
                     {currentPage.pageNumber === 46 && (
                       <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '20%' }}>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             zbyt niebieskie
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             poprawne
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             zbyt żółte
                           </p>
                         </div>
@@ -933,17 +1008,17 @@ useEffect(() => {
                     {currentPage.pageNumber === 47 && (
                       <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '15%' }}>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             zbyt zielone
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             poprawne
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-white">
+                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             zbyt fioletowe
                           </p>
                         </div>
@@ -966,9 +1041,9 @@ useEffect(() => {
                       <div className="absolute top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-6 md:px-8 lg:px-12">
                         <div className="max-w-3xl mx-auto">
                           {loadingText ? (
-                            <div className="text-white text-center">Ładowanie...</div>
+                            <div className={shouldUseBlackText ? "text-gray-900 text-center" : "text-white text-center"}>Ładowanie...</div>
                           ) : (
-                            <div className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                            <div className={`text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif leading-relaxed whitespace-pre-line text-center ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                               {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                                 <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                   {paragraph.trim()}
@@ -1000,10 +1075,10 @@ useEffect(() => {
                           : 'px-6 md:px-8 lg:px-12'
                       }`}>
                         {loadingText ? (
-                          <div className="text-white">Ładowanie...</div>
+                          <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
                         ) : (
                           <div className={`w-full ${content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'max-w-2xl' : 'max-w-3xl'}`}>
-                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-white leading-relaxed whitespace-pre-line ${content.textPosition === 'center' || content.textPosition === 'bottom' || !content.textPosition ? 'text-center' : ''}`}>
+                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif leading-relaxed whitespace-pre-line ${content.textPosition === 'center' || content.textPosition === 'bottom' || !content.textPosition ? 'text-center' : ''} ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1017,13 +1092,13 @@ useEffect(() => {
                   </div>
                 ) : isWhiteHeaderImage ? (
                   // Layout z białym tłem, tekstem na górze i zdjęciem 70%
-                  <div className="relative w-full h-full bg-gray-900 flex flex-col items-center justify-start">
-                    <div className="flex-none bg-gray-900 flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
+                  <div className="relative w-full h-full bg-white flex flex-col items-center justify-start">
+                    <div className="flex-none bg-white flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
                       {loadingText ? (
                         <div className="text-gray-400">Ładowanie...</div>
                       ) : (
                         <div className="w-full max-w-4xl">
-                          <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                          <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1046,14 +1121,14 @@ useEffect(() => {
                   </div>
                 ) : isBlackHeaderImage ? (
                   // Layout z czarnym nagłówkiem i kwadratowym zdjęciem (70% powierzchni)
-                  <div className="relative w-full h-full bg-black flex flex-col items-center justify-start">
-                    {/* Czarne tło z białym tekstem na górze */}
-                    <div className="flex-none bg-black flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
+                  <div className={`relative w-full h-full flex flex-col items-center justify-start ${shouldUseBlackText ? 'bg-white' : 'bg-black'}`}>
+                    {/* Tło z tekstem na górze */}
+                    <div className={`flex-none flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12 ${shouldUseBlackText ? 'bg-white' : 'bg-black'}`}>
                       {loadingText ? (
-                        <div className="text-white">Ładowanie...</div>
+                        <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
                       ) : (
                         <div className="w-full max-w-4xl">
-                          <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                          <div className={`text-base md:text-lg lg:text-xl xl:text-2xl font-serif leading-relaxed whitespace-pre-line text-center ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1077,10 +1152,10 @@ useEffect(() => {
                   </div>
                 ) : isTwoImagesContainer ? (
                   // Layout z białym tłem, tekstem na górze i dwoma kontenerami na zdjęcia (70% powierzchni)
-                  <div className="relative w-full h-full bg-gray-900 flex flex-col">
+                  <div className="relative w-full h-full bg-white flex flex-col">
                     {/* Tekst wyśrodkowany w pionie między górą a kontenerami zdjęć */}
                     <div className="flex-1 flex items-center px-6 md:px-8 lg:px-12">
-                      <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-white leading-relaxed text-left whitespace-pre-line">
+                      <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed text-left whitespace-pre-line">
                         {content.text}
                       </div>
                     </div>
@@ -1128,9 +1203,9 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-                    ) : isTwoImagesTopText ? (
+                ) : isTwoImagesTopText ? (
                   // Layout z białym tłem, tekstem na górze i dwoma kontenerami na zdjęcia
-                  <div className="relative w-full h-full bg-gray-900 flex flex-col">
+                  <div className="relative w-full h-full bg-white flex flex-col">
                     {/* Tekst na górze */}
                     <div
                       className="flex-none px-6 md:px-8 lg:px-12 pt-8 md:pt-12 lg:pt-16"
@@ -1139,7 +1214,7 @@ useEffect(() => {
                       {loadingText ? (
                         <div className="text-gray-400 text-center">Ładowanie...</div>
                       ) : (
-                        <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                        <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
                           {currentPage.pageNumber === 32 ? (
                             (() => {
                               const lines = overlayText.split('\n').filter((l) => l.trim())
@@ -1239,7 +1314,7 @@ useEffect(() => {
                   </div>
                 ) : isThreeImagesTopText ? (
                   // Layout z białym tłem, tekstem na górze i trzema kontenerami na zdjęcia (50% wysokości, 3 kolumny)
-                  <div className="relative w-full h-full bg-gray-900 flex flex-col">
+                  <div className="relative w-full h-full bg-white flex flex-col">
                     {/* Tekst na górze */}
                     <div
                       className="flex-none px-6 md:px-8 lg:px-12 pt-8 md:pt-12 lg:pt-16"
@@ -1248,7 +1323,7 @@ useEffect(() => {
                       {loadingText ? (
                         <div className="text-gray-400 text-center">Ładowanie...</div>
                       ) : (
-                        <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                        <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
                           <div className="flex flex-col space-y-12">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className="m-0">
@@ -1284,15 +1359,15 @@ useEffect(() => {
                   </div>
                 ) : isDictionary ? (
                   // Słowniczek pojęć
-                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900 overflow-y-auto">
+                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
                     {loadingText ? (
                       <div className="text-gray-400">Ładowanie...</div>
                     ) : (
                       <div className="w-full max-w-3xl">
-                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-white text-center mb-8">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-gray-900 text-center mb-8">
                           SŁOWNICZEK
                         </h2>
-                        <div className="text-base md:text-lg lg:text-xl font-serif text-white leading-relaxed whitespace-pre-line">
+                        <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                           {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => {
                             // Sprawdź czy akapit zaczyna się od ** (pogrubiony termin)
                             const isBold = paragraph.trim().startsWith('**') && paragraph.trim().endsWith('**')
@@ -1326,7 +1401,7 @@ useEffect(() => {
                 ) : content?.text ? (
                   <div className="relative w-full h-full flex items-center justify-center p-8">
                     <div className="text-center w-full">
-                      <div className="text-xl md:text-3xl lg:text-4xl font-serif whitespace-pre-line text-white">
+                      <div className={`text-xl md:text-3xl lg:text-4xl font-serif whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
                         {content.text}
                       </div>
                     </div>
@@ -1337,15 +1412,22 @@ useEffect(() => {
                   </div>
                 )}
 
-                {/* Navigation arrows */}
+                    {/* Page indicator */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 text-sm">
+                      {currentPageIndex + 1} / {pages.length}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navigation arrows - poza kontenerem */}
                 {currentPageIndex > 0 && (
                   <button
                     onClick={prevPage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-gray-900/80 hover:bg-gray-900 rounded-full p-3 shadow-lg transition-all"
+                    className="absolute left-0 top-[80%] -translate-y-1/2 -translate-x-20 p-4 z-10 nav-arrow-elegant"
                     aria-label="Poprzednia strona"
                   >
                     <svg
-                      className="w-6 h-6 text-gray-800"
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1354,7 +1436,7 @@ useEffect(() => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
+                        d="M5 15l7-7 7 7"
                       />
                     </svg>
                   </button>
@@ -1363,11 +1445,11 @@ useEffect(() => {
                 {currentPageIndex < pages.length - 1 && (
                   <button
                     onClick={nextPage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-900/80 hover:bg-gray-900 rounded-full p-3 shadow-lg transition-all"
+                    className="absolute right-0 top-[80%] -translate-y-1/2 translate-x-20 p-4 z-10 nav-arrow-elegant"
                     aria-label="Następna strona"
                   >
                     <svg
-                      className="w-6 h-6 text-gray-800"
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1376,54 +1458,83 @@ useEffect(() => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 5l7 7-7 7"
+                        d="M19 9l-7 7-7-7"
                       />
                     </svg>
                   </button>
                 )}
-
-                {/* Page indicator */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-                  {currentPageIndex + 1} / {pages.length}
-                </div>
               </div>
+            </div>
           </div>
 
-          {/* Additional features area - Tips, Dictionary, and space for future features */}
-          <div className="w-full lg:flex-1 lg:max-w-md space-y-4 order-1 lg:order-2">
-            {/* Dictionary button */}
-            <button
-              onClick={() => setShowDictionary(true)}
-              className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
-            >
-              Słownik pojęć
-            </button>
-
-            {/* Last page button */}
-            <button
-              onClick={goToLastPage}
-              className="w-full bg-gray-600 text-white py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
-              aria-label="Ostatnia strona"
-            >
-              Ostatnia strona
-            </button>
-
-            {/* Tips */}
-            {tips.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Tipy</h3>
-                {tips.map((tip, index) => (
-                  <TipCloud key={index} tip={tip} />
-                ))}
+          {/* Gallery z postępami - po prawej stronie */}
+          <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8">
+            {/* Oś postępów z przyciskiem wylogowania */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <ProgressTimeline completedPages={completedPages} onNavigate={goToPage} />
               </div>
-            )}
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-medium flex items-center gap-2 ml-4 -mt-4 btn-elegant"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                Wyloguj
+              </button>
+            </div>
+            
+            {/* Kontener z galerią */}
+            <div className="mt-4">
+              <ProgressGallery onProgressUpdate={setCompletedPages} />
+            </div>
 
-            {tips.length === 0 && (
-              <div className="text-gray-500 text-center py-8">
-                Brak tipów dla tej strony
-              </div>
-            )}
+            {/* Dictionary and Last page buttons */}
+            <div className="flex gap-3 mt-4">
+              {/* Dictionary button - ikona książki */}
+              <button
+                onClick={() => setShowDictionary(true)}
+                className="p-4 btn-icon-elegant"
+                aria-label="Słownik pojęć"
+                title="Słownik pojęć"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+              </button>
+
+              {/* Last page button */}
+              <button
+                onClick={goToLastPage}
+                className="flex-1 py-3 font-semibold btn-elegant"
+                aria-label="Ostatnia strona"
+              >
+                Ostatnia strona
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
 

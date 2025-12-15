@@ -6,8 +6,8 @@ interface TipCloudProps {
 
 export function TipCloud({ tip }: TipCloudProps) {
   return (
-    <div className="tip-cloud relative bg-gray-800 p-4 shadow-md border border-gray-700">
-      <p className="text-white text-sm leading-relaxed">{tip}</p>
+    <div className="tip-cloud relative p-4 w-full max-w-full">
+      <p className="text-white/90 text-sm leading-relaxed break-words">{tip}</p>
     </div>
   )
 }
