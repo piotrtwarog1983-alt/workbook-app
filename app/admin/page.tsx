@@ -132,12 +132,20 @@ export default function AdminPage() {
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Panel Administratora</h1>
-            <Link
-              href="/course"
-              className="text-primary-600 hover:underline"
-            >
-              Wróć do kursu
-            </Link>
+            <div className="flex gap-4">
+              <Link
+                href="/admin/inbox"
+                className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                📬 Inbox
+              </Link>
+              <Link
+                href="/course"
+                className="text-primary-600 hover:underline"
+              >
+                Wróć do kursu
+              </Link>
+            </div>
           </div>
 
           <div className="mb-4 text-sm text-gray-600">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { TipCloud } from './TipCloud'
 import { DictionaryInline } from './DictionaryInline'
+import { ChatBox } from './ChatBox'
 import { PhotoUploadComponent } from './PhotoUploadComponent'
 import { QRCodeUpload } from './QRCodeUpload'
 import { ProgressGallery } from './ProgressGallery'
@@ -33,7 +34,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary'>('gallery')
+  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat'>('gallery')
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
   const [completedPages, setCompletedPages] = useState<number[]>([])
@@ -1480,14 +1481,19 @@ useEffect(() => {
             </div>
             
             {/* Kontener z przełączanymi widokami - stała wysokość */}
-            <div className="mt-4 h-[680px] overflow-hidden">
+            <div className="mt-4 h-[680px] overflow-hidden rounded-2xl">
               {activePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
               {activePanel === 'dictionary' && (
-                <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto">
+                <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto rounded-2xl">
                   <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Słownik pojęć</h3>
                   <DictionaryInline />
+                </div>
+              )}
+              {activePanel === 'chat' && (
+                <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto rounded-2xl">
+                  <ChatBox />
                 </div>
               )}
             </div>
@@ -1540,6 +1546,28 @@ useEffect(() => {
                     strokeLinejoin="round"
                     strokeWidth={1.5}
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+              </button>
+
+              {/* Chat button - ikona wiadomości */}
+              <button
+                onClick={() => setActivePanel('chat')}
+                className={`p-4 ${activePanel === 'chat' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                aria-label="Wiadomości"
+                title="Wiadomości"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                   />
                 </svg>
               </button>
