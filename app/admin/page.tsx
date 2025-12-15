@@ -36,7 +36,6 @@ export default function AdminPage() {
       return
     }
 
-    // Pobierz dane użytkownika
     fetch('/api/auth/me', {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -118,54 +117,70 @@ export default function AdminPage() {
     setTimeout(() => setSuccess(''), 3000)
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    router.push('/login')
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Ładowanie...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1a1d24' }}>
+        <div className="text-gray-400">Ładowanie...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen py-8 px-4" style={{ background: '#1a1d24' }}>
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Panel Administratora</h1>
-            <div className="flex gap-4">
+        <div className="panel-elegant panel-glow rounded-2xl p-8">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8 pb-6 border-b border-white/10">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Panel Administratora</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                Zalogowany jako: <span className="text-white">{user?.email}</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
               <Link
                 href="/admin/inbox"
-                className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                className="btn-elegant px-4 py-2 text-white flex items-center gap-2"
               >
-                📬 Inbox
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Inbox
               </Link>
               <Link
                 href="/course"
-                className="text-primary-600 hover:underline"
+                className="btn-elegant px-4 py-2 text-white"
               >
                 Wróć do kursu
               </Link>
+              <button
+                onClick={handleLogout}
+                className="btn-elegant px-4 py-2 text-red-400 hover:text-red-300"
+              >
+                Wyloguj
+              </button>
             </div>
           </div>
 
-          <div className="mb-4 text-sm text-gray-600">
-            Zalogowany jako: <strong>{user?.email}</strong>
-          </div>
-
           {/* Formularz tworzenia tokenu */}
-          <div className="mb-8 p-6 bg-gray-50 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">
+          <div className="mb-8 p-6 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <h2 className="text-lg font-semibold mb-4 text-white">
               Utwórz nowy token rejestracyjny
             </h2>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+              <div className="bg-red-500/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg mb-4">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 break-all">
+              <div className="bg-green-500/20 border border-green-500/30 text-green-300 px-4 py-3 rounded-lg mb-4 break-all">
                 {success}
               </div>
             )}
@@ -174,7 +189,7 @@ export default function AdminPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-300 mb-2"
                 >
                   Email klienta
                 </label>
@@ -186,7 +201,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500"
                   placeholder="email@example.com"
                 />
               </div>
@@ -194,7 +209,7 @@ export default function AdminPage() {
               <div>
                 <label
                   htmlFor="expiresInDays"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-300 mb-2"
                 >
                   Ważność tokenu (dni)
                 </label>
@@ -211,9 +226,9 @@ export default function AdminPage() {
                       expiresInDays: parseInt(e.target.value) || 7,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-2">
                   Po tym czasie token wygaśnie i nie będzie można go użyć do rejestracji.
                 </p>
               </div>
@@ -221,7 +236,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full btn-primary-elegant py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creating ? 'Tworzenie...' : 'Utwórz token rejestracyjny'}
               </button>
@@ -231,12 +246,12 @@ export default function AdminPage() {
           {/* Lista tokenów */}
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-lg font-semibold text-white">
                 Istniejące tokeny rejestracyjne
               </h2>
               <button
                 onClick={loadTokens}
-                className="text-sm text-primary-600 hover:underline"
+                className="text-sm text-primary-400 hover:text-primary-300 transition-colors"
               >
                 Odśwież
               </button>
@@ -251,28 +266,28 @@ export default function AdminPage() {
                 Brak tokenów rejestracyjnych. Utwórz pierwszy token powyżej.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div className="overflow-x-auto rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                         Utworzony
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                         Ważny do
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                         Akcje
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-white/5">
                     {tokens.map((token) => {
                       const appUrl = typeof window !== 'undefined' 
                         ? window.location.origin 
@@ -281,36 +296,36 @@ export default function AdminPage() {
                       const isExpired = new Date(token.expiresAt) < new Date()
 
                       return (
-                        <tr key={token.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <tr key={token.id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                             {token.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {token.used ? (
-                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">
+                              <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-500/20 text-gray-400">
                                 Użyty
                               </span>
                             ) : isExpired ? (
-                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-800">
+                              <span className="px-3 py-1 text-xs font-medium rounded-full bg-red-500/20 text-red-400">
                                 Wygasł
                               </span>
                             ) : (
-                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-800">
+                              <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-400">
                                 Aktywny
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                             {new Date(token.createdAt).toLocaleDateString('pl-PL')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                             {new Date(token.expiresAt).toLocaleDateString('pl-PL')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             {!token.used && !isExpired && (
                               <button
                                 onClick={() => copyToClipboard(registrationUrl)}
-                                className="text-primary-600 hover:underline"
+                                className="text-primary-400 hover:text-primary-300 transition-colors"
                               >
                                 Kopiuj link
                               </button>
@@ -329,4 +344,3 @@ export default function AdminPage() {
     </div>
   )
 }
-

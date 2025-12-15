@@ -51,7 +51,6 @@ export default function AdminInboxPage() {
   const [error, setError] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Autoryzacja
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
@@ -77,7 +76,6 @@ export default function AdminInboxPage() {
       })
   }, [router])
 
-  // Pusher dla nowych wiadomości
   useEffect(() => {
     if (!selectedConversation?.id) return
 
@@ -106,7 +104,6 @@ export default function AdminInboxPage() {
     }
   }, [selectedConversation?.id])
 
-  // Pusher dla aktualizacji listy konwersacji
   useEffect(() => {
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
@@ -124,7 +121,6 @@ export default function AdminInboxPage() {
     }
   }, [])
 
-  // Przewiń do ostatniej wiadomości
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [selectedConversation?.messages])
@@ -158,7 +154,6 @@ export default function AdminInboxPage() {
       if (response.ok) {
         const data = await response.json()
         setSelectedConversation(data.conversation)
-        // Odśwież listę (oznaczenie jako przeczytane)
         loadConversations()
       }
     } catch (err) {
@@ -221,6 +216,11 @@ export default function AdminInboxPage() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    router.push('/login')
+  }
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
@@ -233,38 +233,44 @@ export default function AdminInboxPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Ładowanie...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1a1d24' }}>
+        <div className="text-gray-400">Ładowanie...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen py-8 px-4" style={{ background: '#1a1d24' }}>
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="panel-elegant panel-glow rounded-2xl overflow-hidden">
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b">
+          <div className="flex justify-between items-center p-6 border-b border-white/10">
             <div>
-              <h1 className="text-2xl font-bold">Inbox - Wiadomości</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Zalogowany jako: {user?.email}
+              <h1 className="text-xl font-bold text-white">Inbox - Wiadomości</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                Zalogowany jako: <span className="text-white">{user?.email}</span>
               </p>
             </div>
-            <div className="flex gap-4">
-              <Link href="/admin" className="text-primary-600 hover:underline">
+            <div className="flex items-center gap-3">
+              <Link href="/admin" className="btn-elegant px-4 py-2 text-white">
                 Panel Admin
               </Link>
-              <Link href="/course" className="text-primary-600 hover:underline">
+              <Link href="/course" className="btn-elegant px-4 py-2 text-white">
                 Wróć do kursu
               </Link>
+              <button
+                onClick={handleLogout}
+                className="btn-elegant px-4 py-2 text-red-400 hover:text-red-300"
+              >
+                Wyloguj
+              </button>
             </div>
           </div>
 
           {/* Content - 2 kolumny */}
           <div className="flex" style={{ height: '600px' }}>
             {/* Lista konwersacji */}
-            <div className="w-1/3 border-r overflow-y-auto">
+            <div className="w-1/3 border-r border-white/10 overflow-y-auto">
               {loadingConversations ? (
                 <div className="p-4 text-center text-gray-500">Ładowanie...</div>
               ) : conversations.length === 0 ? (
@@ -276,27 +282,31 @@ export default function AdminInboxPage() {
                   <div
                     key={conv.id}
                     onClick={() => selectConversation(conv.id)}
-                    className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
-                      selectedConversation?.id === conv.id ? 'bg-primary-50' : ''
-                    } ${conv.unreadByAdmin ? 'bg-blue-50' : ''}`}
+                    className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${
+                      selectedConversation?.id === conv.id 
+                        ? 'bg-primary-600/20' 
+                        : conv.unreadByAdmin 
+                          ? 'bg-primary-500/10' 
+                          : 'hover:bg-white/5'
+                    }`}
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <span className="font-medium text-sm truncate flex-1">
+                      <span className="font-medium text-sm text-white truncate flex-1">
                         {conv.userName || conv.userEmail}
                       </span>
-                      <span className="text-xs text-gray-400 ml-2">
+                      <span className="text-xs text-gray-500 ml-2">
                         {formatDate(conv.lastMessageAt)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <p className="text-sm text-gray-600 truncate flex-1">
+                      <p className="text-sm text-gray-400 truncate flex-1">
                         {conv.lastMessageSender === 'admin' && (
-                          <span className="text-gray-400">Ty: </span>
+                          <span className="text-gray-500">Ty: </span>
                         )}
                         {conv.lastMessage || 'Brak wiadomości'}
                       </p>
                       {conv.unreadByAdmin && (
-                        <span className="w-2 h-2 bg-primary-600 rounded-full ml-2"></span>
+                        <span className="w-2 h-2 bg-primary-500 rounded-full ml-2"></span>
                       )}
                     </div>
                   </div>
@@ -317,11 +327,11 @@ export default function AdminInboxPage() {
               ) : (
                 <>
                   {/* Header konwersacji */}
-                  <div className="p-4 border-b bg-gray-50">
-                    <div className="font-medium">
+                  <div className="p-4 border-b border-white/10" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <div className="font-medium text-white">
                       {selectedConversation.user.name || selectedConversation.user.email}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-400">
                       {selectedConversation.user.email}
                     </div>
                   </div>
@@ -344,7 +354,7 @@ export default function AdminInboxPage() {
                             className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
                               message.sender === 'admin'
                                 ? 'bg-primary-600 text-white rounded-br-md'
-                                : 'bg-gray-200 text-gray-900 rounded-bl-md'
+                                : 'bg-white/10 text-white rounded-bl-md'
                             }`}
                           >
                             <div className="break-words">{message.text}</div>
@@ -364,26 +374,26 @@ export default function AdminInboxPage() {
 
                   {/* Błąd */}
                   {error && (
-                    <div className="px-4 py-2 text-red-600 text-sm text-center">
+                    <div className="px-4 py-2 text-red-400 text-sm text-center">
                       {error}
                     </div>
                   )}
 
                   {/* Pole wejścia */}
-                  <div className="p-4 border-t flex gap-2">
+                  <div className="p-4 border-t border-white/10 flex gap-2">
                     <input
                       type="text"
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Napisz odpowiedź..."
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500"
                       disabled={sending}
                     />
                     <button
                       onClick={sendMessage}
                       disabled={sending || !draft.trim()}
-                      className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-6 py-3 btn-primary-elegant font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {sending ? '...' : 'Wyślij'}
                     </button>
