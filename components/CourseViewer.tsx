@@ -299,7 +299,7 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen" style={{ background: '#1a1d24' }}>
-      <div className="max-w-[1700px] mx-auto px-6 py-8">
+      <div className="max-w-[1700px] ml-6 mr-auto px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Left side - Tips and course content */}
           <div className="w-full lg:flex-1 order-1 lg:order-0 flex-shrink-0">
@@ -1468,7 +1468,7 @@ useEffect(() => {
           </div>
 
           {/* Gallery z postępami - po prawej stronie */}
-          <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8">
+          <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8 lg:ml-24">
             {/* Oś postępów z przyciskiem wylogowania */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
