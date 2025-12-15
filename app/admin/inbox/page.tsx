@@ -282,16 +282,16 @@ export default function AdminInboxPage() {
                   <div
                     key={conv.id}
                     onClick={() => selectConversation(conv.id)}
-                    className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${
+                    className={`p-4 border-b border-white/5 cursor-pointer transition-all ${
                       selectedConversation?.id === conv.id 
-                        ? 'bg-primary-600/20' 
+                        ? 'bg-primary-600/30 border-l-4 border-l-primary-500' 
                         : conv.unreadByAdmin 
-                          ? 'bg-primary-500/10' 
-                          : 'hover:bg-white/5'
+                          ? 'bg-primary-500/20 border-l-4 border-l-primary-400 animate-pulse' 
+                          : 'hover:bg-white/5 border-l-4 border-l-transparent'
                     }`}
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <span className="font-medium text-sm text-white truncate flex-1">
+                      <span className={`text-sm truncate flex-1 ${conv.unreadByAdmin ? 'font-bold text-white' : 'font-medium text-white'}`}>
                         {conv.userName || conv.userEmail}
                       </span>
                       <span className="text-xs text-gray-500 ml-2">
