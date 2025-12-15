@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { TipCloud } from './TipCloud'
-import { Dictionary } from './Dictionary'
+import { DictionaryInline } from './DictionaryInline'
 import { PhotoUploadComponent } from './PhotoUploadComponent'
 import { QRCodeUpload } from './QRCodeUpload'
 import { ProgressGallery } from './ProgressGallery'
@@ -33,7 +33,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [showDictionary, setShowDictionary] = useState(false)
+  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary'>('gallery')
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
   const [completedPages, setCompletedPages] = useState<number[]>([])
@@ -1479,16 +1479,53 @@ useEffect(() => {
               </button>
             </div>
             
-            {/* Kontener z galerią */}
-            <div className="mt-4">
-              <ProgressGallery onProgressUpdate={setCompletedPages} />
+            {/* Kontener z przełączanymi widokami */}
+            <div className="mt-4 min-h-[500px]">
+              {activePanel === 'gallery' && (
+                <ProgressGallery onProgressUpdate={setCompletedPages} />
+              )}
+              {activePanel === 'dictionary' && (
+                <div className="w-full lg:w-[32rem] p-4 panel-elegant panel-glow">
+                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Słownik pojęć</h3>
+                  <DictionaryInline />
+                </div>
+              )}
             </div>
 
-            {/* Dictionary button */}
-            <div className="mt-4">
+            {/* Panel switching buttons */}
+            <div className="flex gap-3 mt-4">
+              {/* Gallery button - ikona aparatu */}
               <button
-                onClick={() => setShowDictionary(true)}
-                className="p-4 btn-icon-elegant"
+                onClick={() => setActivePanel('gallery')}
+                className={`p-4 ${activePanel === 'gallery' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                aria-label="Twoje postępy"
+                title="Twoje postępy"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+
+              {/* Dictionary button - ikona książki */}
+              <button
+                onClick={() => setActivePanel('dictionary')}
+                className={`p-4 ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
                 aria-label="Słownik pojęć"
                 title="Słownik pojęć"
               >
@@ -1511,11 +1548,6 @@ useEffect(() => {
 
         </div>
       </div>
-
-      {/* Dictionary Modal */}
-      {showDictionary && (
-        <Dictionary onClose={() => setShowDictionary(false)} />
-      )}
     </div>
   )
 }

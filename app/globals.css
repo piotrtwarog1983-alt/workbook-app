@@ -157,6 +157,24 @@ body {
   box-shadow: 0 0 35px rgba(100, 130, 160, 0.25);
 }
 
+/* Active icon button */
+.btn-icon-elegant-active {
+  background: rgba(79, 70, 229, 0.6);
+  border: 1px solid rgba(79, 70, 229, 0.5);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  box-shadow: 0 0 30px rgba(79, 70, 229, 0.3);
+}
+
+.btn-icon-elegant-active:hover {
+  background: rgba(79, 70, 229, 0.7);
+  border-color: rgba(79, 70, 229, 0.6);
+  box-shadow: 0 0 40px rgba(79, 70, 229, 0.4);
+}
+
 /* Primary button */
 .btn-primary-elegant {
   background: rgba(79, 70, 229, 0.8);
