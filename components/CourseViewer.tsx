@@ -1480,7 +1480,7 @@ useEffect(() => {
             </div>
             
             {/* Kontener z przełączanymi widokami - stała wysokość */}
-            <div className="mt-4 h-[600px] overflow-hidden">
+            <div className="mt-4 h-[680px] overflow-hidden">
               {activePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
