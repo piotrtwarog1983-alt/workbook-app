@@ -11,14 +11,21 @@ interface EmailOptions {
 
 async function sendEmail(options: EmailOptions): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY
+  const emailFrom = process.env.EMAIL_FROM || 'WorkBook <onboarding@resend.dev>'
   
   if (!apiKey) {
-    console.log('RESEND_API_KEY not set, logging email instead:')
+    console.log('⚠️ RESEND_API_KEY not set, logging email instead:')
     console.log('To:', options.to)
     console.log('Subject:', options.subject)
-    console.log('Body:', options.html)
+    console.log('From:', emailFrom)
+    console.log('Body (first 200 chars):', options.html.substring(0, 200))
     return true // W trybie deweloperskim zwracamy sukces
   }
+
+  console.log('📧 Sending email via Resend...')
+  console.log('From:', emailFrom)
+  console.log('To:', options.to)
+  console.log('Subject:', options.subject)
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -28,22 +35,24 @@ async function sendEmail(options: EmailOptions): Promise<boolean> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM || 'WorkBook <noreply@workbook-app.vercel.app>',
+        from: emailFrom,
         to: options.to,
         subject: options.subject,
         html: options.html,
       }),
     })
 
+    const responseData = await response.json()
+
     if (!response.ok) {
-      const error = await response.json()
-      console.error('Resend API error:', error)
+      console.error('❌ Resend API error:', responseData)
       return false
     }
 
+    console.log('✅ Email sent successfully:', responseData)
     return true
   } catch (error) {
-    console.error('Email send error:', error)
+    console.error('❌ Email send error:', error)
     return false
   }
 }

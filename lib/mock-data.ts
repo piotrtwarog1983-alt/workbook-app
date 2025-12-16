@@ -97,7 +97,9 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'photo-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Zeskanuj telefonem kod QR i otwórz łącze. W Twoim telefonie pojawi się okno do dodawania zdjęć z galerii – dodaj zdjęcie i zatwierdź przyciskiem.',
+      ]),
     },
     {
       id: '8',
@@ -128,7 +130,9 @@ export const MOCK_COURSE = {
         type: 'formatted-text',
         textFile: '/api/course-content/10/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Tryb RAW nie jest dostępny we wszystkich telefonach. W niektórych modelach trzeba ten tryb doinstalować z poziomu aparatu w telefonie, klikając w zakładkę więcej / Expert RAW.',
+      ]),
     },
     {
       id: '11',
@@ -153,7 +157,8 @@ export const MOCK_COURSE = {
         textPosition: 'top',
       }),
       tips: JSON.stringify([
-        'Styropian sprawdza się świetnie, ponieważ jest sztywny i łatwo można go ustawić na stole',
+        'Styropian sprawdza się świetnie, ponieważ jest sztywny i łatwo można go ustawić na stole. Można użyć innych materiałów – ważne żeby były matowe!',
+        'Ustaw kartkę pod takim kątem, żeby odbite światło doświetlało potrawę.',
       ]),
     },
     {
@@ -177,7 +182,10 @@ export const MOCK_COURSE = {
         imageUrl: '/course/strona 14/Foto/14.jpg',
         textFile: '/api/course-content/14/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Zauważ, że cień zaczyna konkurować z potrawą.',
+        'Ostre światło i kartka odbijająca je z drugiej strony sprawi, że nie będziesz miał jednego, tylko dwa ostre cienie. To najgorszy scenariusz. Zdecydowanie lepiej jest fotografować w zachmurzony dzień.',
+      ]),
     },
     {
       id: '15',
@@ -186,7 +194,10 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'photo-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Podczas robienia zdjęć wszelkie tradycyjne lampy w pomieszczeniu powinny być wyłączone. Do fotografii najlepsze jest światło naturalne i specjalne lampy z SoftBox zmiękczające światło.',
+        'Nie przejmuj się teraz jeśli stwierdzisz, że zdjęcie jest za ciemne. W obróbce można rozjaśnić. Skup się na wyglądzie dania i czystym tle.',
+      ]),
     },
     {
       id: '16',
@@ -217,7 +228,9 @@ export const MOCK_COURSE = {
         textFile: '/api/course-content/18/PL',
         textPosition: 'top-left',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Wiele smartfonów daje możliwość włączenia opcji żyroskopu – ustawienia aparatu / linie pomocnicze układu. Jeśli chcesz, możesz jednak lekko wyprostować zdjęcie podczas obróbki.',
+      ]),
     },
     {
       id: '19',
@@ -228,7 +241,9 @@ export const MOCK_COURSE = {
         imageUrl: '/course/strona 19/Foto/19.jpg',
         textFile: '/api/course-content/19/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Wrażenie, że talerz się zsuwa? Nie chcemy tego w fine dining!',
+      ]),
     },
     {
       id: '20',
@@ -238,7 +253,7 @@ export const MOCK_COURSE = {
         type: 'photo-upload',
       }),
       tips: JSON.stringify([
-        'W ustawieniach aparatu możesz włączyć siatkę w której znajduje się opcja żyroskopu pokazująca przechył telefonu',
+        'Ważne, żeby na zdjęciu widoczna była przestrzeń wokół talerza – żeby talerz nie zajmował całej przestrzeni. To poza estetyką ma jeszcze inną funkcję, w trakcie obróbki można krzywe zdjęcie wyprostować.',
       ]),
     },
     {
@@ -282,7 +297,9 @@ export const MOCK_COURSE = {
         image1Url: '/course/strona 24/Foto/24-1.jpg',
         image2Url: '/course/strona 24/Foto/24-2.jpg',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Centralnie ułożona, dobrze oświetlona potrawa sprawdza się w 99 procentach przypadków. Lekka obróbka i zdjęcie gotowe.',
+      ]),
     },
     {
       id: '25',
@@ -293,7 +310,9 @@ export const MOCK_COURSE = {
         imageUrl: '/course/strona 25/Foto/25.jpg',
         textFile: '/api/course-content/25/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Przymruż oczy i zobacz co się dzieje ze wzrokiem – dekoncentracja! Zrób to samo z fotografią ze strony 23 – zauważyłeś jak wzrok odpoczywa.',
+      ]),
     },
     {
       id: '26',
@@ -317,7 +336,9 @@ export const MOCK_COURSE = {
         image1Url: '/course/strona 27/Foto/27-1.jpg',
         image2Url: '/course/strona 27/Foto/27-2.jpg',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Linie pomocnicze możesz włączyć w twoim telefonie w funkcjach aparatu „Linie pomocnicze układu".',
+      ]),
     },
     {
       id: '28',
@@ -328,7 +349,9 @@ export const MOCK_COURSE = {
         imageUrl: '/course/strona 28/Foto/28.jpg',
         textFile: '/api/course-content/28/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        '…i męczy wzrok.',
+      ]),
     },
     {
       id: '29',
@@ -337,9 +360,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'photo-upload',
       }),
-      tips: JSON.stringify([
-        'W ustawieniach aparatu na twoim telefonie włącz siatkę trójpodziału - ułatwi to znacząco fotografowanie',
-      ]),
+      tips: JSON.stringify([]),
     },
     {
       id: '30',
@@ -374,7 +395,9 @@ export const MOCK_COURSE = {
         iconUrl: '/course/strona 32/Foto/prawo.png',
         iconUrlRight: '/course/strona 32/Foto/lewo.png',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Flat lay wygląda dobrze zawsze, kiedy potrawa jest rozbudowana i więcej elementów jest na tej samej płaszczyźnie. Pod kątem 45 stopni, potrawa wygląda dobrze, kiedy jest wielopoziomowa i chcesz pokazać jej warstwy.',
+      ]),
     },
     {
       id: '33',
@@ -385,7 +408,9 @@ export const MOCK_COURSE = {
         imageUrl: '/course/strona 33/Foto/33.jpg',
         textFile: '/api/course-content/33/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Tajemnicą pięknie podświetlonych zdjęć dań, jest zrobienie zdjęcia lekko pod światło. Nie rób nigdy zdjęcia, kiedy światło świeci na potrawę zza aparatu.',
+      ]),
     },
     {
       id: '34',
@@ -405,7 +430,9 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'photo-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Znajdź kąt, w którym potrawa traci na wyglądzie. Poświęć na to kilka minut, operując telefonem. To pozwoli ci na krytyczne spojrzenie na danie pod różnymi kątami.',
+      ]),
     },
     {
       id: '36',
@@ -438,7 +465,9 @@ export const MOCK_COURSE = {
         image1Url: '/course/strona 38/Foto/38-1.jpg',
         image2Url: '/course/strona 38/Foto/38-2.jpg',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Obiektywy działają inaczej niż oko. Często zakrzywiają fotografowany obraz, przez co często potrawa wygląda karykaturalnie. Zrobienie zdjęcia z większej odległości rozwiąże ten problem.',
+      ]),
     },
     {
       id: '39',
@@ -449,7 +478,9 @@ export const MOCK_COURSE = {
         imageUrl: '/course/strona 39/Foto/39.jpg',
         textFile: '/api/course-content/39/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Zwróć uwagę na boki talerza, czy na zdjęciu ich szerokości nie różnią się zbytnio.',
+      ]),
     },
     {
       id: '40',
@@ -507,7 +538,10 @@ export const MOCK_COURSE = {
         type: 'formatted-text',
         textFile: '/api/course-content/44/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Staraj się nie obcinać talerza. Chyba, że samo danie jest bardzo regularne w kształcie, albo dookoła jest duży, biały talerz, który sam w sobie stanowi tło. Jednak oko lubi „ramki" czyli talerz, tacę etc., co daje nam wrażenie harmonii.',
+        'Przestrzeń. Danie fine dining potrzebuje przestrzeni, żeby pięknie się prezentować. Potraktuj je jak modelkę na wybiegu. Piękno potrzebuje powietrza.',
+      ]),
     },
     {
       id: '45',
@@ -519,7 +553,9 @@ export const MOCK_COURSE = {
         textFile: '/api/course-content/45/PL',
         textPosition: 'top-center',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Zdjęcia z telefonu zazwyczaj są za ciemne. Poszukaj suwakiem równowagi w funkcji „dostosuj", znajdziesz punkt jasności, gdzie biel jest piękna, ale nie razi w oczy, a danie jest wyraźnie widoczne.',
+      ]),
     },
     {
       id: '46',
@@ -531,7 +567,10 @@ export const MOCK_COURSE = {
         textFile: '/api/course-content/46/PL',
         textPosition: 'top-center',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Zdjęcia robione w sztucznym oświetleniu, pięknym ciepłym świetle, na zdjęciach wychodzą często żółto. Światło zimne daje niebieską barwę. Ten suwak uratuje sytuację. Podczas używania suwaka „temperatura" uważaj, aby biel nie zaczęła przechodzić w kolor niebieski.',
+        'Suwak „temperatura" i „odcień" znajdziesz w funkcji „balans bieli".',
+      ]),
     },
     {
       id: '47',
@@ -543,7 +582,9 @@ export const MOCK_COURSE = {
         textFile: '/api/course-content/47/PL',
         textPosition: 'top-center',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Przeglądając media społecznościowe najczęstszym problemem z jakim się spotykamy, to zielony lub fioletowy odcień bieli.',
+      ]),
     },
     {
       id: '48',
@@ -553,7 +594,9 @@ export const MOCK_COURSE = {
         type: 'formatted-text',
         textFile: '/api/course-content/48/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify([
+        'Narzędzie „naprawianie". Poświęć chwilę na usunięciu pyłków. Rzadko zdarza się ich nie znaleźć, a wierzę, że ludzkie oko rejestruje więcej niż nam się wydaje. W dużym przybliżeniu zastosuj pędzel naprawiania najmniejszy jak możesz. Usuwaj niedoskonałości punktowo.',
+      ]),
     },
     {
       id: '49',

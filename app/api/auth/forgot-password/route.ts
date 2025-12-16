@@ -54,15 +54,24 @@ export async function POST(request: NextRequest) {
     })
 
     // Wyślij email z linkiem
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                   'http://localhost:3000'
+    let appUrl = process.env.NEXT_PUBLIC_APP_URL
+    if (!appUrl && process.env.VERCEL_URL) {
+      appUrl = `https://${process.env.VERCEL_URL}`
+    }
+    if (!appUrl) {
+      appUrl = 'http://localhost:3000'
+    }
     const resetUrl = `${appUrl}/reset-password?token=${token}`
+
+    console.log('Sending password reset email to:', normalizedEmail)
+    console.log('Reset URL:', resetUrl)
 
     const emailSent = await sendPasswordResetEmail(normalizedEmail, resetUrl)
 
     if (!emailSent) {
       console.error('Failed to send password reset email to:', normalizedEmail)
+    } else {
+      console.log('Password reset email sent successfully to:', normalizedEmail)
     }
 
     return successResponse
