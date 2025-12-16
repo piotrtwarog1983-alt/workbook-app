@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   // Allow public routes
-  const publicRoutes = ['/', '/login', '/signup', '/api/webhooks']
+  const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/api/webhooks']
   const pathname = request.nextUrl.pathname
 
   if (publicRoutes.some((route) => pathname === route || pathname.startsWith(route))) {

@@ -4,38 +4,58 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-function SignupContent() {
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(true)
+  const [tokenValid, setTokenValid] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
-    if (!token) {
-      setError('Brak tokenu rejestracji. Sprawdź link w emailu.')
+    const verifyToken = async () => {
+      if (!token) {
+        setError('Brak tokenu resetowania hasła')
+        setVerifying(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/auth/reset-password?token=${token}`)
+        const data = await response.json()
+
+        if (data.valid) {
+          setTokenValid(true)
+        } else {
+          setError(data.error || 'Nieprawidłowy link')
+        }
+      } catch (err) {
+        setError('Błąd weryfikacji linku')
+      } finally {
+        setVerifying(false)
+      }
     }
+
+    verifyToken()
   }, [token])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       setError('Hasła nie są identyczne')
       return
     }
 
-    if (formData.password.length < 8) {
+    if (password.length < 8) {
       setError('Hasło musi mieć co najmniej 8 znaków')
       return
     }
@@ -43,32 +63,29 @@ function SignupContent() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          token,
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-        }),
+        body: JSON.stringify({ token, password }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Błąd rejestracji')
+        setError(data.error || 'Wystąpił błąd')
         setLoading(false)
         return
       }
 
-      // Save token and redirect
-      localStorage.setItem('token', data.token)
-      router.push('/course')
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/login')
+      }, 3000)
     } catch (err) {
       setError('Wystąpił błąd. Spróbuj ponownie.')
+    } finally {
       setLoading(false)
     }
   }
@@ -86,10 +103,70 @@ function SignupContent() {
     </svg>
   )
 
+  if (verifying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Weryfikacja linku...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!tokenValid) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-4 text-white">Link nieprawidłowy</h1>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <Link
+            href="/forgot-password"
+            className="btn-primary-elegant px-6 py-3 inline-block font-semibold"
+          >
+            Poproś o nowy link
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
+          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-4 text-white">Hasło zmienione!</h1>
+          <p className="text-gray-400 mb-6">
+            Twoje hasło zostało pomyślnie zmienione. Za chwilę zostaniesz przekierowany do strony logowania.
+          </p>
+          <Link
+            href="/login"
+            className="text-primary-400 hover:text-primary-300 transition-colors"
+          >
+            Przejdź do logowania
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
       <div className="max-w-md w-full panel-elegant panel-glow p-8">
-        <h1 className="text-2xl font-bold mb-8 text-center text-white">Załóż konto</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center text-white">Ustaw nowe hasło</h1>
+        <p className="text-gray-400 text-center mb-8">
+          Wprowadź nowe hasło do swojego konta.
+        </p>
 
         {error && (
           <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
@@ -97,47 +174,18 @@ function SignupContent() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-              placeholder="twoj@email.com"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-400 mb-2">
-              Imię (opcjonalnie)
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-              placeholder="Jan"
-            />
-          </div>
-
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
-              Hasło
+              Nowe hasło
             </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
                 placeholder="••••••••"
               />
@@ -145,7 +193,6 @@ function SignupContent() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -162,8 +209,8 @@ function SignupContent() {
                 type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 required
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
                 placeholder="••••••••"
               />
@@ -171,7 +218,6 @@ function SignupContent() {
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                aria-label={showConfirmPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
               >
                 {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -180,18 +226,12 @@ function SignupContent() {
 
           <button
             type="submit"
-            disabled={loading || !token}
+            disabled={loading}
             className="w-full btn-primary-elegant py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Tworzenie konta...' : 'Załóż konto'}
+            {loading ? 'Zapisywanie...' : 'Ustaw nowe hasło'}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <Link href="/login" className="text-gray-400 hover:text-gray-300 transition-colors text-sm">
-            Masz już konto? Zaloguj się
-          </Link>
-        </div>
       </div>
     </div>
   )
@@ -208,10 +248,12 @@ function LoadingFallback() {
   )
 }
 
-export default function SignupPage() {
+export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <SignupContent />
+      <ResetPasswordContent />
     </Suspense>
   )
 }
+
+

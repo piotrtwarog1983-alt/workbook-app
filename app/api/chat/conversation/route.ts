@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
       where: { userId: payload.userId },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
-          take: 100, // Ostatnie 100 wiadomości
+          orderBy: { createdAt: 'desc' },
+          take: 50, // Ostatnie 50 wiadomości (optymalizacja)
         },
         user: {
           select: { email: true, name: true },
@@ -52,9 +52,17 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ conversation })
+    // Odwróć kolejność wiadomości (pobrane desc dla optymalizacji, wyświetlane asc)
+    const conversationWithSortedMessages = {
+      ...conversation,
+      messages: conversation.messages.reverse(),
+    }
+
+    return NextResponse.json({ conversation: conversationWithSortedMessages })
   } catch (error) {
     console.error('Error fetching conversation:', error)
     return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 })
   }
 }
+
+

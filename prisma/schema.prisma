@@ -155,3 +155,28 @@ model Message {
   @@index([createdAt])
 }
 
+// Password Reset Token
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+}
+
+// Rate Limiting - Login Attempts
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}
+

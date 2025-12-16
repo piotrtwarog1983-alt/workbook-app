@@ -45,12 +45,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Zaktualizuj konwersację
-    await prisma.conversation.update({
+    // Zaktualizuj konwersację i pobierz dane użytkownika
+    const updatedConversation = await prisma.conversation.update({
       where: { id: conversation.id },
       data: {
         lastMessageAt: new Date(),
         unreadByAdmin: true,
+      },
+      include: {
+        user: {
+          select: { email: true, name: true },
+        },
       },
     })
 
@@ -60,9 +65,18 @@ export async function POST(request: NextRequest) {
         message,
         conversationId: conversation.id,
       })
-      // Powiadom panel admin o nowej wiadomości
+      // Powiadom panel admin o nowej wiadomości - z pełnymi danymi!
       await pusherServer.trigger('admin-inbox', 'conversation:updated', {
-        conversationId: conversation.id,
+        conversation: {
+          id: updatedConversation.id,
+          userId: updatedConversation.userId,
+          userEmail: updatedConversation.user.email,
+          userName: updatedConversation.user.name,
+          lastMessage: message.text,
+          lastMessageAt: updatedConversation.lastMessageAt,
+          lastMessageSender: 'user',
+          unreadByAdmin: true,
+        },
       })
     } catch (pusherError) {
       console.error('Pusher error:', pusherError)
@@ -75,3 +89,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 })
   }
 }
+
+

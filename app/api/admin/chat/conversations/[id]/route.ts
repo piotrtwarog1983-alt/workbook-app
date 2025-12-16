@@ -33,7 +33,7 @@ export async function GET(
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
-    // Pobierz konwersację z wiadomościami
+    // Pobierz konwersację z ostatnimi 50 wiadomościami (optymalizacja)
     const conversation = await prisma.conversation.findUnique({
       where: { id },
       include: {
@@ -41,7 +41,8 @@ export async function GET(
           select: { id: true, email: true, name: true },
         },
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: 'desc' },
+          take: 50, // Ostatnie 50 wiadomości
         },
       },
     })
@@ -58,9 +59,17 @@ export async function GET(
       })
     }
 
-    return NextResponse.json({ conversation })
+    // Odwróć kolejność wiadomości (pobrane desc, wyświetlane asc)
+    const conversationWithSortedMessages = {
+      ...conversation,
+      messages: conversation.messages.reverse(),
+    }
+
+    return NextResponse.json({ conversation: conversationWithSortedMessages })
   } catch (error) {
     console.error('Error fetching conversation:', error)
     return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 })
   }
 }
+
+

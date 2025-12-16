@@ -111,8 +111,26 @@ export default function AdminInboxPage() {
 
     const channel = pusher.subscribe('admin-inbox')
 
-    channel.bind('conversation:updated', () => {
-      loadConversations()
+    // Optymalizacja: aktualizuj lokalnie z danych Pushera zamiast pobierać z bazy
+    channel.bind('conversation:updated', (data: { conversation: Conversation }) => {
+      if (data.conversation) {
+        setConversations((prev) => {
+          const existing = prev.find((c) => c.id === data.conversation.id)
+          if (existing) {
+            // Aktualizuj istniejącą konwersację
+            const updated = prev.map((c) =>
+              c.id === data.conversation.id ? { ...c, ...data.conversation } : c
+            )
+            // Posortuj według lastMessageAt
+            return updated.sort((a, b) => 
+              new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+            )
+          } else {
+            // Nowa konwersacja - dodaj na początek
+            return [data.conversation, ...prev]
+          }
+        })
+      }
     })
 
     return () => {
@@ -146,6 +164,14 @@ export default function AdminInboxPage() {
   const selectConversation = async (convId: string) => {
     setLoadingMessages(true)
     setError('')
+    
+    // Natychmiast usuń podświetlenie (oznacz jako przeczytane lokalnie)
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === convId ? { ...c, unreadByAdmin: false } : c
+      )
+    )
+    
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/admin/chat/conversations/${convId}`, {
@@ -154,7 +180,7 @@ export default function AdminInboxPage() {
       if (response.ok) {
         const data = await response.json()
         setSelectedConversation(data.conversation)
-        loadConversations()
+        // Nie pobieramy ponownie listy - aktualizacja lokalna już zrobiona
       }
     } catch (err) {
       console.error('Error loading conversation:', err)
@@ -197,7 +223,14 @@ export default function AdminInboxPage() {
           }
         })
         setDraft('')
-        loadConversations()
+        // Aktualizacja lokalna zamiast loadConversations()
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === selectedConversation.id
+              ? { ...c, lastMessage: draft, lastMessageAt: new Date().toISOString(), lastMessageSender: 'admin' }
+              : c
+          )
+        )
       } else {
         const data = await response.json()
         setError(data.error || 'Błąd wysyłania')
@@ -407,3 +440,5 @@ export default function AdminInboxPage() {
     </div>
   )
 }
+
+
