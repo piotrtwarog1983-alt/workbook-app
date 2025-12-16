@@ -96,12 +96,12 @@ useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (isTransitioning) return
       if (e.key === 'ArrowLeft' && currentPageIndex > 0) {
-        setTransitionDirection('up')
+        setTransitionDirection('down')
         setIsTransitioning(true)
-        setAnimationClass('course-container-slide-out-up')
+        setAnimationClass('course-container-slide-out-down')
         setTimeout(() => {
           setCurrentPageIndex(currentPageIndex - 1)
-          setAnimationClass('course-container-slide-in-up')
+          setAnimationClass('course-container-slide-in-down')
           setTimeout(() => {
             setIsTransitioning(false)
             setTransitionDirection(null)
@@ -109,12 +109,12 @@ useEffect(() => {
           }, 800)
         }, 800)
       } else if (e.key === 'ArrowRight' && currentPageIndex < pages.length - 1) {
-        setTransitionDirection('down')
+        setTransitionDirection('up')
         setIsTransitioning(true)
-        setAnimationClass('course-container-slide-out-down')
+        setAnimationClass('course-container-slide-out-up')
         setTimeout(() => {
           setCurrentPageIndex(currentPageIndex + 1)
-          setAnimationClass('course-container-slide-in-down')
+          setAnimationClass('course-container-slide-in-up')
           setTimeout(() => {
             setIsTransitioning(false)
             setTransitionDirection(null)
@@ -178,12 +178,12 @@ useEffect(() => {
 
   const nextPage = () => {
     if (currentPageIndex < pages.length - 1 && !isTransitioning) {
-      setTransitionDirection('down')
+      setTransitionDirection('up')
       setIsTransitioning(true)
-      setAnimationClass('course-container-slide-out-down')
+      setAnimationClass('course-container-slide-out-up')
       setTimeout(() => {
         setCurrentPageIndex(currentPageIndex + 1)
-        setAnimationClass('course-container-slide-in-down')
+        setAnimationClass('course-container-slide-in-up')
         setTimeout(() => {
           setIsTransitioning(false)
           setTransitionDirection(null)
@@ -195,12 +195,12 @@ useEffect(() => {
 
   const prevPage = () => {
     if (currentPageIndex > 0 && !isTransitioning) {
-      setTransitionDirection('up')
+      setTransitionDirection('down')
       setIsTransitioning(true)
-      setAnimationClass('course-container-slide-out-up')
+      setAnimationClass('course-container-slide-out-down')
       setTimeout(() => {
         setCurrentPageIndex(currentPageIndex - 1)
-        setAnimationClass('course-container-slide-in-up')
+        setAnimationClass('course-container-slide-in-down')
         setTimeout(() => {
           setIsTransitioning(false)
           setTransitionDirection(null)
@@ -218,14 +218,15 @@ useEffect(() => {
     const targetIndex = pages.findIndex((p: CoursePage) => p.pageNumber === pageNumber)
     if (targetIndex === -1 || targetIndex === currentPageIndex) return
     
-    const direction = targetIndex > currentPageIndex ? 'down' : 'up'
+    // Następna strona = z dołu do góry (up), poprzednia = z góry do dołu (down)
+    const direction = targetIndex > currentPageIndex ? 'up' : 'down'
     setTransitionDirection(direction)
     setIsTransitioning(true)
-    setAnimationClass(direction === 'down' ? 'course-container-slide-out-down' : 'course-container-slide-out-up')
+    setAnimationClass(direction === 'up' ? 'course-container-slide-out-up' : 'course-container-slide-out-down')
     
     setTimeout(() => {
       setCurrentPageIndex(targetIndex)
-      setAnimationClass(direction === 'down' ? 'course-container-slide-in-down' : 'course-container-slide-in-up')
+      setAnimationClass(direction === 'up' ? 'course-container-slide-in-up' : 'course-container-slide-in-down')
       setTimeout(() => {
         setIsTransitioning(false)
         setTransitionDirection(null)

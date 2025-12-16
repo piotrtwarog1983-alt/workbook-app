@@ -61,6 +61,8 @@ export async function POST(request: NextRequest) {
     if (!appUrl) {
       appUrl = 'http://localhost:3000'
     }
+    // Usuń trailing slash jeśli jest
+    appUrl = appUrl.replace(/\/$/, '')
     const resetUrl = `${appUrl}/reset-password?token=${token}`
 
     console.log('Sending password reset email to:', normalizedEmail)
