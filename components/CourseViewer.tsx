@@ -12,6 +12,8 @@ import { ProgressGallery } from './ProgressGallery'
 import { ProgressEvaluation } from './ProgressEvaluation'
 import { ProgressTimeline } from './ProgressTimeline'
 import { MOCK_COURSE } from '@/lib/mock-data'
+import { useTranslation, useLanguage } from '@/lib/LanguageContext'
+import { Language } from '@/lib/translations'
 
 interface CoursePage {
   id: string
@@ -30,11 +32,13 @@ interface CourseViewerProps {
 
 export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const router = useRouter()
+  const { t, language, setLanguage } = useLanguage()
   const [course, setCourse] = useState<any>(null)
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat'>('gallery')
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false)
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
   const [completedPages, setCompletedPages] = useState<number[]>([])
@@ -42,7 +46,9 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null)
   const [animationClass, setAnimationClass] = useState<string>('')
   const [fileTips, setFileTips] = useState<string[]>([])
-  const [currentLang] = useState('PL') // Obecny język - można rozbudować o przełącznik
+  
+  // Mapowanie języka z kontekstu na format folderów (PL, DE)
+  const currentLang = language
 
   // Funkcja wylogowania
   const handleLogout = () => {
@@ -323,7 +329,7 @@ useEffect(() => {
               <div className="w-full lg:w-64 lg:flex-shrink-0">
                 {tips.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Tipy</h3>
+                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t.course.tips}</h3>
                     {tips.map((tip, index) => (
                       <TipCloud key={index} tip={tip} />
                     ))}
@@ -1481,18 +1487,20 @@ useEffect(() => {
           </div>
 
           {/* Gallery z postępami - po prawej stronie */}
-          <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8 lg:ml-24">
-            {/* Oś postępów z przyciskiem wylogowania */}
+          <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8 lg:ml-24 relative">
+            {/* Przełącznik języka i wylogowanie */}
             <div className="flex items-center justify-between mb-4 gap-2 w-full">
               <div className="flex-1 min-w-0">
                 <ProgressTimeline completedPages={completedPages} onNavigate={goToPage} />
               </div>
               <button
                 onClick={handleLogout}
-                className="px-3 py-2 text-sm font-medium flex items-center gap-2 btn-elegant flex-shrink-0 whitespace-nowrap"
+                className="w-10 h-10 flex items-center justify-center btn-elegant flex-shrink-0"
+                aria-label={t.common.logout}
+                title={t.common.logout}
               >
                 <svg
-                  className="w-4 h-4"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1504,7 +1512,6 @@ useEffect(() => {
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
-                Wyloguj
               </button>
             </div>
             
@@ -1515,7 +1522,7 @@ useEffect(() => {
               )}
               {activePanel === 'dictionary' && (
                 <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto rounded-2xl">
-                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Słownik pojęć</h3>
+                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.dictionary.title}</h3>
                   <DictionaryInline />
                 </div>
               )}
@@ -1531,9 +1538,9 @@ useEffect(() => {
               {/* Gallery button - ikona aparatu */}
               <button
                 onClick={() => setActivePanel('gallery')}
-                className={`p-4 ${activePanel === 'gallery' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
-                aria-label="Twoje postępy"
-                title="Twoje postępy"
+                className={`w-14 h-14 flex items-center justify-center ${activePanel === 'gallery' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                aria-label={t.course.yourProgress}
+                title={t.course.yourProgress}
               >
                 <svg
                   className="w-6 h-6"
@@ -1559,9 +1566,9 @@ useEffect(() => {
               {/* Dictionary button - ikona książki */}
               <button
                 onClick={() => setActivePanel('dictionary')}
-                className={`p-4 ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
-                aria-label="Słownik pojęć"
-                title="Słownik pojęć"
+                className={`w-14 h-14 flex items-center justify-center ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                aria-label={t.dictionary.title}
+                title={t.dictionary.title}
               >
                 <svg
                   className="w-6 h-6"
@@ -1581,9 +1588,9 @@ useEffect(() => {
               {/* Chat button - ikona wiadomości */}
               <button
                 onClick={() => setActivePanel('chat')}
-                className={`p-4 ${activePanel === 'chat' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
-                aria-label="Wiadomości"
-                title="Wiadomości"
+                className={`w-14 h-14 flex items-center justify-center ${activePanel === 'chat' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                aria-label={t.chat.title}
+                title={t.chat.title}
               >
                 <svg
                   className="w-6 h-6"
@@ -1599,6 +1606,82 @@ useEffect(() => {
                   />
                 </svg>
               </button>
+
+              {/* Language button wrapper z relative dla dropdown - ml-auto przesuwa na prawo */}
+              <div className="relative ml-auto w-14 h-14">
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className={`w-14 h-14 flex items-center justify-center ${showLanguageMenu ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                  aria-label="Language"
+                  title="Language"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                    />
+                  </svg>
+                </button>
+                
+                {/* Language dropdown menu - bezpośrednio przy przycisku */}
+                {showLanguageMenu && (
+                  <>
+                    {/* Backdrop do zamykania menu */}
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowLanguageMenu(false)}
+                    />
+                    {/* Menu - nad przyciskiem */}
+                    <div className="absolute bottom-48 right-16 py-2 w-36 panel-elegant panel-glow rounded-lg shadow-2xl z-50">
+                      <button
+                        onClick={() => {
+                          setLanguage('PL')
+                          setShowLanguageMenu(false)
+                        }}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
+                          language === 'PL' 
+                            ? 'text-cyan-400 bg-cyan-500/10' 
+                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <span>🇵🇱</span>
+                        <span>Polski</span>
+                        {language === 'PL' && (
+                          <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setLanguage('DE')
+                          setShowLanguageMenu(false)
+                        }}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
+                          language === 'DE' 
+                            ? 'text-cyan-400 bg-cyan-500/10' 
+                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <span>🇩🇪</span>
+                        <span>Deutsch</span>
+                        {language === 'DE' && (
+                          <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

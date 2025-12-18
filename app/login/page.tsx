@@ -3,9 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/LanguageContext'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -31,7 +34,14 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Błąd logowania')
+        // Mapuj błędy z API na przetłumaczone komunikaty
+        if (data.error?.includes('Nieprawidłowy') || data.error?.includes('Invalid')) {
+          setError(t.login.invalidCredentials)
+        } else if (data.error?.includes('Zbyt wiele') || data.error?.includes('Too many')) {
+          setError(t.login.tooManyAttempts)
+        } else {
+          setError(data.error || t.login.loginError)
+        }
         setLoading(false)
         return
       }
@@ -40,7 +50,7 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token)
       router.push('/course')
     } catch (err) {
-      setError('Wystąpił błąd. Spróbuj ponownie.')
+      setError(t.errors.generic)
       setLoading(false)
     }
   }
@@ -60,8 +70,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      {/* Language switcher w górnym prawym rogu */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-8 text-center text-white">Zaloguj się</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.login.title}</h1>
+        <p className="text-gray-400 text-center mb-8">{t.login.subtitle}</p>
 
         {error && (
           <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
@@ -72,7 +88,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-              Email
+              {t.login.email}
             </label>
             <input
               type="email"
@@ -81,13 +97,13 @@ export default function LoginPage() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-              placeholder="twoj@email.com"
+              placeholder={t.login.emailPlaceholder}
             />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
-              Hasło
+              {t.login.password}
             </label>
             <div className="relative">
               <input
@@ -97,13 +113,12 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-                placeholder="••••••••"
+                placeholder={t.login.passwordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -115,7 +130,7 @@ export default function LoginPage() {
               href="/forgot-password" 
               className="text-sm text-gray-400 hover:text-primary-400 transition-colors"
             >
-              Zapomniałeś hasła?
+              {t.login.forgotPassword}
             </Link>
           </div>
 
@@ -124,13 +139,20 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logowanie...' : 'Zaloguj się'}
+            {loading ? t.login.loggingIn : t.login.loginButton}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <Link href="/" className="text-gray-400 hover:text-gray-300 transition-colors text-sm">
-            Wróć do strony głównej
+          <span className="text-gray-400 text-sm">{t.login.noAccount} </span>
+          <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
+            {t.login.registerHere}
+          </Link>
+        </div>
+
+        <div className="mt-4 text-center">
+          <Link href="/" className="text-gray-500 hover:text-gray-400 transition-colors text-xs">
+            {t.common.back}
           </Link>
         </div>
       </div>

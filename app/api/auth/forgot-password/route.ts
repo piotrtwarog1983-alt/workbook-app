@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { Language } from '@/lib/translations'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json()
+    const { email, language = 'PL' } = await request.json()
 
     if (!email) {
       return NextResponse.json({ error: 'Email jest wymagany' }, { status: 400 })
     }
+    
+    // Walidacja języka
+    const validLanguage: Language = (language === 'DE' ? 'DE' : 'PL')
 
     const normalizedEmail = email.toLowerCase().trim()
 
@@ -64,7 +68,7 @@ export async function POST(request: NextRequest) {
     console.log('Sending password reset email to:', normalizedEmail)
     console.log('Reset URL:', resetUrl)
 
-    const emailSent = await sendPasswordResetEmail(normalizedEmail, resetUrl)
+    const emailSent = await sendPasswordResetEmail(normalizedEmail, resetUrl, validLanguage)
 
     if (!emailSent) {
       console.error('Failed to send password reset email')
@@ -82,3 +86,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

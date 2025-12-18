@@ -26,3 +26,4 @@ export const PAGE_TO_STAGE: Record<ProgressPageNumber, string> = {
 export function getStageLabel(pageNumber: ProgressPageNumber): string {
   return PAGE_TO_STAGE[pageNumber] || ''
 }
+

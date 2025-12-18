@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Pusher from 'pusher-js'
 import { PROGRESS_PAGES } from '@/lib/progress-pages'
+import { useTranslation } from '@/lib/LanguageContext'
 
 interface ProgressGalleryProps {
   uploadId?: string
@@ -11,6 +12,7 @@ interface ProgressGalleryProps {
 }
 
 export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryProps) {
+  const { t } = useTranslation()
   const [progressImages, setProgressImages] = useState<{url: string, page: number}[]>([])
   const [loading, setLoading] = useState(true)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
@@ -155,8 +157,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   if (loading) {
     return (
       <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Twoje postępy</h3>
-        <div className="text-center py-8 text-gray-500">Ładowanie...</div>
+        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
+        <div className="text-center py-8 text-gray-500">{t.common.loading}</div>
       </div>
     )
   }
@@ -164,10 +166,10 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   if (progressImages.length === 0) {
     return (
       <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Twoje postępy</h3>
+        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
         <div className="text-center py-8 text-gray-500 text-sm">
-          Brak zdjęć z postępami.<br />
-          Prześlij zdjęcia używając kodów QR.
+          {t.gallery.noPhotos}<br />
+          {t.course.scanQR}
         </div>
       </div>
     )
@@ -175,13 +177,13 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
   return (
     <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl flex flex-col">
-      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Twoje postępy</h3>
+      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
       
       {/* Kontener ze zdjęciem */}
       <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-black/20 flex-shrink-0">
         <Image
           src={progressImages[currentIndex].url}
-          alt={`Zdjęcie postępu ${currentIndex + 1}`}
+          alt={`${t.gallery.title} ${currentIndex + 1}`}
           fill
           className="object-contain"
           sizes="(max-width: 1024px) 100vw, 512px"
@@ -192,7 +194,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
           <button
             onClick={goToPrevious}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-10"
-            aria-label="Poprzednie zdjęcie"
+            aria-label={t.common.previous}
           >
             <svg
               className="w-5 h-5 text-white"
@@ -215,7 +217,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
           <button
             onClick={goToNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-10"
-            aria-label="Następne zdjęcie"
+            aria-label={t.common.next}
           >
             <svg
               className="w-5 h-5 text-white"
@@ -235,7 +237,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
         {/* Numer strony */}
         <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-          Strona {progressImages[currentIndex].page}
+          {t.common.page} {progressImages[currentIndex].page}
         </div>
       </div>
 
@@ -259,7 +261,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
             >
               <Image
                 src={img.url}
-                alt={`Miniatura ${index + 1}`}
+                alt={`${index + 1}`}
                 fill
                 className="object-cover"
                 sizes="56px"

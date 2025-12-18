@@ -3,11 +3,14 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/LanguageContext'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const { t } = useTranslation()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -23,26 +26,26 @@ function SignupContent() {
 
   useEffect(() => {
     if (!token) {
-      setError('Brak tokenu rejestracji. Sprawdź link w emailu.')
+      setError(t.signup.tokenRequired)
     }
-  }, [token])
+  }, [token, t.signup.tokenRequired])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
     if (!acceptedTerms) {
-      setError('Musisz zaakceptować regulamin i politykę prywatności')
+      setError(t.signup.termsRequired)
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Hasła nie są identyczne')
+      setError(t.signup.passwordMismatch)
       return
     }
 
     if (formData.password.length < 8) {
-      setError('Hasło musi mieć co najmniej 8 znaków')
+      setError(t.signup.passwordTooShort)
       return
     }
 
@@ -70,7 +73,14 @@ function SignupContent() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Błąd rejestracji')
+        // Mapuj błędy API na przetłumaczone komunikaty
+        if (data.error?.includes('token') || data.error?.includes('Token')) {
+          setError(t.signup.invalidToken)
+        } else if (data.error?.includes('email') || data.error?.includes('Email')) {
+          setError(t.signup.emailExists)
+        } else {
+          setError(data.error || t.signup.registrationError)
+        }
         setLoading(false)
         return
       }
@@ -79,7 +89,7 @@ function SignupContent() {
       localStorage.setItem('token', data.token)
       router.push('/course')
     } catch (err) {
-      setError('Wystąpił błąd. Spróbuj ponownie.')
+      setError(t.errors.generic)
       setLoading(false)
     }
   }
@@ -99,8 +109,14 @@ function SignupContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      {/* Language switcher w górnym prawym rogu */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-8 text-center text-white">Załóż konto</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.signup.title}</h1>
+        <p className="text-gray-400 text-center mb-8">{t.signup.subtitle}</p>
 
         {error && (
           <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
@@ -111,7 +127,7 @@ function SignupContent() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-              Email
+              {t.signup.email}
             </label>
             <input
               type="email"
@@ -120,13 +136,13 @@ function SignupContent() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-              placeholder="twoj@email.com"
+              placeholder={t.signup.emailPlaceholder}
             />
           </div>
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-400 mb-2">
-              Imię (opcjonalnie)
+              {t.signup.name}
             </label>
             <input
               type="text"
@@ -134,13 +150,13 @@ function SignupContent() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-              placeholder="Jan"
+              placeholder={t.signup.namePlaceholder}
             />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
-              Hasło
+              {t.signup.password}
             </label>
             <div className="relative">
               <input
@@ -150,23 +166,21 @@ function SignupContent() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-                placeholder="••••••••"
+                placeholder={t.signup.passwordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Minimum 8 znaków</p>
           </div>
 
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-400 mb-2">
-              Potwierdź hasło
+              {t.signup.confirmPassword}
             </label>
             <div className="relative">
               <input
@@ -176,13 +190,12 @@ function SignupContent() {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-                placeholder="••••••••"
+                placeholder={t.signup.confirmPasswordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                aria-label={showConfirmPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
               >
                 {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -199,23 +212,23 @@ function SignupContent() {
               className="mt-1 w-4 h-4 accent-primary-500 bg-white/5 border-white/20 rounded"
             />
             <label htmlFor="terms" className="text-sm text-gray-400 leading-relaxed">
-              Akceptuję{' '}
+              {t.signup.termsAccept}{' '}
               <a 
                 href="https://eulaliafotografia.com/regulamin" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary-400 hover:text-primary-300 underline"
               >
-                Regulamin platformy
+                {t.signup.termsOfService}
               </a>
-              {' '}oraz{' '}
+              {' '}{t.signup.and}{' '}
               <a 
                 href="https://eulaliafotografia.com/polityka-prywatnosci" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary-400 hover:text-primary-300 underline"
               >
-                Politykę Prywatności
+                {t.signup.privacyPolicy}
               </a>
             </label>
           </div>
@@ -225,13 +238,14 @@ function SignupContent() {
             disabled={loading || !token || !acceptedTerms}
             className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Tworzenie konta...' : 'Załóż konto'}
+            {loading ? t.signup.registering : t.signup.registerButton}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <Link href="/login" className="text-gray-400 hover:text-gray-300 transition-colors text-sm">
-            Masz już konto? Zaloguj się
+          <span className="text-gray-400 text-sm">{t.signup.haveAccount} </span>
+          <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
+            {t.signup.loginHere}
           </Link>
         </div>
       </div>
@@ -244,7 +258,7 @@ function LoadingFallback() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
       <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center rounded-2xl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-        <p className="text-gray-400">Ładowanie...</p>
+        <p className="text-gray-400">...</p>
       </div>
     </div>
   )

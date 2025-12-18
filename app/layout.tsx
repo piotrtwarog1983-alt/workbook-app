@@ -1,4 +1,5 @@
 import './globals.css'
+import { Providers } from '@/components/Providers'
 
 export const metadata = {
   title: 'WorkBook - Kurs Fotografii Kulinarnej',
@@ -13,7 +14,9 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

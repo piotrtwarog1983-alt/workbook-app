@@ -2,8 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslation, useLanguage } from '@/lib/LanguageContext'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export default function ForgotPasswordPage() {
+  const { t, language } = useTranslation()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -18,7 +21,7 @@ export default function ForgotPasswordPage() {
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, language })
       })
 
       const data = await response.json()
@@ -26,10 +29,10 @@ export default function ForgotPasswordPage() {
       if (response.ok) {
         setSuccess(true)
       } else {
-        setError(data.error || 'Wystąpił błąd')
+        setError(data.error || t.errors.generic)
       }
     } catch {
-      setError('Błąd połączenia z serwerem')
+      setError(t.errors.network)
     } finally {
       setLoading(false)
     }
@@ -38,6 +41,11 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        {/* Language switcher */}
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
+
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
           <div className="text-center">
             <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -45,15 +53,15 @@ export default function ForgotPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">Sprawdź swoją skrzynkę</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">{t.common.success}</h1>
             <p className="text-gray-400 mb-6">
-              Jeśli podany adres email jest zarejestrowany, wysłaliśmy link do resetowania hasła.
+              {t.forgotPassword.successMessage}
             </p>
             <Link
               href="/login"
               className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
             >
-              Wróć do logowania
+              {t.forgotPassword.backToLogin}
             </Link>
           </div>
         </div>
@@ -63,10 +71,15 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      {/* Language switcher */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-2 text-center text-white">Zapomniałeś hasła?</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.forgotPassword.title}</h1>
         <p className="text-gray-400 text-center mb-8">
-          Podaj swój adres email, a wyślemy Ci link do resetowania hasła.
+          {t.forgotPassword.subtitle}
         </p>
 
         {error && (
@@ -78,7 +91,7 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-              Email
+              {t.forgotPassword.email}
             </label>
             <input
               type="email"
@@ -87,7 +100,7 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-              placeholder="twoj@email.com"
+              placeholder={t.forgotPassword.emailPlaceholder}
             />
           </div>
 
@@ -96,16 +109,17 @@ export default function ForgotPasswordPage() {
             disabled={loading}
             className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Wysyłanie...' : 'Wyślij link resetujący'}
+            {loading ? t.forgotPassword.sending : t.forgotPassword.sendButton}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <Link href="/login" className="text-gray-400 hover:text-gray-300 transition-colors text-sm">
-            ← Wróć do logowania
+            ← {t.forgotPassword.backToLogin}
           </Link>
         </div>
       </div>
     </div>
   )
 }
+

@@ -3,11 +3,14 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/LanguageContext'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const { t } = useTranslation()
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -22,7 +25,7 @@ function ResetPasswordContent() {
   useEffect(() => {
     if (!token) {
       setVerifying(false)
-      setError('Brak tokenu resetowania hasła')
+      setError(t.resetPassword.invalidToken)
       return
     }
 
@@ -32,28 +35,28 @@ function ResetPasswordContent() {
       .then(data => {
         setTokenValid(data.valid)
         if (!data.valid) {
-          setError(data.error || 'Nieprawidłowy lub wygasły link')
+          setError(t.resetPassword.tokenExpired)
         }
       })
       .catch(() => {
-        setError('Błąd weryfikacji tokenu')
+        setError(t.errors.generic)
       })
       .finally(() => {
         setVerifying(false)
       })
-  }, [token])
+  }, [token, t.resetPassword.invalidToken, t.resetPassword.tokenExpired, t.errors.generic])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Hasła nie są identyczne')
+      setError(t.signup.passwordMismatch)
       return
     }
 
     if (password.length < 8) {
-      setError('Hasło musi mieć co najmniej 8 znaków')
+      setError(t.signup.passwordTooShort)
       return
     }
 
@@ -72,10 +75,10 @@ function ResetPasswordContent() {
         setSuccess(true)
         setTimeout(() => router.push('/login'), 3000)
       } else {
-        setError(data.error || 'Wystąpił błąd')
+        setError(data.error || t.errors.generic)
       }
     } catch {
-      setError('Błąd połączenia z serwerem')
+      setError(t.errors.network)
     } finally {
       setLoading(false)
     }
@@ -97,9 +100,12 @@ function ResetPasswordContent() {
   if (verifying) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Weryfikowanie linku...</p>
+          <p className="text-gray-400">{t.common.loading}</p>
         </div>
       </div>
     )
@@ -108,6 +114,9 @@ function ResetPasswordContent() {
   if (!tokenValid && !success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -115,13 +124,13 @@ function ResetPasswordContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">Link nieprawidłowy</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">{t.common.error}</h1>
             <p className="text-gray-400 mb-6">{error}</p>
             <Link
               href="/forgot-password"
               className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
             >
-              Poproś o nowy link
+              {t.forgotPassword.sendButton}
             </Link>
           </div>
         </div>
@@ -132,6 +141,9 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
           <div className="text-center">
             <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -139,15 +151,15 @@ function ResetPasswordContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">Hasło zmienione!</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">{t.common.success}</h1>
             <p className="text-gray-400 mb-6">
-              Twoje hasło zostało pomyślnie zmienione. Za chwilę zostaniesz przekierowany do logowania.
+              {t.resetPassword.successMessage}
             </p>
             <Link
               href="/login"
               className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
             >
-              Zaloguj się teraz
+              {t.login.loginButton}
             </Link>
           </div>
         </div>
@@ -157,10 +169,14 @@ function ResetPasswordContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-2 text-center text-white">Ustaw nowe hasło</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.resetPassword.title}</h1>
         <p className="text-gray-400 text-center mb-8">
-          Wprowadź nowe hasło dla swojego konta.
+          {t.resetPassword.subtitle}
         </p>
 
         {error && (
@@ -172,7 +188,7 @@ function ResetPasswordContent() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
-              Nowe hasło
+              {t.resetPassword.password}
             </label>
             <div className="relative">
               <input
@@ -182,7 +198,7 @@ function ResetPasswordContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-                placeholder="••••••••"
+                placeholder={t.resetPassword.passwordPlaceholder}
               />
               <button
                 type="button"
@@ -192,12 +208,11 @@ function ResetPasswordContent() {
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Minimum 8 znaków</p>
           </div>
 
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-400 mb-2">
-              Potwierdź hasło
+              {t.resetPassword.confirmPassword}
             </label>
             <div className="relative">
               <input
@@ -207,7 +222,7 @@ function ResetPasswordContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
-                placeholder="••••••••"
+                placeholder={t.resetPassword.confirmPasswordPlaceholder}
               />
               <button
                 type="button"
@@ -224,7 +239,7 @@ function ResetPasswordContent() {
             disabled={loading}
             className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Zapisywanie...' : 'Zmień hasło'}
+            {loading ? t.resetPassword.resetting : t.resetPassword.resetButton}
           </button>
         </form>
       </div>
@@ -237,7 +252,7 @@ function LoadingFallback() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
       <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center rounded-2xl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-        <p className="text-gray-400">Ładowanie...</p>
+        <p className="text-gray-400">...</p>
       </div>
     </div>
   )
@@ -250,3 +265,4 @@ export default function ResetPasswordPage() {
     </Suspense>
   )
 }
+
