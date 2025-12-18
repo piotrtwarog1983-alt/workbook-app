@@ -12,7 +12,7 @@ const STAGES = [
   { id: 3, label: 'kompozycja', targetPage: 20 },
   { id: 4, label: 'perspektywa', targetPage: 29 },
   { id: 5, label: 'proporcje', targetPage: 35 },
-  { id: 6, label: 'finał', targetPage: 49 },
+  { id: 6, label: 'retusz', targetPage: 49 },
 ]
 
 // Strony z uploadem zdjęć przypisane do etapów
@@ -23,7 +23,7 @@ const PROGRESS_PAGE_TO_STAGE: { [key: number]: number } = {
   29: 4,  // perspektywa
   35: 5,  // proporcje
   40: 5,  // proporcje (dodatkowe)
-  49: 6,  // finał
+  49: 6,  // retusz
 }
 
 export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelineProps) {
@@ -51,20 +51,20 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
               title={`Przejdź do: ${stage.label}`}
             >
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                   isCompleted
-                    ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
+                    ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]'
                     : 'bg-gray-700 border-2 border-gray-500'
                 } group-hover:scale-110`}
               >
                 {isCompleted && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>
-              <span className={`text-[9px] mt-1 whitespace-nowrap transition-colors ${
-                isCompleted ? 'text-green-400' : 'text-gray-400 group-hover:text-white'
+              <span className={`text-[10px] mt-1 whitespace-nowrap transition-colors ${
+                isCompleted ? 'text-cyan-400' : 'text-gray-400 group-hover:text-white'
               }`}>
                 {stage.label}
               </span>
@@ -72,14 +72,8 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
 
             {/* Linia łącząca (nie dla ostatniego) */}
             {!isLast && (
-              <div className="w-6 sm:w-8 lg:w-10 h-[2px] mx-1 relative">
-                <div className="absolute inset-0 bg-gray-700" />
-                <div
-                  className={`absolute inset-y-0 left-0 transition-all duration-500 ${
-                    isCompleted ? 'bg-green-500' : 'bg-transparent'
-                  }`}
-                  style={{ width: isCompleted ? '100%' : '0%' }}
-                />
+              <div className="w-8 sm:w-10 lg:w-12 h-[2px] mx-1 relative">
+                <div className={`absolute inset-0 ${isCompleted ? 'bg-cyan-500' : 'bg-gray-600'}`} />
               </div>
             )}
           </div>
