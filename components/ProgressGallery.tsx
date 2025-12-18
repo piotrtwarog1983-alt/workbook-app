@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Pusher from 'pusher-js'
 import { PROGRESS_PAGES } from '@/lib/progress-pages'
 
 interface ProgressGalleryProps {
@@ -14,6 +15,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   const [loading, setLoading] = useState(true)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const pusherRef = useRef<Pusher | null>(null)
 
   // Pobierz uploadId użytkownika, jeśli nie został przekazany
   useEffect(() => {
@@ -101,15 +103,40 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
     }
   }
 
-  // Odśwież zdjęcia co 3 sekundy
+  // Pusher real-time updates
   useEffect(() => {
     if (!currentUploadId) return
 
-    const interval = setInterval(() => {
-      fetchProgressImages(currentUploadId)
-    }, 3000)
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
 
-    return () => clearInterval(interval)
+    if (pusherKey && pusherCluster) {
+      // Użyj Pusher dla real-time updates
+      pusherRef.current = new Pusher(pusherKey, {
+        cluster: pusherCluster,
+      })
+
+      const channel = pusherRef.current.subscribe(`progress-${currentUploadId}`)
+      
+      channel.bind('photo:uploaded', (data: { pageNumber: number; imageUrl: string }) => {
+        console.log('Received photo:uploaded event:', data)
+        // Odśwież galerię po otrzymaniu nowego zdjęcia
+        fetchProgressImages(currentUploadId)
+      })
+
+      return () => {
+        channel.unbind_all()
+        channel.unsubscribe()
+        pusherRef.current?.disconnect()
+      }
+    } else {
+      // Fallback: polling co 5 sekund jeśli Pusher nie jest skonfigurowany
+      const interval = setInterval(() => {
+        fetchProgressImages(currentUploadId)
+      }, 5000)
+
+      return () => clearInterval(interval)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUploadId])
 

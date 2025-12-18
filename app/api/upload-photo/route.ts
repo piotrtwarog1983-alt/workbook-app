@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { triggerPusherEvent } from '@/lib/pusher'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,6 +63,13 @@ export async function POST(request: NextRequest) {
     // Upload do Vercel Blob Storage
     const blob = await put(blobPath, file, {
       access: 'public', // Plik będzie publicznie dostępny
+    })
+
+    // Wyślij event przez Pusher - real-time update dla desktop view
+    await triggerPusherEvent(`progress-${uploadId}`, 'photo:uploaded', {
+      pageNumber: parseInt(pageNumber),
+      imageUrl: blob.url,
+      timestamp: timestamp
     })
 
     return NextResponse.json({
