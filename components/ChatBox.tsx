@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Pusher from 'pusher-js'
 
 interface Message {
   id: string
@@ -17,14 +18,52 @@ export function ChatBox() {
   const [sending, setSending] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const pusherRef = useRef<Pusher | null>(null)
 
   useEffect(() => {
     initializeConversation()
+    
+    return () => {
+      // Cleanup Pusher on unmount
+      pusherRef.current?.disconnect()
+    }
   }, [])
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Pusher subscription for real-time messages
+  useEffect(() => {
+    if (!conversationId) return
+
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+
+    if (!pusherKey || !pusherCluster) return
+
+    pusherRef.current = new Pusher(pusherKey, {
+      cluster: pusherCluster,
+    })
+
+    const channel = pusherRef.current.subscribe(`chat-${conversationId}`)
+    
+    channel.bind('message:new', (message: Message) => {
+      // Tylko dodaj wiadomości od admina (własne wiadomości dodajemy optymistycznie)
+      if (message.sender === 'admin') {
+        setMessages(prev => {
+          // Sprawdź czy wiadomość już istnieje
+          if (prev.some(m => m.id === message.id)) return prev
+          return [...prev, message]
+        })
+      }
+    })
+
+    return () => {
+      channel.unbind_all()
+      channel.unsubscribe()
+    }
+  }, [conversationId])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

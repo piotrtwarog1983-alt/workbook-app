@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Pusher from 'pusher-js'
 
 interface User {
   id: string
@@ -35,10 +36,69 @@ export default function AdminInboxPage() {
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const pusherRef = useRef<Pusher | null>(null)
+  const chatChannelRef = useRef<ReturnType<Pusher['subscribe']> | null>(null)
 
   useEffect(() => {
     fetchConversations()
+    setupAdminInboxPusher()
+    
+    return () => {
+      pusherRef.current?.disconnect()
+    }
   }, [])
+
+  // Setup Pusher for admin-inbox channel (new conversations/updates)
+  const setupAdminInboxPusher = () => {
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+
+    if (!pusherKey || !pusherCluster) return
+
+    pusherRef.current = new Pusher(pusherKey, {
+      cluster: pusherCluster,
+    })
+
+    const channel = pusherRef.current.subscribe('admin-inbox')
+    
+    channel.bind('conversation:updated', (data: { conversationId: string; lastMessage: string; unreadByAdmin: boolean }) => {
+      setConversations(prev => 
+        prev.map(c => 
+          c.id === data.conversationId 
+            ? { ...c, lastMessage: data.lastMessage, unreadByAdmin: data.unreadByAdmin, lastMessageAt: new Date().toISOString() }
+            : c
+        )
+      )
+    })
+  }
+
+  // Subscribe to specific chat channel when conversation is selected
+  useEffect(() => {
+    if (!selectedConversation || !pusherRef.current) return
+
+    // Unsubscribe from previous channel
+    if (chatChannelRef.current) {
+      chatChannelRef.current.unbind_all()
+      chatChannelRef.current.unsubscribe()
+    }
+
+    chatChannelRef.current = pusherRef.current.subscribe(`chat-${selectedConversation.id}`)
+    
+    chatChannelRef.current.bind('message:new', (message: Message) => {
+      // Tylko dodaj wiadomości od użytkownika (własne dodajemy optymistycznie)
+      if (message.sender === 'user') {
+        setMessages(prev => {
+          if (prev.some(m => m.id === message.id)) return prev
+          return [...prev, message]
+        })
+      }
+    })
+
+    return () => {
+      chatChannelRef.current?.unbind_all()
+      chatChannelRef.current?.unsubscribe()
+    }
+  }, [selectedConversation])
 
   useEffect(() => {
     scrollToBottom()
