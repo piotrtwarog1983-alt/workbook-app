@@ -61,7 +61,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const value: LanguageContextType = {
     language,
     setLanguage,
-    t: translations[language],
+    t: translations[language] as TranslationKeys,
   }
 
   // Pokaż dzieci dopiero po inicjalizacji, aby uniknąć mismatch SSR
