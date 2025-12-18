@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Pusher from 'pusher-js'
 
@@ -27,7 +28,10 @@ interface Message {
   createdAt: string
 }
 
+const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
+
 export default function AdminInboxPage() {
+  const router = useRouter()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -35,18 +39,46 @@ export default function AdminInboxPage() {
   const [loading, setLoading] = useState(true)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pusherRef = useRef<Pusher | null>(null)
   const chatChannelRef = useRef<ReturnType<Pusher['subscribe']> | null>(null)
 
+  // Sprawdź autoryzację admina
   useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
+    fetch('/api/auth/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error || data.email !== ADMIN_EMAIL) {
+          router.push('/course')
+          return
+        }
+        setIsAuthorized(true)
+      })
+      .catch(() => {
+        router.push('/login')
+      })
+  }, [router])
+
+  useEffect(() => {
+    if (!isAuthorized) return
     fetchConversations()
     setupAdminInboxPusher()
-    
+
     return () => {
       pusherRef.current?.disconnect()
     }
-  }, [])
+  }, [isAuthorized])
 
   // Setup Pusher for admin-inbox channel (new conversations/updates)
   const setupAdminInboxPusher = () => {
@@ -228,7 +260,7 @@ export default function AdminInboxPage() {
     }
   }
 
-  if (loading) {
+  if (!isAuthorized || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#1a1d24' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>

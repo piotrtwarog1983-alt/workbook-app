@@ -50,8 +50,25 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   // Mapowanie języka z kontekstu na format folderów (PL, DE)
   const currentLang = language
 
-  // Funkcja wylogowania
+  // Sprawdź czy użytkownik jest zalogowany
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.replace('/login')
+    }
+  }, [router])
+
+  // Zapisz aktualną stronę do localStorage przy każdej zmianie
+  useEffect(() => {
+    if (course && currentPageIndex >= 0) {
+      localStorage.setItem('lastCoursePage', currentPageIndex.toString())
+    }
+  }, [currentPageIndex, course])
+
+  // Funkcja wylogowania - zapisz ostatnią stronę przed wylogowaniem
   const handleLogout = () => {
+    // Zapisz ostatnią stronę przed wylogowaniem
+    localStorage.setItem('lastCoursePage', currentPageIndex.toString())
     localStorage.removeItem('token')
     router.replace('/login')
   }
@@ -73,6 +90,16 @@ useEffect(() => {
       }
 
       setCourse(data)
+      
+      // Przywróć ostatnią stronę z localStorage
+      const savedPage = localStorage.getItem('lastCoursePage')
+      if (savedPage) {
+        const pageIndex = parseInt(savedPage, 10)
+        if (!isNaN(pageIndex) && pageIndex >= 0 && pageIndex < (data.pages?.length || 51)) {
+          setCurrentPageIndex(pageIndex)
+        }
+      }
+      
       setLoading(false)
     } catch (err) {
       console.error('Course fetch error:', err)
