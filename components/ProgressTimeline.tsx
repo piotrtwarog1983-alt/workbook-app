@@ -7,22 +7,22 @@ interface ProgressTimelineProps {
 
 // Etapy kursu z przypisanymi stronami
 const STAGES = [
-  { id: 1, label: 'światło', targetPage: 11 },
-  { id: 2, label: 'kompozycja', targetPage: 22 },
-  { id: 3, label: 'perspektywa', targetPage: 31 },
-  { id: 4, label: 'stylizacja', targetPage: 37 },
-  { id: 5, label: 'edycja', targetPage: 44 },
-  { id: 6, label: 'finał', targetPage: 51 },
+  { id: 1, label: 'światło', targetPage: 7 },
+  { id: 2, label: 'horyzont', targetPage: 15 },
+  { id: 3, label: 'kompozycja', targetPage: 20 },
+  { id: 4, label: 'perspektywa', targetPage: 29 },
+  { id: 5, label: 'proporcje', targetPage: 35 },
+  { id: 6, label: 'finał', targetPage: 49 },
 ]
 
 // Strony z uploadem zdjęć przypisane do etapów
 const PROGRESS_PAGE_TO_STAGE: { [key: number]: number } = {
   7: 1,   // światło
-  15: 2,  // kompozycja
-  20: 2,  // kompozycja
-  29: 3,  // perspektywa
-  35: 4,  // stylizacja
-  40: 5,  // edycja
+  15: 2,  // horyzont
+  20: 3,  // kompozycja
+  29: 4,  // perspektywa
+  35: 5,  // proporcje
+  40: 5,  // proporcje (dodatkowe)
   49: 6,  // finał
 }
 
@@ -37,36 +37,45 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
   })
 
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex items-center justify-center w-full px-4">
       {STAGES.map((stage, index) => {
         const isCompleted = completedStages.has(stage.id)
         const isLast = index === STAGES.length - 1
 
         return (
-          <div key={stage.id} className="flex items-center flex-1">
+          <div key={stage.id} className="flex items-center">
             {/* Dot z etykietą */}
             <button
               onClick={() => onNavigate(stage.targetPage)}
-              className="flex flex-col items-center group relative"
+              className="flex flex-col items-center group"
               title={`Przejdź do: ${stage.label}`}
             >
               <div
-                className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                   isCompleted
-                    ? 'timeline-dot-completed'
-                    : 'bg-gray-600 border border-gray-500'
-                } group-hover:scale-125`}
-              />
-              <span className="text-[10px] text-gray-400 mt-1 whitespace-nowrap group-hover:text-white transition-colors">
+                    ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)]'
+                    : 'bg-gray-700 border-2 border-gray-500'
+                } group-hover:scale-110`}
+              >
+                {isCompleted && (
+                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span className={`text-[10px] mt-1.5 whitespace-nowrap transition-colors ${
+                isCompleted ? 'text-green-400' : 'text-gray-400 group-hover:text-white'
+              }`}>
                 {stage.label}
               </span>
             </button>
 
             {/* Linia łącząca (nie dla ostatniego) */}
             {!isLast && (
-              <div className="flex-1 h-[2px] mx-1 bg-gray-700">
+              <div className="w-12 lg:w-16 h-[2px] mx-2 relative">
+                <div className="absolute inset-0 bg-gray-700" />
                 <div
-                  className={`h-full transition-all duration-500 ${
+                  className={`absolute inset-y-0 left-0 transition-all duration-500 ${
                     isCompleted ? 'bg-green-500' : 'bg-transparent'
                   }`}
                   style={{ width: isCompleted ? '100%' : '0%' }}

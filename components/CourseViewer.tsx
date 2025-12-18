@@ -41,6 +41,8 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null)
   const [animationClass, setAnimationClass] = useState<string>('')
+  const [fileTips, setFileTips] = useState<string[]>([])
+  const [currentLang] = useState('PL') // Obecny język - można rozbudować o przełącznik
 
   // Funkcja wylogowania
   const handleLogout = () => {
@@ -87,6 +89,32 @@ useEffect(() => {
     isActive = false
   }
 }, [courseSlug])
+
+  // Pobierz tipy z plików dla aktualnej strony
+  useEffect(() => {
+    if (!course) return
+    
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (!currentPage) return
+
+    const fetchTips = async () => {
+      try {
+        const response = await fetch(`/api/course-tips/${currentPage.pageNumber}/${currentLang}`)
+        const data = await response.json()
+        if (data.tips && Array.isArray(data.tips)) {
+          setFileTips(data.tips)
+        } else {
+          setFileTips([])
+        }
+      } catch (error) {
+        console.error('Error fetching tips:', error)
+        setFileTips([])
+      }
+    }
+
+    fetchTips()
+  }, [course, currentPageIndex, currentLang])
 
   // Keyboard navigation - musi być przed warunkowymi returnami (reguły hooków React)
   useEffect(() => {
@@ -253,7 +281,9 @@ useEffect(() => {
     }
   }
 
-  const tips = parseTips(currentPage?.tips)
+  // Tipy z plików mają priorytet, jeśli brak to fallback do mock-data
+  const mockTips = parseTips(currentPage?.tips)
+  const tips = fileTips.length > 0 ? fileTips : mockTips
   const content = parseContent(currentPage?.content)
 
   // Sprawdź typ layoutu

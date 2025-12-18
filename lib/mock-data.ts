@@ -95,9 +95,9 @@ export const MOCK_COURSE = {
       pageNumber: 7,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['Zrób zdjęcie potrawy na białym tle', 'Użyj naturalnego światła z okna', 'Ustaw telefon stabilnie']),
     },
     {
       id: '8',
@@ -128,7 +128,7 @@ export const MOCK_COURSE = {
         type: 'formatted-text',
         textFile: '/api/course-content/10/PL',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['Zapoznaj się dokładnie z ustawieniami swojego aparatu']),
     },
     {
       id: '11',
@@ -140,7 +140,7 @@ export const MOCK_COURSE = {
         overlayText: 'Światło',
         textPosition: 'bottom',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['Światło to podstawa dobrej fotografii kulinarnej']),
     },
     {
       id: '12',
@@ -184,9 +184,9 @@ export const MOCK_COURSE = {
       pageNumber: 15,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['Pamiętaj o linii horyzontu', 'Sprawdź czy zdjęcie jest proste']),
     },
     {
       id: '16',
@@ -235,7 +235,7 @@ export const MOCK_COURSE = {
       pageNumber: 20,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
       tips: JSON.stringify([
         'W ustawieniach aparatu możesz włączyć siatkę w której znajduje się opcja żyroskopu pokazująca przechył telefonu',
@@ -335,7 +335,7 @@ export const MOCK_COURSE = {
       pageNumber: 29,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
       tips: JSON.stringify([
         'W ustawieniach aparatu na twoim telefonie włącz siatkę trójpodziału - ułatwi to znacząco fotografowanie',
@@ -403,9 +403,9 @@ export const MOCK_COURSE = {
       pageNumber: 35,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['Skup się na stylizacji i kompozycji']),
     },
     {
       id: '36',
@@ -456,9 +456,9 @@ export const MOCK_COURSE = {
       pageNumber: 40,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['Zastosuj wiedzę o edycji zdjęć']),
     },
     {
       id: '41',
@@ -560,9 +560,9 @@ export const MOCK_COURSE = {
       pageNumber: 49,
       title: '',
       content: JSON.stringify({
-        type: 'photo-upload',
+        type: 'qr-upload',
       }),
-      tips: JSON.stringify([]),
+      tips: JSON.stringify(['To Twoje finałowe zdjęcie - pokaż wszystko czego się nauczyłeś!']),
     },
     {
       id: '50',
