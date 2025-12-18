@@ -1,144 +1,81 @@
 'use client'
 
-import { PROGRESS_PAGES } from '@/lib/progress-pages'
-
 interface ProgressTimelineProps {
   completedPages: number[]
-  onNavigate?: (pageNumber: number) => void
+  onNavigate: (pageNumber: number) => void
 }
 
-// Mapowanie stron do etapów
-const STAGE_MAPPING: Record<number, string> = {
-  7: 'światło',
-  15: 'horyzont',
-  20: 'kompozycja',
-  29: 'perspektywa',
-  35: 'proporcje',
-  40: 'retusz',
-  49: 'retusz', // Druga część retuszu
-}
-
-// Mapowanie etapów na strony docelowe (do nawigacji)
-const STAGE_TARGET_PAGES: Record<number, number> = {
-  7: 11,   // światło → strona 11
-  15: 17,  // horyzont → strona 17
-  20: 22,  // kompozycja → strona 22
-  29: 31,  // perspektywa → strona 31
-  35: 37,  // proporcje → strona 37
-  40: 42,  // retusz → strona 42
-}
-
+// Etapy kursu z przypisanymi stronami
 const STAGES = [
-  { page: 7, name: 'światło' },
-  { page: 15, name: 'horyzont' },
-  { page: 20, name: 'kompozycja' },
-  { page: 29, name: 'perspektywa' },
-  { page: 35, name: 'proporcje' },
-  { page: 40, name: 'retusz' },
-] as const
+  { id: 1, label: 'światło', targetPage: 11 },
+  { id: 2, label: 'kompozycja', targetPage: 22 },
+  { id: 3, label: 'perspektywa', targetPage: 31 },
+  { id: 4, label: 'stylizacja', targetPage: 37 },
+  { id: 5, label: 'edycja', targetPage: 44 },
+  { id: 6, label: 'finał', targetPage: 51 },
+]
+
+// Strony z uploadem zdjęć przypisane do etapów
+const PROGRESS_PAGE_TO_STAGE: { [key: number]: number } = {
+  7: 1,   // światło
+  15: 2,  // kompozycja
+  20: 2,  // kompozycja
+  29: 3,  // perspektywa
+  35: 4,  // stylizacja
+  40: 5,  // edycja
+  49: 6,  // finał
+}
 
 export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelineProps) {
-  const completedPagesSet = new Set(completedPages)
-  
-  // Sprawdź, które etapy są ukończone
-  const isStageCompleted = (stagePage: number) => {
-    if (stagePage === 40) {
-      // Etap retuszu jest ukończony, jeśli przesłano zdjęcie na stronie 40 lub 49
-      return completedPagesSet.has(40) || completedPagesSet.has(49)
+  // Sprawdź które etapy są ukończone (mają przynajmniej jedno zdjęcie)
+  const completedStages = new Set<number>()
+  completedPages.forEach(page => {
+    const stage = PROGRESS_PAGE_TO_STAGE[page]
+    if (stage) {
+      completedStages.add(stage)
     }
-    return completedPagesSet.has(stagePage)
-  }
-  
-  // Znajdź pierwszy nieukończony etap
-  const firstIncompleteIndex = STAGES.findIndex(stage => !isStageCompleted(stage.page))
-  const completedStagesCount = firstIncompleteIndex === -1 ? STAGES.length : firstIncompleteIndex
+  })
 
   return (
-    <div className="w-full mb-4">
-      <div className="relative">
-        {/* Linia osi */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-white/20 rounded-full">
-          {/* Wypełniona część */}
-          <div
-            className="absolute top-0 left-0 h-full bg-primary-500 transition-all duration-500 rounded-full"
-            style={{
-              width: `${(completedStagesCount / STAGES.length) * 100}%`,
-            }}
-          />
-        </div>
+    <div className="flex items-center justify-between w-full">
+      {STAGES.map((stage, index) => {
+        const isCompleted = completedStages.has(stage.id)
+        const isLast = index === STAGES.length - 1
 
-        {/* Punkty etapów */}
-        <div className="relative flex justify-between">
-          {STAGES.map((stage, index) => {
-            const isCompleted = isStageCompleted(stage.page)
-            const isNext = index === completedStagesCount && !isCompleted
+        return (
+          <div key={stage.id} className="flex items-center flex-1">
+            {/* Dot z etykietą */}
+            <button
+              onClick={() => onNavigate(stage.targetPage)}
+              className="flex flex-col items-center group relative"
+              title={`Przejdź do: ${stage.label}`}
+            >
+              <div
+                className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                  isCompleted
+                    ? 'timeline-dot-completed'
+                    : 'bg-gray-600 border border-gray-500'
+                } group-hover:scale-125`}
+              />
+              <span className="text-[10px] text-gray-400 mt-1 whitespace-nowrap group-hover:text-white transition-colors">
+                {stage.label}
+              </span>
+            </button>
 
-            const targetPage = STAGE_TARGET_PAGES[stage.page]
-            
-            const handleClick = () => {
-              if (onNavigate && targetPage) {
-                onNavigate(targetPage)
-              }
-            }
-
-            return (
-              <button
-                key={stage.page}
-                onClick={handleClick}
-                className="flex flex-col items-center relative group cursor-pointer"
-                title={`Przejdź do strony ${targetPage}`}
-              >
-                {/* Punkt */}
+            {/* Linia łącząca (nie dla ostatniego) */}
+            {!isLast && (
+              <div className="flex-1 h-[2px] mx-1 bg-gray-700">
                 <div
-                  className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
-                    isCompleted
-                      ? 'bg-primary-500 border-primary-500 group-hover:bg-primary-400'
-                      : isNext
-                      ? 'bg-primary-500/20 border-primary-500 group-hover:bg-primary-500/30'
-                      : 'bg-white/10 border-white/20 group-hover:bg-white/20 group-hover:border-white/30'
+                  className={`h-full transition-all duration-500 ${
+                    isCompleted ? 'bg-green-500' : 'bg-transparent'
                   }`}
-                >
-                  {isCompleted ? (
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : (
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        isNext ? 'bg-primary-500' : 'bg-white/30'
-                      }`}
-                    />
-                  )}
-                </div>
-
-                {/* Etykieta */}
-                <div className="mt-2 text-center">
-                  <div
-                    className={`text-xs font-medium transition-colors duration-200 ${
-                      isCompleted ? 'text-primary-400 group-hover:text-primary-300' : isNext ? 'text-primary-400 group-hover:text-primary-300' : 'text-gray-500 group-hover:text-gray-400'
-                    }`}
-                  >
-                    {stage.name}
-                  </div>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+                  style={{ width: isCompleted ? '100%' : '0%' }}
+                />
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
-
-
-

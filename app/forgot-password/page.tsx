@@ -17,23 +17,19 @@ export default function ForgotPasswordPage() {
     try {
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
+      if (response.ok) {
+        setSuccess(true)
+      } else {
         setError(data.error || 'Wystąpił błąd')
-        setLoading(false)
-        return
       }
-
-      setSuccess(true)
-    } catch (err) {
-      setError('Wystąpił błąd. Spróbuj ponownie.')
+    } catch {
+      setError('Błąd połączenia z serwerem')
     } finally {
       setLoading(false)
     }
@@ -42,25 +38,24 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-4">Sprawdź swoją skrzynkę</h1>
+            <p className="text-gray-400 mb-6">
+              Jeśli podany adres email jest zarejestrowany, wysłaliśmy link do resetowania hasła.
+            </p>
+            <Link
+              href="/login"
+              className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
+            >
+              Wróć do logowania
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold mb-4 text-white">Sprawdź email</h1>
-          <p className="text-gray-400 mb-6">
-            Jeśli podany adres email istnieje w naszej bazie, otrzymasz wiadomość z linkiem do resetowania hasła.
-          </p>
-          <p className="text-gray-500 text-sm mb-6">
-            Link będzie ważny przez 1 godzinę.
-          </p>
-          <Link
-            href="/login"
-            className="text-primary-400 hover:text-primary-300 transition-colors"
-          >
-            Wróć do logowania
-          </Link>
         </div>
       </div>
     )
@@ -68,10 +63,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-      <div className="max-w-md w-full panel-elegant panel-glow p-8">
+      <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
         <h1 className="text-2xl font-bold mb-2 text-center text-white">Zapomniałeś hasła?</h1>
         <p className="text-gray-400 text-center mb-8">
-          Podaj swój email, a wyślemy Ci link do zresetowania hasła.
+          Podaj swój adres email, a wyślemy Ci link do resetowania hasła.
         </p>
 
         {error && (
@@ -80,10 +75,10 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-              Adres email
+              Email
             </label>
             <input
               type="email"
@@ -99,20 +94,18 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary-elegant py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
+            {loading ? 'Wysyłanie...' : 'Wyślij link resetujący'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <Link href="/login" className="text-gray-400 hover:text-gray-300 transition-colors text-sm">
-            Wróć do logowania
+            ← Wróć do logowania
           </Link>
         </div>
       </div>
     </div>
   )
 }
-
-

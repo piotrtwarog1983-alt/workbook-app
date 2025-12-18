@@ -65,14 +65,14 @@ export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
   }
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center p-8 bg-white">
+    <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900">
       <div className="w-full max-w-md text-center space-y-6">
-        <h2 className="text-2xl md:text-3xl font-serif text-gray-900">
+        <h2 className="text-2xl md:text-3xl font-serif text-white">
           Prześlij zdjęcie z postępami
         </h2>
         
         {loading ? (
-          <div className="text-gray-500">Ładowanie...</div>
+          <div className="text-gray-400">Ładowanie...</div>
         ) : qrCodeUrl ? (
           <div className="space-y-4">
             <div className="flex justify-center">
@@ -80,7 +80,7 @@ export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
                 href={uploadUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-colors inline-block"
+                className="p-4 bg-gray-800 rounded-lg border-2 border-gray-700 hover:border-primary-400 transition-colors inline-block"
               >
                 <Image
                   src={qrCodeUrl}
@@ -91,12 +91,12 @@ export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
                 />
               </a>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Zeskanuj kod QR telefonem, aby przesłać zdjęcie z postępami
             </p>
           </div>
         ) : (
-          <div className="text-red-600 text-sm">
+          <div className="text-red-400 text-sm">
             Nie udało się wygenerować kodu QR. Odśwież stronę.
           </div>
         )}

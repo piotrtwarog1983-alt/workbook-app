@@ -19,6 +19,7 @@ function SignupContent() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -29,6 +30,11 @@ function SignupContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!acceptedTerms) {
+      setError('Musisz zaakceptować regulamin i politykę prywatności')
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Hasła nie są identyczne')
@@ -53,6 +59,11 @@ function SignupContent() {
           email: formData.email,
           password: formData.password,
           name: formData.name,
+          consents: {
+            terms: true,
+            privacy: true,
+            termsVersion: new Date().toISOString().split('T')[0]
+          }
         }),
       })
 
@@ -88,7 +99,7 @@ function SignupContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-      <div className="max-w-md w-full panel-elegant panel-glow p-8">
+      <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
         <h1 className="text-2xl font-bold mb-8 text-center text-white">Załóż konto</h1>
 
         {error && (
@@ -178,10 +189,41 @@ function SignupContent() {
             </div>
           </div>
 
+          {/* Checkbox zgód */}
+          <div className="flex items-start gap-3 pt-2">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 accent-primary-500 bg-white/5 border-white/20 rounded"
+            />
+            <label htmlFor="terms" className="text-sm text-gray-400 leading-relaxed">
+              Akceptuję{' '}
+              <a 
+                href="https://eulaliafotografia.com/regulamin" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary-400 hover:text-primary-300 underline"
+              >
+                Regulamin platformy
+              </a>
+              {' '}oraz{' '}
+              <a 
+                href="https://eulaliafotografia.com/polityka-prywatnosci" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary-400 hover:text-primary-300 underline"
+              >
+                Politykę Prywatności
+              </a>
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={loading || !token}
-            className="w-full btn-primary-elegant py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !token || !acceptedTerms}
+            className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Tworzenie konta...' : 'Załóż konto'}
           </button>
@@ -200,7 +242,7 @@ function SignupContent() {
 function LoadingFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-      <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
+      <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center rounded-2xl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
         <p className="text-gray-400">Ładowanie...</p>
       </div>

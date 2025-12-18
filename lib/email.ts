@@ -1,8 +1,3 @@
-/**
- * Email service for WorkBook platform
- * Uses Resend for sending emails (configure RESEND_API_KEY in environment)
- */
-
 interface EmailOptions {
   to: string
   subject: string
@@ -12,14 +7,14 @@ interface EmailOptions {
 async function sendEmail(options: EmailOptions): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY
   const emailFrom = process.env.EMAIL_FROM || 'WorkBook <onboarding@resend.dev>'
-  
+
   if (!apiKey) {
     console.log('⚠️ RESEND_API_KEY not set, logging email instead:')
     console.log('To:', options.to)
     console.log('Subject:', options.subject)
     console.log('From:', emailFrom)
     console.log('Body (first 200 chars):', options.html.substring(0, 200))
-    return true // W trybie deweloperskim zwracamy sukces
+    return true // In development mode, return success
   }
 
   console.log('📧 Sending email via Resend...')
@@ -73,17 +68,18 @@ export async function sendRegistrationEmail(
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .button { display: inline-block; background: #4f46e5; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 24px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }
         .footer { margin-top: 30px; font-size: 12px; color: #666; }
       </style>
     </head>
     <body>
       <div class="container">
         <h1>Witaj!</h1>
-        <p>Dziękujemy za zakup kursu WorkBook. Aby uzyskać dostęp do platformy, załóż konto używając poniższego linku:</p>
+        <p>Dziękujemy za zakup kursu <strong>WorkBook</strong>.</p>
+        <p>Aby uzyskać dostęp do platformy, załóż konto klikając poniższy przycisk:</p>
         <a href="${registrationUrl}" class="button">Załóż konto</a>
         <p>Lub skopiuj ten link do przeglądarki:</p>
-        <p><small>${registrationUrl}</small></p>
+        <p style="word-break: break-all; font-size: 14px;">${registrationUrl}</p>
         <p><strong>Link jest ważny przez 7 dni.</strong></p>
         <div class="footer">
           <p>Pozdrawiamy,<br>Zespół WorkBook</p>
@@ -97,7 +93,7 @@ export async function sendRegistrationEmail(
 }
 
 /**
- * Send password reset email
+ * Send password reset email with token link
  */
 export async function sendPasswordResetEmail(
   email: string,
@@ -112,23 +108,22 @@ export async function sendPasswordResetEmail(
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .button { display: inline-block; background: #4f46e5; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
-        .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 24px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }
         .footer { margin-top: 30px; font-size: 12px; color: #666; }
+        .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin: 20px 0; }
       </style>
     </head>
     <body>
       <div class="container">
         <h1>Resetowanie hasła</h1>
-        <p>Otrzymaliśmy prośbę o resetowanie hasła do Twojego konta w WorkBook.</p>
+        <p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta w <strong>WorkBook</strong>.</p>
         <p>Kliknij poniższy przycisk, aby ustawić nowe hasło:</p>
-        <a href="${resetUrl}" class="button">Ustaw nowe hasło</a>
+        <a href="${resetUrl}" class="button">Zresetuj hasło</a>
         <p>Lub skopiuj ten link do przeglądarki:</p>
-        <p><small>${resetUrl}</small></p>
+        <p style="word-break: break-all; font-size: 14px;">${resetUrl}</p>
         <div class="warning">
-          <strong>⏰ Link wygasa za 1 godzinę.</strong>
+          <strong>⚠️ Ważne:</strong> Ten link wygasa za 1 godzinę. Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.
         </div>
-        <p>Jeśli nie prosiłeś o resetowanie hasła, zignoruj tę wiadomość. Twoje hasło pozostanie niezmienione.</p>
         <div class="footer">
           <p>Pozdrawiamy,<br>Zespół WorkBook</p>
         </div>

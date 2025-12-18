@@ -2,64 +2,65 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
 
-const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
-
-// GET - lista wszystkich konwersacji (tylko dla admina)
+// GET - Pobierz wszystkie konwersacje (dla admina)
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Brak autoryzacji' }, { status: 401 })
     }
 
     const token = authHeader.split(' ')[1]
-    const payload = verifyToken(token)
-    if (!payload) {
+    const decoded = verifyToken(token)
+    if (!decoded) {
       return NextResponse.json({ error: 'Nieprawidłowy token' }, { status: 401 })
     }
 
-    // Sprawdź czy to admin
+    // Sprawdź czy użytkownik jest adminem (email kończy się na odpowiedniej domenie)
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
+      where: { id: decoded.userId }
     })
 
-    if (!user || user.email !== ADMIN_EMAIL) {
+    if (!user || !user.email.includes('eulalia')) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
     // Pobierz wszystkie konwersacje z ostatnią wiadomością
-    const conversations = await prisma.conversation.findMany({
-      orderBy: { lastMessageAt: 'desc' },
+    const conversations = await (prisma as any).conversation.findMany({
       include: {
         user: {
-          select: { id: true, email: true, name: true },
+          select: {
+            id: true,
+            email: true,
+            name: true
+          }
         },
         messages: {
           orderBy: { createdAt: 'desc' },
-          take: 1, // Tylko ostatnia wiadomość
-        },
+          take: 1
+        }
       },
+      orderBy: { lastMessageAt: 'desc' }
     })
 
-    // Formatuj dane
+    // Formatuj odpowiedź
     const formattedConversations = conversations.map((conv: any) => ({
       id: conv.id,
       userId: conv.userId,
-      userEmail: conv.user.email,
-      userName: conv.user.name,
+      user: conv.user,
       subject: conv.subject,
       lastMessage: conv.messages[0]?.text || '',
       lastMessageAt: conv.lastMessageAt,
-      lastMessageSender: conv.messages[0]?.sender || null,
       unreadByAdmin: conv.unreadByAdmin,
-      createdAt: conv.createdAt,
+      createdAt: conv.createdAt
     }))
 
-    return NextResponse.json({ conversations: formattedConversations })
+    return NextResponse.json(formattedConversations)
   } catch (error) {
-    console.error('Error fetching conversations:', error)
-    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 })
+    console.error('Get admin conversations error:', error)
+    return NextResponse.json(
+      { error: 'Błąd serwera' },
+      { status: 500 }
+    )
   }
 }
-
-

@@ -11,39 +11,36 @@ function ResetPasswordContent() {
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [verifying, setVerifying] = useState(true)
   const [tokenValid, setTokenValid] = useState(false)
-  const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
-    const verifyToken = async () => {
-      if (!token) {
-        setError('Brak tokenu resetowania hasła')
-        setVerifying(false)
-        return
-      }
-
-      try {
-        const response = await fetch(`/api/auth/reset-password?token=${token}`)
-        const data = await response.json()
-
-        if (data.valid) {
-          setTokenValid(true)
-        } else {
-          setError(data.error || 'Nieprawidłowy link')
-        }
-      } catch (err) {
-        setError('Błąd weryfikacji linku')
-      } finally {
-        setVerifying(false)
-      }
+    if (!token) {
+      setVerifying(false)
+      setError('Brak tokenu resetowania hasła')
+      return
     }
 
-    verifyToken()
+    // Weryfikuj token
+    fetch(`/api/auth/reset-password?token=${token}`)
+      .then(res => res.json())
+      .then(data => {
+        setTokenValid(data.valid)
+        if (!data.valid) {
+          setError(data.error || 'Nieprawidłowy lub wygasły link')
+        }
+      })
+      .catch(() => {
+        setError('Błąd weryfikacji tokenu')
+      })
+      .finally(() => {
+        setVerifying(false)
+      })
   }, [token])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,26 +62,20 @@ function ResetPasswordContent() {
     try {
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token, password }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password })
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
+      if (response.ok) {
+        setSuccess(true)
+        setTimeout(() => router.push('/login'), 3000)
+      } else {
         setError(data.error || 'Wystąpił błąd')
-        setLoading(false)
-        return
       }
-
-      setSuccess(true)
-      setTimeout(() => {
-        router.push('/login')
-      }, 3000)
-    } catch (err) {
-      setError('Wystąpił błąd. Spróbuj ponownie.')
+    } catch {
+      setError('Błąd połączenia z serwerem')
     } finally {
       setLoading(false)
     }
@@ -106,31 +97,33 @@ function ResetPasswordContent() {
   if (verifying) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Weryfikacja linku...</p>
+          <p className="text-gray-400">Weryfikowanie linku...</p>
         </div>
       </div>
     )
   }
 
-  if (!tokenValid) {
+  if (!tokenValid && !success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-4">Link nieprawidłowy</h1>
+            <p className="text-gray-400 mb-6">{error}</p>
+            <Link
+              href="/forgot-password"
+              className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
+            >
+              Poproś o nowy link
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold mb-4 text-white">Link nieprawidłowy</h1>
-          <p className="text-gray-400 mb-6">{error}</p>
-          <Link
-            href="/forgot-password"
-            className="btn-primary-elegant px-6 py-3 inline-block font-semibold"
-          >
-            Poproś o nowy link
-          </Link>
         </div>
       </div>
     )
@@ -139,22 +132,24 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-        <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-4">Hasło zmienione!</h1>
+            <p className="text-gray-400 mb-6">
+              Twoje hasło zostało pomyślnie zmienione. Za chwilę zostaniesz przekierowany do logowania.
+            </p>
+            <Link
+              href="/login"
+              className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
+            >
+              Zaloguj się teraz
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold mb-4 text-white">Hasło zmienione!</h1>
-          <p className="text-gray-400 mb-6">
-            Twoje hasło zostało pomyślnie zmienione. Za chwilę zostaniesz przekierowany do strony logowania.
-          </p>
-          <Link
-            href="/login"
-            className="text-primary-400 hover:text-primary-300 transition-colors"
-          >
-            Przejdź do logowania
-          </Link>
         </div>
       </div>
     )
@@ -162,10 +157,10 @@ function ResetPasswordContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-      <div className="max-w-md w-full panel-elegant panel-glow p-8">
+      <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
         <h1 className="text-2xl font-bold mb-2 text-center text-white">Ustaw nowe hasło</h1>
         <p className="text-gray-400 text-center mb-8">
-          Wprowadź nowe hasło do swojego konta.
+          Wprowadź nowe hasło dla swojego konta.
         </p>
 
         {error && (
@@ -174,7 +169,7 @@ function ResetPasswordContent() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
               Nowe hasło
@@ -227,9 +222,9 @@ function ResetPasswordContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary-elegant py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full btn-primary-elegant py-3 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Zapisywanie...' : 'Ustaw nowe hasło'}
+            {loading ? 'Zapisywanie...' : 'Zmień hasło'}
           </button>
         </form>
       </div>
@@ -240,7 +235,7 @@ function ResetPasswordContent() {
 function LoadingFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
-      <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center">
+      <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center rounded-2xl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
         <p className="text-gray-400">Ładowanie...</p>
       </div>
@@ -255,5 +250,3 @@ export default function ResetPasswordPage() {
     </Suspense>
   )
 }
-
-

@@ -190,23 +190,23 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
 
   if (loading) {
     return (
-      <div className="relative w-full h-full flex items-center justify-center p-8 bg-white">
-        <div className="text-gray-500">Ładowanie...</div>
+      <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900">
+        <div className="text-gray-400">Ładowanie...</div>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
+    <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900 overflow-y-auto">
       <div className="w-full max-w-3xl space-y-8">
-        <h2 className="text-2xl md:text-3xl font-serif text-gray-900 text-center">
+        <h2 className="text-2xl md:text-3xl font-serif text-white text-center">
           Czy widzisz postęp w odniesieniu do Twojego poprzedniego zdjęcia?
         </h2>
 
         {/* Skala z suwakiem */}
         <div className="space-y-6">
           {/* Etykiety */}
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <div className="flex justify-between text-sm text-gray-400 mb-2">
             <span>Jest gorzej</span>
             <span>Tak samo</span>
             <span>Jest lepiej</span>
@@ -215,7 +215,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
           {/* Kontener skali */}
           <div className="relative">
             {/* Linia skali */}
-            <div className="h-2 bg-gray-200 rounded-full relative">
+            <div className="h-2 bg-gray-700 rounded-full relative">
               {/* Segmenty skali (13 pozycji: -6 do +6) */}
               {Array.from({ length: 13 }, (_, i) => {
                 const position = i - 6 // -6 do +6
@@ -224,7 +224,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                   <div
                     key={i}
                     className={`absolute top-0 h-2 ${
-                      isCenter ? 'w-1 bg-gray-900' : 'w-0.5 bg-gray-400'
+                      isCenter ? 'w-1 bg-white' : 'w-0.5 bg-gray-500'
                     }`}
                     style={{ left: `${(i / 12) * 100}%` }}
                   />
@@ -249,7 +249,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                 className={`px-6 py-3 rounded-lg font-semibold transition-all ${
                   value === -1
                     ? 'bg-red-500 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Jest gorzej
@@ -260,7 +260,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                 className={`px-6 py-3 rounded-lg font-semibold transition-all ${
                   value === 0
                     ? 'bg-gray-500 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Tak samo
@@ -271,7 +271,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                 className={`px-6 py-3 rounded-lg font-semibold transition-all ${
                   value === 1
                     ? 'bg-green-500 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Jest lepiej
@@ -280,18 +280,18 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
 
             {/* Status zapisu */}
             {saving && (
-              <div className="text-center mt-4 text-sm text-gray-500">
+              <div className="text-center mt-4 text-sm text-gray-400">
                 Zapisuję...
               </div>
             )}
             {saved && !saving && (
-              <div className="text-center mt-4 text-sm text-green-600">
+              <div className="text-center mt-4 text-sm text-green-400">
                 ✓ Zapisano
               </div>
             )}
 
             {/* Informacja o aktualnej pozycji */}
-            <div className="text-center mt-6 text-sm text-gray-600">
+            <div className="text-center mt-6 text-sm text-gray-400">
               Aktualna pozycja na skali: {sliderPosition > 0 ? '+' : ''}{sliderPosition}
               {sliderPosition === 0 && ' (punkt odniesienia)'}
             </div>

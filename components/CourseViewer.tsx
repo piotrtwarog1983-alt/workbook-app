@@ -210,7 +210,6 @@ useEffect(() => {
     }
   }
 
-
   // Nawigacja do konkretnej strony po numerze strony
   const goToPage = (pageNumber: number) => {
     if (isTransitioning) return
@@ -327,7 +326,7 @@ useEffect(() => {
                         ) : panel.type === 'text' ? (
                           <div className={`w-full h-full flex items-center justify-center p-6 ${
                             panel.backgroundColor === 'dark' 
-                              ? 'bg-gray-900 text-white'
+                              ? 'bg-gray-900 text-white' 
                               : 'bg-white text-gray-900'
                           }`}>
                             <div className="text-center">
@@ -437,17 +436,17 @@ useEffect(() => {
                                 const author = authorMatch[1]
                                 return (
                                   <>
-                                    <div className={`text-xl md:text-2xl lg:text-3xl font-serif font-bold leading-relaxed mb-4 ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                                    <div className="text-xl md:text-2xl lg:text-3xl font-serif font-bold text-gray-900 leading-relaxed mb-4">
                                       {quote}
                                     </div>
-                                    <div className={`text-base md:text-lg lg:text-xl font-serif text-right pr-8 md:pr-12 lg:pr-16 ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                                    <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 text-right pr-8 md:pr-12 lg:pr-16">
                                       - {author}
                                     </div>
                                   </>
                                 )
                               }
                               return (
-                                <div className={`text-xl md:text-2xl lg:text-3xl font-serif font-bold leading-relaxed ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                                <div className="text-xl md:text-2xl lg:text-3xl font-serif font-bold text-gray-900 leading-relaxed">
                                   {quoteText}
                                 </div>
                               )
@@ -457,14 +456,14 @@ useEffect(() => {
                         {/* Tekst poniżej - wyśrodkowany */}
                         {overlayText.includes('---') && (
                           <div className="w-full max-w-4xl text-center">
-                            <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                            <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
                               {overlayText.split('---')[1]?.trim()}
                             </div>
                           </div>
                         )}
                         {!overlayText.includes('---') && (
                           <div className="text-center w-full">
-                            <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                            <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
                               {overlayText}
                             </div>
                           </div>
@@ -729,7 +728,7 @@ useEffect(() => {
                             <label key={num} className="flex items-center cursor-pointer">
                               <input
                                 type="checkbox"
-                                className="w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
+                                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                               />
                               <span className="ml-2 text-gray-900">{num}</span>
                             </label>
@@ -852,10 +851,10 @@ useEffect(() => {
                     {/* Tekst nałożony na zdjęcie na górze */}
                     <div className="absolute inset-0 flex items-start justify-center pt-16 md:pt-20 lg:pt-24 px-6 md:px-8 lg:px-12">
                       {loadingText ? (
-                        <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
+                        <div className="text-white">Ładowanie...</div>
                       ) : (
                         <div className="w-full max-w-3xl">
-                          <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -884,12 +883,10 @@ useEffect(() => {
                         style={{ top: currentPage.pageNumber === 42 ? '15%' : '15%' }}
                       >
                         {loadingText ? (
-                          <div className={shouldUseBlackText ? "text-gray-900 text-center" : "text-white text-center"}>Ładowanie...</div>
+                          <div className="text-white text-center">Ładowanie...</div>
                         ) : (
                           <div
-                            className={`font-serif leading-relaxed whitespace-pre-line text-center ${
-                              shouldUseBlackText ? 'text-gray-900' : 'text-white'
-                            } ${
+                            className={`font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center ${
                               currentPage.pageNumber === 42
                                 ? 'text-4xl md:text-5xl lg:text-6xl xl:text-7xl'
                                 : currentPage.pageNumber === 45
@@ -936,10 +933,10 @@ useEffect(() => {
                           : 'px-6 md:px-8 lg:px-12'
                       }`}>
                         {loadingText ? (
-                          <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
+                          <div className="text-white">Ładowanie...</div>
                         ) : (
                           <div className={`w-full ${content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'max-w-2xl' : 'max-w-3xl'}`}>
-                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif leading-relaxed whitespace-pre-line text-center ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -954,17 +951,17 @@ useEffect(() => {
                     {currentPage.pageNumber === 45 && (
                       <div className="absolute bottom-0 left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12 pb-6 md:pb-8 lg:pb-12">
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             kontury tracą wyrazistość, a danie jest za jasne, nie widać wielu elementów
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             idealnie wyważone, talerz i jego struktura jest zachowana, a danie widoczne
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             właśnie tak najczęściej wygląda zdjęcie bez obróbki na telefonie. Wystarczy je lekko rozjaśnić, aby nabrało szlachetności
                           </p>
                         </div>
@@ -974,17 +971,17 @@ useEffect(() => {
                     {currentPage.pageNumber === 46 && (
                       <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '20%' }}>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             zbyt niebieskie
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             poprawne
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             zbyt żółte
                           </p>
                         </div>
@@ -994,17 +991,17 @@ useEffect(() => {
                     {currentPage.pageNumber === 47 && (
                       <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '15%' }}>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             zbyt zielone
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             poprawne
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className={`text-sm md:text-base lg:text-lg font-serif ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
                             zbyt fioletowe
                           </p>
                         </div>
@@ -1027,9 +1024,9 @@ useEffect(() => {
                       <div className="absolute top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-6 md:px-8 lg:px-12">
                         <div className="max-w-3xl mx-auto">
                           {loadingText ? (
-                            <div className={shouldUseBlackText ? "text-gray-900 text-center" : "text-white text-center"}>Ładowanie...</div>
+                            <div className="text-white text-center">Ładowanie...</div>
                           ) : (
-                            <div className={`text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif leading-relaxed whitespace-pre-line text-center ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                            <div className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
                               {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                                 <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                   {paragraph.trim()}
@@ -1061,10 +1058,10 @@ useEffect(() => {
                           : 'px-6 md:px-8 lg:px-12'
                       }`}>
                         {loadingText ? (
-                          <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
+                          <div className="text-white">Ładowanie...</div>
                         ) : (
                           <div className={`w-full ${content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'max-w-2xl' : 'max-w-3xl'}`}>
-                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif leading-relaxed whitespace-pre-line ${content.textPosition === 'center' || content.textPosition === 'bottom' || !content.textPosition ? 'text-center' : ''} ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-white leading-relaxed whitespace-pre-line ${content.textPosition === 'center' || content.textPosition === 'bottom' || !content.textPosition ? 'text-center' : ''}`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1081,7 +1078,7 @@ useEffect(() => {
                   <div className="relative w-full h-full bg-white flex flex-col items-center justify-start">
                     <div className="flex-none bg-white flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
                       {loadingText ? (
-                        <div className="text-gray-400">Ładowanie...</div>
+                        <div className="text-gray-600">Ładowanie...</div>
                       ) : (
                         <div className="w-full max-w-4xl">
                           <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
@@ -1107,14 +1104,14 @@ useEffect(() => {
                   </div>
                 ) : isBlackHeaderImage ? (
                   // Layout z czarnym nagłówkiem i kwadratowym zdjęciem (70% powierzchni)
-                  <div className={`relative w-full h-full flex flex-col items-center justify-start ${shouldUseBlackText ? 'bg-white' : 'bg-black'}`}>
-                    {/* Tło z tekstem na górze */}
-                    <div className={`flex-none flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12 ${shouldUseBlackText ? 'bg-white' : 'bg-black'}`}>
+                  <div className="relative w-full h-full bg-black flex flex-col items-center justify-start">
+                    {/* Czarne tło z białym tekstem na górze */}
+                    <div className="flex-none bg-black flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
                       {loadingText ? (
-                        <div className={shouldUseBlackText ? "text-gray-900" : "text-white"}>Ładowanie...</div>
+                        <div className="text-white">Ładowanie...</div>
                       ) : (
                         <div className="w-full max-w-4xl">
-                          <div className={`text-base md:text-lg lg:text-xl xl:text-2xl font-serif leading-relaxed whitespace-pre-line text-center ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                          <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1169,7 +1166,7 @@ useEffect(() => {
                                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
                                 style={{ transform: 'translate(-40%, -10%)' }}
                               >
-                                <span className="text-center text-2xl md:text-3xl lg:text-4xl font-serif text-white drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)]">
+                                <span className="text-center text-2xl md:text-3xl lg:text-4xl font-serif text-gray-900 drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)]">
                                   - flat lay
                                 </span>
                               </div>
@@ -1189,7 +1186,7 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-                ) : isTwoImagesTopText ? (
+                    ) : isTwoImagesTopText ? (
                   // Layout z białym tłem, tekstem na górze i dwoma kontenerami na zdjęcia
                   <div className="relative w-full h-full bg-white flex flex-col">
                     {/* Tekst na górze */}
@@ -1353,7 +1350,7 @@ useEffect(() => {
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-gray-900 text-center mb-8">
                           SŁOWNICZEK
                         </h2>
-                        <div className={`text-base md:text-lg lg:text-xl font-serif leading-relaxed whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                        <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
                           {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => {
                             // Sprawdź czy akapit zaczyna się od ** (pogrubiony termin)
                             const isBold = paragraph.trim().startsWith('**') && paragraph.trim().endsWith('**')
@@ -1387,7 +1384,7 @@ useEffect(() => {
                 ) : content?.text ? (
                   <div className="relative w-full h-full flex items-center justify-center p-8">
                     <div className="text-center w-full">
-                      <div className={`text-xl md:text-3xl lg:text-4xl font-serif whitespace-pre-line ${shouldUseBlackText ? 'text-gray-900' : 'text-white'}`}>
+                      <div className="text-xl md:text-3xl lg:text-4xl font-serif whitespace-pre-line text-gray-900">
                         {content.text}
                       </div>
                     </div>

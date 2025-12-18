@@ -2,25 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import Pusher from 'pusher-js'
-import { PROGRESS_PAGES, PROGRESS_PAGES_SET } from '@/lib/progress-pages'
+import { PROGRESS_PAGES } from '@/lib/progress-pages'
 
 interface ProgressGalleryProps {
   uploadId?: string
   onProgressUpdate?: (completedPages: number[]) => void
 }
 
-interface ProgressImage {
-  pageNumber: number
-  imageUrl: string
-}
-
 export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryProps) {
-  const [progressImages, setProgressImages] = useState<ProgressImage[]>([])
+  const [progressImages, setProgressImages] = useState<{url: string, page: number}[]>([])
   const [loading, setLoading] = useState(true)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
-  const [currentIndex, setCurrentIndex] = useState(-1) // -1 oznacza "jeszcze nie ustawiono"
-  const [isFirstLoad, setIsFirstLoad] = useState(true)
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   // Pobierz uploadId użytkownika, jeśli nie został przekazany
   useEffect(() => {
@@ -68,7 +61,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   const fetchProgressImages = async (uploadIdValue: string) => {
     try {
       const token = localStorage.getItem('token')
-      const images: ProgressImage[] = []
+      const images: {url: string, page: number}[] = []
+      const completedPages: number[] = []
       const previousLength = progressImages.length
 
       // Sprawdź każdą stronę z postępami
@@ -81,7 +75,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
           })
           const data = await response.json()
           if (data.uploaded && data.imageUrl) {
-            images.push({ pageNumber, imageUrl: data.imageUrl })
+            images.push({ url: data.imageUrl, page: pageNumber })
+            completedPages.push(pageNumber)
           }
         } catch (error) {
           console.error(`Error checking upload for page ${pageNumber}:`, error)
@@ -91,22 +86,14 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
       setProgressImages(images)
       setLoading(false)
       
-      // Powiadom o zaktualizowanych postępach
+      // Powiadom o ukończonych stronach
       if (onProgressUpdate) {
-        const completedPages = images.map(img => img.pageNumber)
         onProgressUpdate(completedPages)
       }
       
-      // Przy pierwszym załadowaniu lub gdy dodano nowe zdjęcie - pokaż ostatnie
-      if (images.length > 0) {
-        if (isFirstLoad) {
-          // Pierwsze załadowanie - zawsze pokaż ostatnie zdjęcie
-          setCurrentIndex(images.length - 1)
-          setIsFirstLoad(false)
-        } else if (images.length > previousLength) {
-          // Dodano nowe zdjęcie - przejdź do niego
-          setCurrentIndex(images.length - 1)
-        }
+      // Jeśli dodano nowe zdjęcie, przejdź do ostatniego
+      if (images.length > previousLength && images.length > 0) {
+        setCurrentIndex(images.length - 1)
       }
     } catch (error) {
       console.error('Error fetching progress images:', error)
@@ -114,90 +101,17 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
     }
   }
 
-  // Pusher - nasłuchuj na nowe zdjęcia z telefonu (real-time, bez pollingu)
+  // Odśwież zdjęcia co 3 sekundy
   useEffect(() => {
     if (!currentUploadId) return
 
-    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
-    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+    const interval = setInterval(() => {
+      fetchProgressImages(currentUploadId)
+    }, 3000)
 
-    // Sprawdź czy Pusher jest skonfigurowany
-    if (!pusherKey || !pusherCluster) {
-      console.warn('Pusher nie skonfigurowany - brak NEXT_PUBLIC_PUSHER_KEY lub NEXT_PUBLIC_PUSHER_CLUSTER')
-      return
-    }
-
-    console.log('ProgressGallery: Inicjalizacja Pusher...')
-    
-    // Inicjalizacja Pusher
-    const pusher = new Pusher(pusherKey, {
-      cluster: pusherCluster,
-    })
-
-    // Subskrybuj kanał dla tego uploadId
-    const channel = pusher.subscribe(`upload-${currentUploadId}`)
-    console.log('ProgressGallery: Subskrybowano kanał upload-' + currentUploadId)
-
-    // Nasłuchuj na event przesłania zdjęcia
-    channel.bind('photo-uploaded', (data: { pageNumber: number; imageUrl: string }) => {
-      console.log('ProgressGallery: Otrzymano event photo-uploaded:', data)
-      // Sprawdź czy to strona z postępami
-      if (PROGRESS_PAGES_SET.has(data.pageNumber)) {
-        setProgressImages((prev) => {
-          const existingIndex = prev.findIndex((img) => img.pageNumber === data.pageNumber)
-          let updated: ProgressImage[]
-          if (existingIndex !== -1) {
-            updated = [...prev]
-            updated[existingIndex] = { pageNumber: data.pageNumber, imageUrl: data.imageUrl }
-          } else {
-            updated = [...prev, { pageNumber: data.pageNumber, imageUrl: data.imageUrl }]
-          }
-          // Sortuj według kolejności stron postępów
-          const pageOrder = new Map<number, number>(PROGRESS_PAGES.map((p, i) => [p, i]))
-          updated.sort((a, b) => (pageOrder.get(a.pageNumber) ?? 0) - (pageOrder.get(b.pageNumber) ?? 0))
-          const newIndex = updated.findIndex((img) => img.pageNumber === data.pageNumber)
-          setCurrentIndex(newIndex >= 0 ? newIndex : updated.length - 1)
-          console.log('ProgressGallery: Zmieniono zdjęcie dla strony', data.pageNumber)
-          return updated
-        })
-      }
-    })
-
-    // Cleanup przy odmontowaniu
-    return () => {
-      console.log('ProgressGallery: Rozłączanie Pusher...')
-      channel.unbind_all()
-      channel.unsubscribe()
-      pusher.disconnect()
-    }
+    return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUploadId])
-
-  // UWAGA: Usunięto visibility API polling - używamy tylko Pusher
-  // Zdjęcia są ładowane raz przy pierwszym renderze (fetchProgressImages w pierwszym useEffect)
-
-  // Nawigacja klawiszami
-  useEffect(() => {
-    if (progressImages.length === 0) return
-
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Sprawdź, czy użytkownik nie jest w polu tekstowym
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return
-      }
-
-      if (e.key === 'ArrowLeft' && currentIndex > 0) {
-        e.preventDefault()
-        setCurrentIndex(currentIndex - 1)
-      } else if (e.key === 'ArrowRight' && currentIndex < progressImages.length - 1) {
-        e.preventDefault()
-        setCurrentIndex(currentIndex + 1)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [currentIndex, progressImages.length])
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
@@ -213,18 +127,18 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
   if (loading) {
     return (
-      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow">
+      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
         <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Twoje postępy</h3>
-        <div className="text-center py-8 text-gray-400">Ładowanie...</div>
+        <div className="text-center py-8 text-gray-500">Ładowanie...</div>
       </div>
     )
   }
 
   if (progressImages.length === 0) {
     return (
-      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow">
+      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
         <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Twoje postępy</h3>
-        <div className="text-center py-8 text-gray-400 text-sm">
+        <div className="text-center py-8 text-gray-500 text-sm">
           Brak zdjęć z postępami.<br />
           Prześlij zdjęcia używając kodów QR.
         </div>
@@ -233,30 +147,28 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   }
 
   return (
-    <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow">
+    <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl flex flex-col">
       <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Twoje postępy</h3>
       
       {/* Kontener ze zdjęciem */}
-      <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-white/10 bg-gray-800/50">
-        {currentIndex >= 0 && progressImages[currentIndex] && (
-          <Image
-            src={progressImages[currentIndex].imageUrl}
-            alt={`Zdjęcie postępu ze strony ${progressImages[currentIndex].pageNumber}`}
-            fill
-            className="object-contain"
-            sizes="(max-width: 1024px) 100vw, 256px"
-          />
-        )}
+      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-black/20 flex-shrink-0">
+        <Image
+          src={progressImages[currentIndex].url}
+          alt={`Zdjęcie postępu ${currentIndex + 1}`}
+          fill
+          className="object-contain"
+          sizes="(max-width: 1024px) 100vw, 512px"
+        />
 
         {/* Strzałka w lewo */}
-        {currentIndex > 0 && progressImages.length > 1 && (
+        {currentIndex > 0 && (
           <button
             onClick={goToPrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-10"
             aria-label="Poprzednie zdjęcie"
           >
             <svg
-              className="w-6 h-6 text-gray-700"
+              className="w-5 h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -275,11 +187,11 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
         {currentIndex < progressImages.length - 1 && (
           <button
             onClick={goToNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-10"
             aria-label="Następne zdjęcie"
           >
             <svg
-              className="w-6 h-6 text-gray-700"
+              className="w-5 h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -293,38 +205,38 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
             </svg>
           </button>
         )}
+
+        {/* Numer strony */}
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+          Strona {progressImages[currentIndex].page}
+        </div>
       </div>
 
       {/* Wskaźnik (np. 1/7) */}
-      {currentIndex >= 0 && (
-        <div className="mt-3 text-center text-sm text-gray-600">
-          {currentIndex + 1} / {progressImages.length}
-        </div>
-      )}
+      <div className="mt-3 text-center text-sm text-gray-400">
+        {currentIndex + 1} / {progressImages.length}
+      </div>
 
-      {/* Miniaturki pod zdjęciem (opcjonalnie) */}
+      {/* Miniaturki pod zdjęciem */}
       {progressImages.length > 1 && (
-        <div className="mt-3 flex gap-2 justify-center overflow-x-auto pb-2">
-          {progressImages.map((progressImage, index) => (
+        <div className="mt-3 flex gap-2 justify-center overflow-x-auto pb-2 flex-wrap">
+          {progressImages.map((img, index) => (
             <button
-              key={progressImage.pageNumber}
+              key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`relative w-12 h-12 rounded overflow-hidden border-2 flex-shrink-0 transition-all ${
+              className={`relative w-14 h-14 rounded overflow-hidden border-2 flex-shrink-0 transition-all ${
                 index === currentIndex
-                  ? 'border-primary-500 ring-2 ring-primary-200'
-                  : 'border-gray-300 opacity-60 hover:opacity-100'
+                  ? 'border-primary-500 ring-2 ring-primary-500/30'
+                  : 'border-white/20 opacity-60 hover:opacity-100'
               }`}
             >
               <Image
-                src={progressImage.imageUrl}
-                alt={`Miniatura strony ${progressImage.pageNumber}`}
+                src={img.url}
+                alt={`Miniatura ${index + 1}`}
                 fill
                 className="object-cover"
-                sizes="48px"
+                sizes="56px"
               />
-              <span className="absolute bottom-0 right-0 text-[10px] font-semibold bg-white/80 px-1 rounded-tl">
-                {progressImage.pageNumber}
-              </span>
             </button>
           ))}
         </div>

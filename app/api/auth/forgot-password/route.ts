@@ -1,56 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
 import { sendPasswordResetEmail } from '@/lib/email'
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email(),
-})
-
-export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { email } = forgotPasswordSchema.parse(body)
-    const normalizedEmail = email.toLowerCase()
+    const { email } = await request.json()
 
-    // Zawsze zwracaj sukces - nie ujawniaj czy email istnieje w bazie
-    const successResponse = NextResponse.json({
-      success: true,
-      message: 'Jeśli podany email istnieje w naszej bazie, otrzymasz wiadomość z linkiem do resetowania hasła.',
-    })
+    if (!email) {
+      return NextResponse.json({ error: 'Email jest wymagany' }, { status: 400 })
+    }
+
+    const normalizedEmail = email.toLowerCase().trim()
 
     // Sprawdź czy użytkownik istnieje
     const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+      where: { email: normalizedEmail }
     })
 
+    // Zawsze zwracamy sukces (zapobiega enumeracji emaili)
     if (!user) {
-      // Nie ujawniaj, że użytkownik nie istnieje
-      return successResponse
+      console.log('Password reset requested for non-existent email:', normalizedEmail)
+      return NextResponse.json({ 
+        success: true,
+        message: 'Jeśli konto istnieje, link do resetowania hasła został wysłany na podany adres email.'
+      })
     }
 
-    // Unieważnij poprzednie tokeny resetu dla tego emaila
-    await prisma.passwordResetToken.updateMany({
+    // Unieważnij poprzednie tokeny
+    await (prisma as any).passwordResetToken.updateMany({
       where: { 
         email: normalizedEmail,
-        used: false,
+        used: false 
       },
-      data: { used: true },
+      data: { used: true }
     })
 
     // Wygeneruj nowy token
     const token = crypto.randomBytes(32).toString('hex')
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 godzina
 
-    await prisma.passwordResetToken.create({
+    await (prisma as any).passwordResetToken.create({
       data: {
         email: normalizedEmail,
         token,
-        expiresAt,
-      },
+        expiresAt
+      }
     })
 
     // Wyślij email z linkiem
@@ -63,6 +58,7 @@ export async function POST(request: NextRequest) {
     }
     // Usuń trailing slash jeśli jest
     appUrl = appUrl.replace(/\/$/, '')
+    
     const resetUrl = `${appUrl}/reset-password?token=${token}`
 
     console.log('Sending password reset email to:', normalizedEmail)
@@ -71,20 +67,14 @@ export async function POST(request: NextRequest) {
     const emailSent = await sendPasswordResetEmail(normalizedEmail, resetUrl)
 
     if (!emailSent) {
-      console.error('Failed to send password reset email to:', normalizedEmail)
-    } else {
-      console.log('Password reset email sent successfully to:', normalizedEmail)
+      console.error('Failed to send password reset email')
     }
 
-    return successResponse
+    return NextResponse.json({ 
+      success: true,
+      message: 'Jeśli konto istnieje, link do resetowania hasła został wysłany na podany adres email.'
+    })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Nieprawidłowy adres email' },
-        { status: 400 }
-      )
-    }
-
     console.error('Forgot password error:', error)
     return NextResponse.json(
       { error: 'Błąd serwera' },
@@ -92,5 +82,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-

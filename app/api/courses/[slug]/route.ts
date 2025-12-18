@@ -10,11 +10,6 @@ type Params =
       slug: string
     }>
 
-// Mapa tipów z MOCK_COURSE (zawsze aktualna)
-const TIPS_MAP = new Map(
-  MOCK_COURSE.pages.map((page) => [page.pageNumber, page.tips])
-)
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Params }
@@ -33,16 +28,7 @@ export async function GET(
     })
 
     if (course) {
-      // Nadpisz tipy z MOCK_COURSE (zawsze aktualne)
-      const pagesWithUpdatedTips = course.pages.map((page) => ({
-        ...page,
-        tips: TIPS_MAP.get(page.pageNumber) || page.tips,
-      }))
-
-      return NextResponse.json({
-        ...course,
-        pages: pagesWithUpdatedTips,
-      })
+      return NextResponse.json(course)
     }
 
     if (slug === MOCK_COURSE.slug) {

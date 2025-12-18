@@ -1,200 +1,117 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Pusher from 'pusher-js'
 
-interface Message {
+interface User {
   id: string
-  sender: 'user' | 'admin'
-  text: string
-  status: string
-  createdAt: string
+  email: string
+  name?: string
 }
 
 interface Conversation {
   id: string
   userId: string
-  userEmail: string
-  userName: string | null
-  subject: string | null
+  user: User
+  subject?: string
   lastMessage: string
   lastMessageAt: string
-  lastMessageSender: string | null
   unreadByAdmin: boolean
+}
+
+interface Message {
+  id: string
+  text: string
+  sender: 'user' | 'admin'
   createdAt: string
 }
 
-interface ConversationDetail {
-  id: string
-  user: {
-    id: string
-    email: string
-    name: string | null
-  }
-  messages: Message[]
-}
-
-const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
-
 export default function AdminInboxPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [selectedConversation, setSelectedConversation] = useState<ConversationDetail | null>(null)
-  const [loadingConversations, setLoadingConversations] = useState(false)
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [loading, setLoading] = useState(true)
   const [loadingMessages, setLoadingMessages] = useState(false)
-  const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
-  const [error, setError] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
-    fetch('/api/auth/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error || data.email !== ADMIN_EMAIL) {
-          router.push('/course')
-          return
-        }
-        setUser(data)
-        setLoading(false)
-        loadConversations()
-      })
-      .catch(() => {
-        router.push('/login')
-      })
-  }, [router])
-
-  useEffect(() => {
-    if (!selectedConversation?.id) return
-
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
-    })
-
-    const channel = pusher.subscribe(`chat-${selectedConversation.id}`)
-
-    channel.bind('message:new', (data: { message: Message }) => {
-      setSelectedConversation((prev) => {
-        if (!prev) return prev
-        if (prev.messages.some((m) => m.id === data.message.id)) {
-          return prev
-        }
-        return {
-          ...prev,
-          messages: [...prev.messages, data.message],
-        }
-      })
-    })
-
-    return () => {
-      channel.unbind_all()
-      pusher.unsubscribe(`chat-${selectedConversation.id}`)
-    }
-  }, [selectedConversation?.id])
-
-  useEffect(() => {
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
-    })
-
-    const channel = pusher.subscribe('admin-inbox')
-
-    // Optymalizacja: aktualizuj lokalnie z danych Pushera zamiast pobierać z bazy
-    channel.bind('conversation:updated', (data: { conversation: Conversation }) => {
-      if (data.conversation) {
-        setConversations((prev) => {
-          const existing = prev.find((c) => c.id === data.conversation.id)
-          if (existing) {
-            // Aktualizuj istniejącą konwersację
-            const updated = prev.map((c) =>
-              c.id === data.conversation.id ? { ...c, ...data.conversation } : c
-            )
-            // Posortuj według lastMessageAt
-            return updated.sort((a, b) => 
-              new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
-            )
-          } else {
-            // Nowa konwersacja - dodaj na początek
-            return [data.conversation, ...prev]
-          }
-        })
-      }
-    })
-
-    return () => {
-      channel.unbind_all()
-      pusher.unsubscribe('admin-inbox')
-    }
+    fetchConversations()
   }, [])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [selectedConversation?.messages])
+    scrollToBottom()
+  }, [messages])
 
-  const loadConversations = async () => {
-    setLoadingConversations(true)
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const fetchConversations = async () => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch('/api/admin/chat/conversations', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }
       })
+
       if (response.ok) {
         const data = await response.json()
-        setConversations(data.conversations || [])
+        setConversations(data)
       }
-    } catch (err) {
-      console.error('Error loading conversations:', err)
+    } catch (error) {
+      console.error('Failed to fetch conversations:', error)
     } finally {
-      setLoadingConversations(false)
+      setLoading(false)
     }
   }
 
-  const selectConversation = async (convId: string) => {
+  const selectConversation = async (conversation: Conversation) => {
+    setSelectedConversation(conversation)
     setLoadingMessages(true)
-    setError('')
     
-    // Natychmiast usuń podświetlenie (oznacz jako przeczytane lokalnie)
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === convId ? { ...c, unreadByAdmin: false } : c
+    // Natychmiast usuń highlight z lokalnego stanu
+    if (conversation.unreadByAdmin) {
+      setConversations(prev => 
+        prev.map(c => 
+          c.id === conversation.id ? { ...c, unreadByAdmin: false } : c
+        )
       )
-    )
-    
+    }
+
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/admin/chat/conversations/${convId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`/api/admin/chat/messages?conversationId=${conversation.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       })
+
       if (response.ok) {
         const data = await response.json()
-        setSelectedConversation(data.conversation)
-        // Nie pobieramy ponownie listy - aktualizacja lokalna już zrobiona
+        setMessages(data.messages || [])
       }
-    } catch (err) {
-      console.error('Error loading conversation:', err)
-      setError('Błąd ładowania konwersacji')
+    } catch (error) {
+      console.error('Failed to fetch messages:', error)
     } finally {
       setLoadingMessages(false)
     }
   }
 
-  const sendMessage = async () => {
-    if (!draft.trim() || sending || !selectedConversation) return
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newMessage.trim() || !selectedConversation || sending) return
 
+    const messageText = newMessage.trim()
+    setNewMessage('')
     setSending(true)
-    setError('')
+
+    // Optymistycznie dodaj wiadomość
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      text: messageText,
+      sender: 'admin',
+      createdAt: new Date().toISOString()
+    }
+    setMessages(prev => [...prev, tempMessage])
 
     try {
       const token = localStorage.getItem('token')
@@ -202,243 +119,203 @@ export default function AdminInboxPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           conversationId: selectedConversation.id,
-          text: draft,
-        }),
+          text: messageText
+        })
       })
 
       if (response.ok) {
         const data = await response.json()
-        setSelectedConversation((prev) => {
-          if (!prev) return prev
-          if (prev.messages.some((m) => m.id === data.message.id)) {
-            return prev
-          }
-          return {
-            ...prev,
-            messages: [...prev.messages, data.message],
-          }
-        })
-        setDraft('')
-        // Aktualizacja lokalna zamiast loadConversations()
-        setConversations((prev) =>
-          prev.map((c) =>
+        setMessages(prev => 
+          prev.map(msg => msg.id === tempMessage.id ? data : msg)
+        )
+        
+        // Aktualizuj ostatnią wiadomość w liście konwersacji
+        setConversations(prev =>
+          prev.map(c =>
             c.id === selectedConversation.id
-              ? { ...c, lastMessage: draft, lastMessageAt: new Date().toISOString(), lastMessageSender: 'admin' }
+              ? { ...c, lastMessage: messageText, lastMessageAt: new Date().toISOString() }
               : c
           )
         )
       } else {
-        const data = await response.json()
-        setError(data.error || 'Błąd wysyłania')
+        setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id))
       }
-    } catch (err) {
-      setError('Błąd połączenia')
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id))
     } finally {
       setSending(false)
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) {
+      return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+    } else if (diffDays === 1) {
+      return 'Wczoraj'
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString('pl-PL', { weekday: 'short' })
+    } else {
+      return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })
     }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    router.push('/login')
-  }
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })
   }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#1a1d24' }}>
-        <div className="text-gray-400">Ładowanie...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-8 px-4" style={{ background: '#1a1d24' }}>
-      <div className="max-w-6xl mx-auto">
-        <div className="panel-elegant panel-glow rounded-2xl overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-white/10">
-            <div>
-              <h1 className="text-xl font-bold text-white">Inbox - Wiadomości</h1>
-              <p className="text-sm text-gray-400 mt-1">
-                Zalogowany jako: <span className="text-white">{user?.email}</span>
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/admin" className="btn-elegant px-4 py-2 text-white">
-                Panel Admin
-              </Link>
-              <Link href="/course" className="btn-elegant px-4 py-2 text-white">
-                Wróć do kursu
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="btn-elegant px-4 py-2 text-red-400 hover:text-red-300"
-              >
-                Wyloguj
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen" style={{ background: '#1a1d24' }}>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-white">Inbox</h1>
+          <Link href="/admin" className="btn-elegant px-4 py-2 text-sm">
+            ← Panel Admin
+          </Link>
+        </div>
 
-          {/* Content - 2 kolumny */}
-          <div className="flex" style={{ height: '600px' }}>
-            {/* Lista konwersacji */}
-            <div className="w-1/3 border-r border-white/10 overflow-y-auto">
-              {loadingConversations ? (
-                <div className="p-4 text-center text-gray-500">Ładowanie...</div>
-              ) : conversations.length === 0 ? (
+        <div className="flex gap-6 h-[calc(100vh-200px)]">
+          {/* Conversations list */}
+          <div className="w-80 flex-shrink-0 panel-elegant panel-glow rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-white/10">
+              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+                Konwersacje ({conversations.length})
+              </h2>
+            </div>
+            <div className="overflow-y-auto h-[calc(100%-60px)]">
+              {conversations.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                   Brak konwersacji
                 </div>
               ) : (
                 conversations.map((conv) => (
-                  <div
+                  <button
                     key={conv.id}
-                    onClick={() => selectConversation(conv.id)}
-                    className={`p-4 border-b border-white/5 cursor-pointer transition-all ${
-                      selectedConversation?.id === conv.id 
-                        ? 'bg-primary-600/30 border-l-4 border-l-primary-500' 
-                        : conv.unreadByAdmin 
-                          ? 'bg-primary-500/20 border-l-4 border-l-primary-400 animate-pulse' 
-                          : 'hover:bg-white/5 border-l-4 border-l-transparent'
+                    onClick={() => selectConversation(conv)}
+                    className={`w-full p-4 text-left border-b border-white/5 transition-colors ${
+                      selectedConversation?.id === conv.id
+                        ? 'bg-primary-600/20'
+                        : conv.unreadByAdmin
+                        ? 'bg-yellow-500/10 hover:bg-white/5'
+                        : 'hover:bg-white/5'
                     }`}
                   >
-                    <div className="flex justify-between items-start mb-1">
-                      <span className={`text-sm truncate flex-1 ${conv.unreadByAdmin ? 'font-bold text-white' : 'font-medium text-white'}`}>
-                        {conv.userName || conv.userEmail}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`font-medium ${conv.unreadByAdmin ? 'text-white' : 'text-gray-300'}`}>
+                        {conv.user.name || conv.user.email}
                       </span>
-                      <span className="text-xs text-gray-500 ml-2">
-                        {formatDate(conv.lastMessageAt)}
+                      <span className="text-xs text-gray-500">
+                        {formatTime(conv.lastMessageAt)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-gray-400 truncate flex-1">
-                        {conv.lastMessageSender === 'admin' && (
-                          <span className="text-gray-500">Ty: </span>
-                        )}
-                        {conv.lastMessage || 'Brak wiadomości'}
-                      </p>
-                      {conv.unreadByAdmin && (
-                        <span className="w-2 h-2 bg-primary-500 rounded-full ml-2"></span>
-                      )}
-                    </div>
-                  </div>
+                    <p className={`text-sm truncate ${conv.unreadByAdmin ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {conv.lastMessage || 'Brak wiadomości'}
+                    </p>
+                    {conv.unreadByAdmin && (
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    )}
+                  </button>
                 ))
               )}
             </div>
+          </div>
 
-            {/* Szczegóły konwersacji */}
-            <div className="flex-1 flex flex-col">
-              {!selectedConversation ? (
-                <div className="flex-1 flex items-center justify-center text-gray-500">
-                  Wybierz konwersację z listy
+          {/* Messages area */}
+          <div className="flex-1 panel-elegant panel-glow rounded-2xl overflow-hidden flex flex-col">
+            {selectedConversation ? (
+              <>
+                {/* Chat header */}
+                <div className="p-4 border-b border-white/10">
+                  <h3 className="font-medium text-white">
+                    {selectedConversation.user.name || selectedConversation.user.email}
+                  </h3>
+                  <p className="text-sm text-gray-500">{selectedConversation.user.email}</p>
                 </div>
-              ) : loadingMessages ? (
-                <div className="flex-1 flex items-center justify-center text-gray-500">
-                  Ładowanie...
-                </div>
-              ) : (
-                <>
-                  {/* Header konwersacji */}
-                  <div className="p-4 border-b border-white/10" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    <div className="font-medium text-white">
-                      {selectedConversation.user.name || selectedConversation.user.email}
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      {selectedConversation.user.email}
-                    </div>
-                  </div>
 
-                  {/* Wiadomości */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {selectedConversation.messages.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        Brak wiadomości
-                      </div>
-                    ) : (
-                      selectedConversation.messages.map((message) => (
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {loadingMessages ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      Brak wiadomości w tej konwersacji
+                    </div>
+                  ) : (
+                    messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.sender === 'admin' ? 'justify-end' : 'justify-start'}`}
+                      >
                         <div
-                          key={message.id}
-                          className={`flex ${
-                            message.sender === 'admin' ? 'justify-end' : 'justify-start'
+                          className={`max-w-[70%] px-4 py-2 rounded-lg ${
+                            message.sender === 'admin'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-white/10 text-gray-200'
                           }`}
                         >
-                          <div
-                            className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
-                              message.sender === 'admin'
-                                ? 'bg-primary-600 text-white rounded-br-md'
-                                : 'bg-white/10 text-white rounded-bl-md'
-                            }`}
-                          >
-                            <div className="break-words">{message.text}</div>
-                            <div
-                              className={`text-[10px] mt-1 text-right ${
-                                message.sender === 'admin' ? 'opacity-60' : 'text-gray-500'
-                              }`}
-                            >
-                              {formatTime(message.createdAt)}
-                            </div>
-                          </div>
+                          <p className="whitespace-pre-wrap">{message.text}</p>
+                          <span className="text-[10px] opacity-60 mt-1 block">
+                            {new Date(message.createdAt).toLocaleTimeString('pl-PL', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
                         </div>
-                      ))
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  {/* Błąd */}
-                  {error && (
-                    <div className="px-4 py-2 text-red-400 text-sm text-center">
-                      {error}
-                    </div>
+                      </div>
+                    ))
                   )}
+                  <div ref={messagesEndRef} />
+                </div>
 
-                  {/* Pole wejścia */}
-                  <div className="p-4 border-t border-white/10 flex gap-2">
+                {/* Message input */}
+                <form onSubmit={sendMessage} className="p-4 border-t border-white/10">
+                  <div className="flex gap-3">
                     <input
                       type="text"
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      onKeyDown={handleKeyDown}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Napisz odpowiedź..."
-                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500"
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500"
                       disabled={sending}
                     />
                     <button
-                      onClick={sendMessage}
-                      disabled={sending || !draft.trim()}
-                      className="px-6 py-3 btn-primary-elegant font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      type="submit"
+                      disabled={!newMessage.trim() || sending}
+                      className="px-6 py-3 btn-primary-elegant rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {sending ? '...' : 'Wyślij'}
+                      Wyślij
                     </button>
                   </div>
-                </>
-              )}
-            </div>
+                </form>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <div className="text-center">
+                  <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <p>Wybierz konwersację z listy</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   )
 }
-
-
