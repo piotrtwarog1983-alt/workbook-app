@@ -13,6 +13,17 @@ interface RegistrationToken {
   createdAt: string
 }
 
+interface UserAccount {
+  id: string
+  email: string
+  name: string | null
+  createdAt: string
+  _count: {
+    conversations: number
+    progressEvaluations: number
+  }
+}
+
 const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
 
 export default function AdminPage() {
@@ -28,6 +39,9 @@ export default function AdminPage() {
   const [success, setSuccess] = useState('')
   const [creating, setCreating] = useState(false)
   const [loadingTokens, setLoadingTokens] = useState(false)
+  const [users, setUsers] = useState<UserAccount[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -51,6 +65,7 @@ export default function AdminPage() {
         setUser(data)
         setLoading(false)
         loadTokens()
+        loadUsers()
       })
       .catch(() => {
         router.push('/login')
@@ -74,6 +89,61 @@ export default function AdminPage() {
       console.error('Error loading tokens:', error)
     } finally {
       setLoadingTokens(false)
+    }
+  }
+
+  const loadUsers = async () => {
+    setLoadingUsers(true)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setUsers(data.users || [])
+      }
+    } catch (error) {
+      console.error('Error loading users:', error)
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
+
+  const deleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`Czy na pewno chcesz usunąć konto użytkownika ${userEmail}? Ta operacja jest nieodwracalna.`)) {
+      return
+    }
+
+    setDeletingUserId(userId)
+    setError('')
+    setSuccess('')
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Błąd usuwania użytkownika')
+        return
+      }
+
+      setSuccess(`Konto ${userEmail} zostało usunięte`)
+      loadUsers()
+    } catch (error) {
+      setError('Wystąpił błąd podczas usuwania użytkownika')
+      console.error('Error deleting user:', error)
+    } finally {
+      setDeletingUserId(null)
     }
   }
 
@@ -305,6 +375,99 @@ export default function AdminPage() {
                                 className="text-primary-600 hover:underline"
                               >
                                 Kopiuj link
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Lista użytkowników */}
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">
+                Konta użytkowników
+              </h2>
+              <button
+                onClick={loadUsers}
+                className="text-sm text-primary-600 hover:underline"
+              >
+                Odśwież
+              </button>
+            </div>
+
+            {loadingUsers ? (
+              <div className="text-center py-8 text-gray-500">
+                Ładowanie użytkowników...
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Brak zarejestrowanych użytkowników.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nazwa
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Rejestracja
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Postępy
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Wiadomości
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Akcje
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((userAccount) => {
+                      const isAdmin = userAccount.email === ADMIN_EMAIL
+
+                      return (
+                        <tr key={userAccount.id} className={isAdmin ? 'bg-blue-50' : ''}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {userAccount.email}
+                            {isAdmin && (
+                              <span className="ml-2 px-2 py-1 text-xs font-semibold rounded-full bg-blue-200 text-blue-800">
+                                Admin
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {userAccount.name || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(userAccount.createdAt).toLocaleDateString('pl-PL')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {userAccount._count.progressEvaluations} ocen
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {userAccount._count.conversations} konwersacji
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {!isAdmin && (
+                              <button
+                                onClick={() => deleteUser(userAccount.id, userAccount.email)}
+                                disabled={deletingUserId === userAccount.id}
+                                className="text-red-600 hover:text-red-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {deletingUserId === userAccount.id ? 'Usuwanie...' : 'Usuń'}
                               </button>
                             )}
                           </td>
