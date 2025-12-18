@@ -1483,13 +1483,13 @@ useEffect(() => {
           {/* Gallery z postępami - po prawej stronie */}
           <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8 lg:ml-24">
             {/* Oś postępów z przyciskiem wylogowania */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <div className="flex-1 min-w-0 max-w-[400px]">
                 <ProgressTimeline completedPages={completedPages} onNavigate={goToPage} />
               </div>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium flex items-center gap-2 ml-4 -mt-4 btn-elegant"
+                className="px-3 py-2 text-sm font-medium flex items-center gap-2 btn-elegant flex-shrink-0"
               >
                 <svg
                   className="w-4 h-4"

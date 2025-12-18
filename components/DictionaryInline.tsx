@@ -22,10 +22,12 @@ export function DictionaryInline() {
       const response = await fetch('/api/glossary')
       if (response.ok) {
         const data = await response.json()
-        setTerms(data)
+        // API zwraca { terms: [...] }
+        setTerms(data.terms || [])
       }
     } catch (error) {
       console.error('Failed to fetch glossary:', error)
+      setTerms([])
     } finally {
       setLoading(false)
     }

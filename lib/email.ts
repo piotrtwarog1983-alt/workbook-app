@@ -105,26 +105,23 @@ export async function sendPasswordResetEmail(
     <html>
     <head>
       <meta charset="utf-8">
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .button { display: inline-block; padding: 12px 24px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }
-        .footer { margin-top: 30px; font-size: 12px; color: #666; }
-        .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin: 20px 0; }
-      </style>
     </head>
-    <body>
-      <div class="container">
-        <h1>Resetowanie hasła</h1>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #333;">Resetowanie hasła</h1>
         <p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta w <strong>WorkBook</strong>.</p>
         <p>Kliknij poniższy przycisk, aby ustawić nowe hasło:</p>
-        <a href="${resetUrl}" class="button">Zresetuj hasło</a>
+        <p style="margin: 20px 0;">
+          <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold;">Zresetuj hasło</a>
+        </p>
         <p>Lub skopiuj ten link do przeglądarki:</p>
-        <p style="word-break: break-all; font-size: 14px;">${resetUrl}</p>
-        <div class="warning">
+        <p style="word-break: break-all; font-size: 14px;">
+          <a href="${resetUrl}" style="color: #4f46e5;">${resetUrl}</a>
+        </p>
+        <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin: 20px 0;">
           <strong>⚠️ Ważne:</strong> Ten link wygasa za 1 godzinę. Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.
         </div>
-        <div class="footer">
+        <div style="margin-top: 30px; font-size: 12px; color: #666;">
           <p>Pozdrawiamy,<br>Zespół WorkBook</p>
         </div>
       </div>

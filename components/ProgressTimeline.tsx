@@ -37,7 +37,7 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
   })
 
   return (
-    <div className="flex items-center justify-center w-full px-4">
+    <div className="flex items-center justify-center w-full">
       {STAGES.map((stage, index) => {
         const isCompleted = completedStages.has(stage.id)
         const isLast = index === STAGES.length - 1
@@ -51,19 +51,19 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
               title={`Przejdź do: ${stage.label}`}
             >
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
                   isCompleted
-                    ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)]'
+                    ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
                     : 'bg-gray-700 border-2 border-gray-500'
                 } group-hover:scale-110`}
               >
                 {isCompleted && (
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>
-              <span className={`text-[10px] mt-1.5 whitespace-nowrap transition-colors ${
+              <span className={`text-[9px] mt-1 whitespace-nowrap transition-colors ${
                 isCompleted ? 'text-green-400' : 'text-gray-400 group-hover:text-white'
               }`}>
                 {stage.label}
@@ -72,7 +72,7 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
 
             {/* Linia łącząca (nie dla ostatniego) */}
             {!isLast && (
-              <div className="w-12 lg:w-16 h-[2px] mx-2 relative">
+              <div className="w-6 sm:w-8 lg:w-10 h-[2px] mx-1 relative">
                 <div className="absolute inset-0 bg-gray-700" />
                 <div
                   className={`absolute inset-y-0 left-0 transition-all duration-500 ${
