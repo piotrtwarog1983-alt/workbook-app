@@ -37,17 +37,17 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
   })
 
   return (
-    <div className="flex items-center justify-center w-full">
+    <div className="flex items-center w-full">
       {STAGES.map((stage, index) => {
         const isCompleted = completedStages.has(stage.id)
         const isLast = index === STAGES.length - 1
 
         return (
-          <div key={stage.id} className="flex items-center">
+          <div key={stage.id} className={`flex items-center ${isLast ? '' : 'flex-1'}`}>
             {/* Dot z etykietą */}
             <button
               onClick={() => onNavigate(stage.targetPage)}
-              className="flex flex-col items-center group"
+              className="flex flex-col items-center group flex-shrink-0"
               title={`Przejdź do: ${stage.label}`}
             >
               <div
@@ -72,8 +72,8 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
 
             {/* Linia łącząca (nie dla ostatniego) */}
             {!isLast && (
-              <div className="w-8 sm:w-10 lg:w-12 h-[2px] mx-1 relative">
-                <div className={`absolute inset-0 ${isCompleted ? 'bg-cyan-500' : 'bg-gray-600'}`} />
+              <div className="flex-1 h-[2px] mx-1">
+                <div className={`h-full ${isCompleted ? 'bg-cyan-500' : 'bg-gray-600'}`} />
               </div>
             )}
           </div>

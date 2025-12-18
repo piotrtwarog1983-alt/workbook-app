@@ -38,3 +38,8 @@ next-env.d.ts
 # prisma
 /prisma/migrations
 
+# cursor/ide
+.cursor/
+.vscode/
+.idea/
+
