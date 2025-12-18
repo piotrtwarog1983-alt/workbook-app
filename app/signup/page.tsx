@@ -3,14 +3,38 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useTranslation } from '@/lib/LanguageContext'
+import { useLanguage } from '@/lib/LanguageContext'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+
+// Wykryj język przeglądarki bezpośrednio
+function detectBrowserLanguage(): 'PL' | 'DE' {
+  if (typeof window === 'undefined') return 'PL'
+  
+  const browserLang = navigator.language || (navigator as any).userLanguage || ''
+  const langCode = browserLang.toLowerCase().split('-')[0]
+  
+  // Mapowanie kodów języków
+  if (langCode === 'de') return 'DE'
+  if (langCode === 'pl') return 'PL'
+  
+  // Dla innych języków (np. angielski) - domyślnie niemiecki jako bardziej międzynarodowy
+  return 'DE'
+}
 
 function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
-  const { t } = useTranslation()
+  const { t, language, setLanguage } = useLanguage()
+  
+  // Dla strony rejestracji - zawsze wykryj język przeglądarki (nowy użytkownik)
+  useEffect(() => {
+    const browserLang = detectBrowserLanguage()
+    if (language !== browserLang) {
+      setLanguage(browserLang)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Uruchom tylko raz przy montowaniu
 
   const [formData, setFormData] = useState({
     email: '',

@@ -1,14 +1,41 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useTranslation } from '@/lib/LanguageContext'
+import { useLanguage } from '@/lib/LanguageContext'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+
+// Wykryj język przeglądarki bezpośrednio
+function detectBrowserLanguage(): 'PL' | 'DE' {
+  if (typeof window === 'undefined') return 'PL'
+  
+  const browserLang = navigator.language || (navigator as any).userLanguage || ''
+  const langCode = browserLang.toLowerCase().split('-')[0]
+  
+  if (langCode === 'de') return 'DE'
+  if (langCode === 'pl') return 'PL'
+  
+  // Dla innych języków - domyślnie niemiecki
+  return 'DE'
+}
 
 export default function LoginPage() {
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, language, setLanguage } = useLanguage()
+  
+  // Wykryj język przeglądarki przy pierwszym otwarciu strony logowania
+  useEffect(() => {
+    const savedLang = localStorage.getItem('app-language')
+    // Tylko jeśli nie ma zapisanego języka - wykryj z przeglądarki
+    if (!savedLang) {
+      const browserLang = detectBrowserLanguage()
+      if (language !== browserLang) {
+        setLanguage(browserLang)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [formData, setFormData] = useState({
     email: '',
     password: '',
