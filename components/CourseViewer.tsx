@@ -1768,6 +1768,21 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
+                ) : currentPage.pageNumber === 51 && isDictionary ? (
+                  // Strona 51 - finał kursu - wycentrowany tekst dużą czcionką
+                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
+                    {loadingText ? (
+                      <div className="text-gray-400">Ładowanie...</div>
+                    ) : (
+                      <div className="w-full flex items-center justify-center">
+                        <div className="text-center max-w-4xl">
+                          <div className="text-3xl md:text-5xl lg:text-6xl font-bold font-serif text-gray-900 leading-relaxed whitespace-pre-line">
+                            {overlayText}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : isDictionary ? (
                   // Słowniczek pojęć
                   <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
