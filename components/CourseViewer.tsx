@@ -13,6 +13,7 @@ import { QRCodeUpload } from './QRCodeUpload'
 import { ProgressGallery } from './ProgressGallery'
 import { ProgressEvaluation } from './ProgressEvaluation'
 import { ProgressTimeline } from './ProgressTimeline'
+import { VideoPlayer, VIDEO_PAGES } from './VideoPlayer'
 import { MOCK_COURSE } from '@/lib/mock-data'
 import { useTranslation, useLanguage } from '@/lib/LanguageContext'
 import { Language } from '@/lib/translations'
@@ -39,7 +40,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat'>('gallery')
+  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat' | 'video'>('gallery')
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
@@ -87,6 +88,19 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   useEffect(() => {
     if (course && currentPageIndex >= 0) {
       localStorage.setItem('lastCoursePage', currentPageIndex.toString())
+    }
+  }, [currentPageIndex, course])
+
+  // Automatyczne przełączanie na panel video dla stron 44-48
+  useEffect(() => {
+    if (!course) return
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (currentPage && VIDEO_PAGES.includes(currentPage.pageNumber)) {
+      setActivePanel('video')
+    } else if (activePanel === 'video') {
+      // Jeśli opuściliśmy stronę z video, wróć do galerii
+      setActivePanel('gallery')
     }
   }, [currentPageIndex, course])
 
@@ -1903,6 +1917,9 @@ useEffect(() => {
                   <ChatBox />
                 </div>
               )}
+              {activePanel === 'video' && currentPage && (
+                <VideoPlayer pageNumber={currentPage.pageNumber} />
+              )}
             </div>
 
             {/* Panel switching buttons */}
@@ -1975,6 +1992,34 @@ useEffect(() => {
                     strokeLinejoin="round"
                     strokeWidth={1.5}
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </button>
+
+              {/* Video button - ikona play */}
+              <button
+                onClick={() => setActivePanel('video')}
+                className={`w-14 h-14 flex items-center justify-center ${activePanel === 'video' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+                aria-label="Video"
+                title="Video"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
               </button>
