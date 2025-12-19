@@ -9,11 +9,11 @@ interface VideoPlayerProps {
 
 // Mapowanie stron na pliki video
 const PAGE_TO_VIDEO: { [key: number]: string } = {
-  44: '/course/videos/page-44.mp4',
-  45: '/course/videos/page-45.mp4',
-  46: '/course/videos/page-46.mp4',
-  47: '/course/videos/page-47.mp4',
-  48: '/course/videos/page-48.mp4',
+  44: '/course/videos/page44.mp4',
+  45: '/course/videos/page45.mp4',
+  46: '/course/videos/page46.mp4',
+  47: '/course/videos/page47.mp4',
+  48: '/course/videos/page48.mp4',
 }
 
 // Strony z video
