@@ -17,6 +17,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   const [loading, setLoading] = useState(true)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [error, setError] = useState<string | null>(null)
   const pusherRef = useRef<Pusher | null>(null)
 
   // Pobierz uploadId użytkownika, jeśli nie został przekazany
@@ -30,10 +31,13 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
       try {
         const token = localStorage.getItem('token')
         if (!token) {
+          console.log('ProgressGallery: No token found')
+          setError('notLoggedIn')
           setLoading(false)
           return
         }
 
+        console.log('ProgressGallery: Fetching upload ID...')
         const response = await fetch('/api/user/upload-id', {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -41,19 +45,24 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
         })
 
         if (!response.ok) {
+          console.error('ProgressGallery: Failed to fetch upload ID, status:', response.status)
+          setError('apiError')
           setLoading(false)
           return
         }
 
         const data = await response.json()
+        console.log('ProgressGallery: Got upload ID:', data.uploadId)
         if (data.uploadId) {
           setCurrentUploadId(data.uploadId)
           fetchProgressImages(data.uploadId)
         } else {
+          setError('noUploadId')
           setLoading(false)
         }
       } catch (error) {
         console.error('Error fetching upload ID:', error)
+        setError('networkError')
         setLoading(false)
       }
     }
@@ -159,6 +168,22 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
       <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
         <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
         <div className="text-center py-8 text-gray-500">{t.common.loading}</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
+        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm">
+            {error === 'notLoggedIn' && 'Zaloguj się, aby zobaczyć postępy'}
+            {error === 'apiError' && 'Błąd połączenia z serwerem'}
+            {error === 'noUploadId' && 'Brak identyfikatora użytkownika'}
+            {error === 'networkError' && 'Błąd sieci'}
+          </p>
+        </div>
       </div>
     )
   }

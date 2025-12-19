@@ -116,12 +116,12 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setUploadError('Proszę wybrać plik graficzny')
+      setUploadError(t.course.pleaseSelectImage)
       return
     }
 
     if (!currentUploadId) {
-      setUploadError('Brak identyfikatora uploadu. Odśwież stronę.')
+      setUploadError(t.course.noUploadId)
       return
     }
 
@@ -157,12 +157,12 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
         setCheckInterval(null)
       }
     } catch (error: any) {
-      setUploadError(error.message || 'Nie udało się przesłać zdjęcia. Spróbuj ponownie.')
+      setUploadError(error.message || t.course.uploadFailed)
       console.error('Upload error:', error)
     } finally {
       setIsUploading(false)
     }
-  }, [pageNumber, currentUploadId, checkInterval])
+  }, [pageNumber, currentUploadId, checkInterval, t])
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
