@@ -7,24 +7,26 @@ interface ProgressTimelineProps {
   onNavigate: (pageNumber: number) => void
 }
 
-// Etapy kursu z przypisanymi stronami (klucz id mapuje na klucz w tłumaczeniach)
+// Etapy kursu z przypisanymi stronami QR upload (klucz id mapuje na klucz w tłumaczeniach)
 const STAGES = [
-  { id: 1, labelKey: 'light', targetPage: 11 },
-  { id: 2, labelKey: 'horizon', targetPage: 17 },
-  { id: 3, labelKey: 'composition', targetPage: 22 },
-  { id: 4, labelKey: 'perspective', targetPage: 31 },
-  { id: 5, labelKey: 'proportions', targetPage: 37 },
-  { id: 6, labelKey: 'retouching', targetPage: 42 },
+  { id: 1, labelKey: 'light', targetPage: 7 },
+  { id: 2, labelKey: 'horizon', targetPage: 15 },
+  { id: 3, labelKey: 'composition', targetPage: 20 },
+  { id: 4, labelKey: 'perspective', targetPage: 29 },
+  { id: 5, labelKey: 'proportions', targetPage: 35 },
+  { id: 6, labelKey: 'retouching', targetPage: 40 },
+  { id: 7, labelKey: 'final', targetPage: 49 },
 ] as const
 
 // Strony z uploadem zdjęć przypisane do etapów
 const PROGRESS_PAGE_TO_STAGE: { [key: number]: number } = {
-  11: 1,  // światło
-  17: 2,  // horyzont
-  22: 3,  // kompozycja
-  31: 4,  // perspektywa
-  37: 5,  // proporcje
-  42: 6,  // retusz
+  7: 1,   // światło
+  15: 2,  // horyzont
+  20: 3,  // kompozycja
+  29: 4,  // perspektywa
+  35: 5,  // proporcje
+  40: 6,  // retusz
+  49: 7,  // finał
 }
 
 export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelineProps) {
@@ -81,7 +83,7 @@ export function ProgressTimeline({ completedPages, onNavigate }: ProgressTimelin
             
             {/* Linia łącząca do następnego - stała szerokość */}
             {!isLast && (
-              <div className="w-8 h-[2px] mt-2.5 mx-1">
+              <div className="w-6 h-[2px] mt-2.5 mx-0.5">
                 <div className={`h-full ${isCompleted ? 'bg-cyan-500' : 'bg-gray-600'}`} />
               </div>
             )}

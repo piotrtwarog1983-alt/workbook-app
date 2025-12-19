@@ -143,6 +143,7 @@ export const translations = {
       perspective: 'perspektywa',
       proportions: 'proporcje',
       retouching: 'retusz',
+      final: 'finał',
       goTo: 'Przejdź do:',
     },
 
@@ -352,6 +353,7 @@ export const translations = {
       perspective: 'Perspektive',
       proportions: 'Proportionen',
       retouching: 'Retusche',
+      final: 'Finale',
       goTo: 'Gehe zu:',
     },
 
