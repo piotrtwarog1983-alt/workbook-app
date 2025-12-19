@@ -1,12 +1,29 @@
-**Flat lay**
+Słownik fotografa
+
+
+Flat lay
 Zdjęcie zrobione z góry.
 
-**Trójkąt ekspozycji**
-Trzy elementy, które razem decydują o jasności zdjęcia:
-- czas naświetlania (jak długo kamera rejestruje światło - dłużej = jaśniej)
-- ISO (jak bardzo aparat wzmacnia jasność - wyżej = jaśniej)
-- przysłona (jak szeroko otwiera się obiektyw i ile światła wpada do środka)
-...
 
+Głębia ostrości
+To, co na zdjęciu jest ostre, a co rozmyte, w smartfonie można rozmyć tło m.in. używając trybu portretowego.
 
+Bokeh
+Miękkie, rozmyte tło z delikatnymi punktami światła.
 
+Balans bieli
+Ustawienie, dzięki któremu zdjęcie nie jest zbyt żółte ani zbyt niebieskie.
+
+Trójpodział
+Podział zdjęcia na trzy równe części w pionie i poziomie.
+Najważniejsze elementy najlepiej ustawiać na liniach lub ich przecięciach.
+
+Światło miękkie
+Rozproszone światło bez ostrych cieni — najbardziej naturalne i korzystne w fotografii jedzenia.
+
+Światło twarde
+Mocne światło tworzące wyraźne, ostre cienie — rzadko używane w fotografii kulinarnej, bo zniekształca potrawę
+
+RAW
+Zapisuje więcej szczegółów niż zwykłe zdjęcie.
+Dzięki temu możesz później łatwiej poprawić jasność i kolory, bez psucia jakości.

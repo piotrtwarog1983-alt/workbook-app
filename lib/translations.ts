@@ -99,6 +99,7 @@ export const translations = {
 
     // Kurs - główny widok
     course: {
+      loadingCourse: 'Ładowanie kursu...',
       yourProgress: 'TWOJE POSTĘPY',
       dictionary: 'Słownik pojęć',
       lastPage: 'Ostatnia strona',
@@ -309,6 +310,7 @@ export const translations = {
 
     // Kurs - Hauptansicht
     course: {
+      loadingCourse: 'Kurs wird geladen...',
       yourProgress: 'IHR FORTSCHRITT',
       dictionary: 'Glossar',
       lastPage: 'Letzte Seite',
