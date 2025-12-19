@@ -27,21 +27,24 @@ export function QRCodeUpload({ pageNumber, uploadId, headerText }: QRCodeUploadP
 
       try {
         const token = localStorage.getItem('token')
+        console.log('QRCodeUpload: Token from localStorage:', token ? `present (${token.length} chars)` : 'missing')
+        
         if (!token) {
           setError('Brak tokenu - zaloguj się ponownie')
           setLoading(false)
           return
         }
 
-        console.log('Fetching uploadId...')
+        console.log('QRCodeUpload: Fetching uploadId...')
         const response = await fetch('/api/user/upload-id', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         })
 
+        console.log('QRCodeUpload: Response status:', response.status)
         const data = await response.json()
-        console.log('Upload ID response:', data)
+        console.log('QRCodeUpload: Upload ID response:', data)
 
         if (!response.ok) {
           setError(data.error || 'Błąd pobierania ID')

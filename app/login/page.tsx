@@ -74,7 +74,14 @@ export default function LoginPage() {
       }
 
       // Save token and redirect
+      console.log('Login successful, token received:', data.token ? 'yes' : 'no')
+      console.log('Token length:', data.token?.length || 0)
       localStorage.setItem('token', data.token)
+      
+      // Weryfikacja że token został zapisany
+      const savedToken = localStorage.getItem('token')
+      console.log('Token saved to localStorage:', savedToken === data.token)
+      
       router.push('/course')
     } catch (err) {
       setError(t.errors.generic)

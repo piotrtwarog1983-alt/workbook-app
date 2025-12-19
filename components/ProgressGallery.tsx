@@ -30,6 +30,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
       try {
         const token = localStorage.getItem('token')
+        console.log('ProgressGallery: Token from localStorage:', token ? `present (${token.length} chars)` : 'missing')
+        
         if (!token) {
           console.log('ProgressGallery: No token found')
           setError('notLoggedIn')
@@ -44,8 +46,11 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
           },
         })
 
+        console.log('ProgressGallery: Response status:', response.status)
+        
         if (!response.ok) {
-          console.error('ProgressGallery: Failed to fetch upload ID, status:', response.status)
+          const errorData = await response.json()
+          console.error('ProgressGallery: Failed to fetch upload ID:', errorData)
           setError('apiError')
           setLoading(false)
           return
