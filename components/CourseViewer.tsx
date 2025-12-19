@@ -14,6 +14,7 @@ import { ProgressGallery } from './ProgressGallery'
 import { ProgressEvaluation } from './ProgressEvaluation'
 import { ProgressTimeline } from './ProgressTimeline'
 import { VideoPlayer, VIDEO_PAGES } from './VideoPlayer'
+import { Confetti } from './Confetti'
 import { MOCK_COURSE } from '@/lib/mock-data'
 import { useTranslation, useLanguage } from '@/lib/LanguageContext'
 import { Language } from '@/lib/translations'
@@ -634,6 +635,9 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen" style={{ background: '#1a1d24' }}>
+      {/* Konfetti na stronie 51 (finał kursu) */}
+      {currentPage.pageNumber === 51 && <Confetti />}
+      
       <div className="max-w-[1700px] ml-6 mr-auto px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Left side - Tips and course content */}
