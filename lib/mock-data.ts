@@ -436,7 +436,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zastosuj wiedzę o edycji zdjęć']),
+      tips: JSON.stringify([]),
     },
     {
       id: '41',
