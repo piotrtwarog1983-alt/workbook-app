@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
+import { useTranslation } from '@/lib/LanguageContext'
 
 interface PhotoUploadComponentProps {
   pageNumber: number
@@ -10,6 +11,7 @@ interface PhotoUploadComponentProps {
 }
 
 export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUploadComponentProps) {
+  const { t } = useTranslation()
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -34,7 +36,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
       try {
         const token = localStorage.getItem('token')
         if (!token) {
-          setUploadError('Musisz być zalogowany, aby przesłać zdjęcie')
+          setUploadError(t.course.mustBeLoggedIn)
           return
         }
 
@@ -56,7 +58,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
         }
       } catch (error) {
         console.error('Error fetching upload ID:', error)
-        setUploadError('Nie udało się załadować danych użytkownika')
+        setUploadError(t.course.failedToLoadUserData)
       }
     }
 
@@ -143,7 +145,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Błąd podczas przesyłania zdjęcia')
+        throw new Error(errorData.error || t.course.uploadError)
       }
 
       const data = await response.json()
@@ -197,7 +199,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
     <div className="relative w-full h-full flex flex-col p-8 bg-white overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col">
         <h2 className="text-2xl md:text-3xl font-serif text-gray-900 text-center mb-6">
-          Prześlij swoje zdjęcie
+          {t.course.submitPhoto}
         </h2>
 
         {/* Kontener do uploadu - Desktop */}
@@ -230,12 +232,12 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                 <div className="relative w-full h-64 md:h-96 rounded-lg overflow-hidden">
                   <Image
                     src={uploadedImage}
-                    alt="Przesłane zdjęcie"
+                    alt={t.course.photoUploaded}
                     fill
                     className="object-contain"
                   />
                 </div>
-                <p className="text-green-600 font-semibold">Zdjęcie zostało przesłane pomyślnie!</p>
+                <p className="text-green-600 font-semibold">{t.course.photoUploaded}</p>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -243,7 +245,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                   }}
                   className="text-primary-600 hover:text-primary-700 underline"
                 >
-                  Prześlij inne zdjęcie
+                  {t.course.uploadOther}
                 </button>
               </div>
             ) : (
@@ -251,7 +253,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                 {isUploading ? (
                   <div className="space-y-2">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-                    <p className="text-gray-600">Przesyłanie zdjęcia...</p>
+                    <p className="text-gray-600">{t.course.uploading}</p>
                   </div>
                 ) : (
                   <>
@@ -270,10 +272,10 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                     </svg>
                     <div>
                       <p className="text-lg font-semibold text-gray-700">
-                        Przeciągnij zdjęcie tutaj lub kliknij, aby wybrać
+                        {t.course.dragOrClick}
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
-                        Obsługiwane formaty: JPG, PNG, WEBP
+                        {t.course.supportedFormats}
                       </p>
                     </div>
                   </>
@@ -292,7 +294,7 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
         {/* QR kod do przesłania z telefonu - na dole kontenera */}
         <div className="border-t pt-6 mt-6">
           <h3 className="text-lg font-semibold text-gray-900 text-center mb-4">
-            Lub prześlij z telefonu:
+            {t.course.uploadFromPhone}
           </h3>
           <div className="flex flex-col items-center space-y-4">
             {qrCodeUrl ? (
@@ -312,17 +314,17 @@ export function PhotoUploadComponent({ pageNumber, userId, uploadId }: PhotoUplo
                   />
                 </a>
                 <p className="text-sm text-gray-600 text-center max-w-md">
-                  Zeskanuj kod QR telefonem, aby otworzyć stronę do przesłania zdjęcia bezpośrednio z urządzenia mobilnego
+                  {t.course.scanQRToUpload}
                 </p>
                 {!uploadedImage && (
                   <p className="text-xs text-gray-500 text-center">
-                    Czekam na przesłanie zdjęcia z telefonu...
+                    {t.course.waitingForUpload}
                   </p>
                 )}
               </>
             ) : (
               <p className="text-sm text-gray-500 text-center">
-                Ładowanie...
+                {t.common.loading}
               </p>
             )}
           </div>

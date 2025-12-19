@@ -1,14 +1,17 @@
 Zacznijmy od ustawień telefonu. Jeśli twój smartfon na to pozwoli, włącz:
 
-**Tryb Portret.** Co to daje? Telefon rozmyje tło, a danie będzie najważniejsze.
+**Tryb Portret**
+Co to daje? 
+Telefon rozmyje tło, a danie będzie najważniejsze.
 
-**Tryb RAW.** Co to daje? Zdjęcie będzie lepszej jakości i łatwiej je później poprawić bez utraty jakości podczas obróbki.
-
-Jeśli robisz zdjęcie pod kątem 45°, najpierw włącz przybliżenie x3, a potem odsuń się trochę od dania, żeby uchwycić cały talerz. Po co? Dzięki temu danie będzie wyglądało naturalnie i nie będzie zniekształcone.
-
-W tym workbooku staraj się, żeby cały talerz był widoczny.
+**Tryb RAW**
+Co to daje? 
+Zdjęcie będzie lepszej jakości i łatwiej je później poprawić bez utraty jakości podczas obróbki.
 
 **Co wyłączyć?**
 
-**Flash (lampa błyskowa).** Flash świeci na danie prosto z przodu. To najgorsze światło do jedzenia — danie wygląda wtedy płasko i mniej apetycznie.
+**Flash (lampa błyskowa)**
+Flash świeci na danie prosto z przodu. To najgorsze światło — danie wygląda wtedy płasko i mniej apetycznie.
+
+Wyłącz na telefonie **odpoczynek wzroku**, filtr światła niebieskiego (np. Night Shift). Te tryby ocieplają ekran i przekłamują kolory.
 

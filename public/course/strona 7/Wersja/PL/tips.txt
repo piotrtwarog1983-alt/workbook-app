@@ -1,1 +1,4 @@
 Zeskanuj telefonem kod QR i otwórz łącze. W Twoim telefonie pojawi się okno do dodawania zdjęć z galerii – dodaj zdjęcie i zatwierdź przyciskiem.
+
+
+

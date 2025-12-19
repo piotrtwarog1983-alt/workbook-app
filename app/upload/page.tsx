@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useTranslation } from '@/lib/LanguageContext'
 
 function UploadContent() {
+  const { t } = useTranslation()
   const searchParams = useSearchParams()
   const router = useRouter()
   const pageNumber = searchParams.get('page')
@@ -18,9 +20,9 @@ function UploadContent() {
 
   useEffect(() => {
     if (!pageNumber || !uploadId) {
-      setError('Brak wymaganych parametrów w linku')
+      setError(t.upload.missingParams)
     }
-  }, [pageNumber, uploadId])
+  }, [pageNumber, uploadId, t])
 
   useEffect(() => {
     if (selectedFile) {
@@ -38,7 +40,7 @@ function UploadContent() {
     const file = e.target.files?.[0]
     if (file) {
       if (!file.type.startsWith('image/')) {
-        setError('Proszę wybrać plik graficzny')
+        setError(t.upload.pleaseSelectImage)
         return
       }
       setSelectedFile(file)
@@ -68,7 +70,7 @@ function UploadContent() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Błąd podczas przesyłania zdjęcia')
+        throw new Error(errorData.error || t.upload.uploadFailed)
       }
 
       setUploadSuccess(true)
@@ -96,9 +98,9 @@ function UploadContent() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center">
-          <p className="text-red-600">Błąd: Nieprawidłowy link</p>
+          <p className="text-red-600">{t.upload.invalidLink}</p>
           <p className="text-sm text-gray-600 mt-2">
-            Link do uploadu jest nieprawidłowy. Sprawdź kod QR ponownie.
+            {t.upload.invalidLinkDesc}
           </p>
         </div>
       </div>
@@ -109,17 +111,17 @@ function UploadContent() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6">
-          Prześlij zdjęcie
+          {t.upload.title}
         </h1>
 
         {uploadSuccess ? (
           <div className="text-center space-y-4">
             <div className="text-green-500 text-5xl mb-4">✓</div>
             <p className="text-lg font-semibold text-gray-900">
-              Zdjęcie zostało przesłane pomyślnie!
+              {t.upload.success}
             </p>
             <p className="text-sm text-gray-600">
-              Możesz zamknąć to okno.
+              {t.upload.closeWindow}
             </p>
           </div>
         ) : (
@@ -153,7 +155,7 @@ function UploadContent() {
                     }}
                     className="w-full text-sm text-gray-600 underline"
                   >
-                    Wybierz inne zdjęcie
+                    {t.upload.selectOther}
                   </button>
                 </div>
               ) : (
@@ -176,7 +178,7 @@ function UploadContent() {
                       />
                     </svg>
                     <p className="text-gray-700 font-medium">
-                      Wybierz zdjęcie z galerii
+                      {t.upload.selectFromGallery}
                     </p>
                     <p className="text-sm text-gray-500">
                       JPG, PNG, WEBP
@@ -198,7 +200,7 @@ function UploadContent() {
                 disabled={isUploading}
                 className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isUploading ? 'Przesyłanie...' : 'Prześlij zdjęcie'}
+                {isUploading ? t.upload.uploading : t.upload.submitPhoto}
               </button>
             )}
           </div>
@@ -213,7 +215,7 @@ function LoadingFallback() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Ładowanie...</p>
+        <p className="text-gray-600">Loading...</p>
       </div>
     </div>
   )

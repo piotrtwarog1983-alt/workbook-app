@@ -4,6 +4,32 @@ import { useState, useEffect } from 'react'
 
 interface ProgressEvaluationProps {
   pageNumber: number
+  language?: 'PL' | 'DE'
+}
+
+const translations = {
+  PL: {
+    title: 'Czy widzisz postęp w odniesieniu do Twojego poprzedniego zdjęcia?',
+    worse: 'Jest gorzej',
+    same: 'Tak samo',
+    better: 'Jest lepiej',
+    loading: 'Ładowanie...',
+    saving: 'Zapisuję...',
+    saved: '✓ Zapisano',
+    currentPosition: 'Aktualna pozycja na skali:',
+    referencePoint: '(punkt odniesienia)',
+  },
+  DE: {
+    title: 'Siehst du einen Fortschritt im Vergleich zu deinem vorherigen Foto?',
+    worse: 'Es ist schlechter',
+    same: 'Gleich',
+    better: 'Es ist besser',
+    loading: 'Laden...',
+    saving: 'Speichern...',
+    saved: '✓ Gespeichert',
+    currentPosition: 'Aktuelle Position auf der Skala:',
+    referencePoint: '(Referenzpunkt)',
+  },
 }
 
 const evaluationPages = [16, 21, 30, 36, 41, 50]
@@ -52,12 +78,14 @@ function calculateCumulative(
   return cumulative
 }
 
-export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
+export function ProgressEvaluation({ pageNumber, language = 'PL' }: ProgressEvaluationProps) {
   const [value, setValue] = useState(0) // -1 = gorzej, 0 = tak samo, 1 = lepiej
   const [cumulativeScore, setCumulativeScore] = useState(0) // Skumulowany wynik
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  
+  const t = translations[language]
 
   // Pobierz poprzednie oceny i oblicz skumulowany wynik
   useEffect(() => {
@@ -191,7 +219,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
   if (loading) {
     return (
       <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900">
-        <div className="text-gray-400">Ładowanie...</div>
+        <div className="text-gray-400">{t.loading}</div>
       </div>
     )
   }
@@ -200,16 +228,16 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
     <div className="relative w-full h-full flex items-center justify-center p-8 bg-gray-900 overflow-y-auto">
       <div className="w-full max-w-3xl space-y-8">
         <h2 className="text-2xl md:text-3xl font-serif text-white text-center">
-          Czy widzisz postęp w odniesieniu do Twojego poprzedniego zdjęcia?
+          {t.title}
         </h2>
 
         {/* Skala z suwakiem */}
         <div className="space-y-6">
           {/* Etykiety */}
           <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Jest gorzej</span>
-            <span>Tak samo</span>
-            <span>Jest lepiej</span>
+            <span>{t.worse}</span>
+            <span>{t.same}</span>
+            <span>{t.better}</span>
           </div>
 
           {/* Kontener skali */}
@@ -252,7 +280,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Jest gorzej
+                {t.worse}
               </button>
               <button
                 onClick={() => handleChange(0)}
@@ -263,7 +291,7 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Tak samo
+                {t.same}
               </button>
               <button
                 onClick={() => handleChange(1)}
@@ -274,26 +302,26 @@ export function ProgressEvaluation({ pageNumber }: ProgressEvaluationProps) {
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Jest lepiej
+                {t.better}
               </button>
             </div>
 
             {/* Status zapisu */}
             {saving && (
               <div className="text-center mt-4 text-sm text-gray-400">
-                Zapisuję...
+                {t.saving}
               </div>
             )}
             {saved && !saving && (
               <div className="text-center mt-4 text-sm text-green-400">
-                ✓ Zapisano
+                {t.saved}
               </div>
             )}
 
             {/* Informacja o aktualnej pozycji */}
             <div className="text-center mt-6 text-sm text-gray-400">
-              Aktualna pozycja na skali: {sliderPosition > 0 ? '+' : ''}{sliderPosition}
-              {sliderPosition === 0 && ' (punkt odniesienia)'}
+              {t.currentPosition} {sliderPosition > 0 ? '+' : ''}{sliderPosition}
+              {sliderPosition === 0 && ` ${t.referencePoint}`}
             </div>
           </div>
         </div>

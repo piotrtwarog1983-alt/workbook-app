@@ -12,26 +12,8 @@ export const MOCK_COURSE = {
       pageNumber: 1,
       title: '',
       content: JSON.stringify({
-        type: 'grid-2x2',
-        panels: [
-          {
-            type: 'image',
-            imageUrl: '/course/strona 1/Foto/hero-1.jpg',
-          },
-          {
-            type: 'image',
-            imageUrl: '/course/strona 1/Foto/hero-2.jpg',
-          },
-          {
-            type: 'text',
-            text: 'EULALIA TWAROG\n\nFine Dining Smartphone Photography\n\n★\n\nWORKBOOK FOR CHEFS\n\nTHE BASICS\nWHITE BACKGROUND PHOTOGRAPHY',
-            backgroundColor: 'dark',
-          },
-          {
-            type: 'image',
-            imageUrl: '/course/strona 1/Foto/hero-3.jpg',
-          },
-        ],
+        type: 'image-overlay',
+        imageUrl: '/course/strona 1/Foto/1.jpg',
       }),
       tips: JSON.stringify([]),
     },
@@ -62,9 +44,9 @@ export const MOCK_COURSE = {
       pageNumber: 4,
       title: '',
       content: JSON.stringify({
-        type: 'image-overlay-text',
+        type: 'image-overlay-text-file',
         imageUrl: '/course/strona 4/Foto/start.jpg',
-        overlayText: 'Start',
+        textFile: '/api/course-content/4/PL',
         textPosition: 'bottom-center',
       }),
       tips: JSON.stringify([]),
@@ -116,7 +98,7 @@ export const MOCK_COURSE = {
       title: '',
       content: JSON.stringify({
         type: 'simple-text',
-        text: 'Ustawienia\nsmartfona',
+        textFile: '/api/course-content/9/PL',
       }),
       tips: JSON.stringify([]),
     },
@@ -135,12 +117,12 @@ export const MOCK_COURSE = {
       pageNumber: 11,
       title: '',
       content: JSON.stringify({
-        type: 'image-overlay-text',
+        type: 'image-overlay-text-file',
         imageUrl: '/course/strona 11/Foto/11.jpg',
-        overlayText: 'Światło',
-        textPosition: 'bottom',
+        textFile: '/api/course-content/11/PL',
+        textPosition: 'center',
       }),
-      tips: JSON.stringify(['Światło to podstawa dobrej fotografii kulinarnej']),
+      tips: JSON.stringify([]),
     },
     {
       id: '12',
@@ -203,7 +185,7 @@ export const MOCK_COURSE = {
       title: '',
       content: JSON.stringify({
         type: 'simple-text',
-        text: 'PROSTY\nHORYZONT',
+        textFile: '/api/course-content/17/PL',
       }),
       tips: JSON.stringify([]),
     },
@@ -237,9 +219,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify([
-        'W ustawieniach aparatu możesz włączyć siatkę w której znajduje się opcja żyroskopu pokazująca przechył telefonu',
-      ]),
+      tips: JSON.stringify([]),
     },
     {
       id: '21',
@@ -256,7 +236,7 @@ export const MOCK_COURSE = {
       title: '',
       content: JSON.stringify({
         type: 'simple-text',
-        text: 'KOMPOZYCJA',
+        textFile: '/api/course-content/22/PL',
       }),
       tips: JSON.stringify([]),
     },
@@ -265,9 +245,9 @@ export const MOCK_COURSE = {
       pageNumber: 23,
       title: '',
       content: JSON.stringify({
-        type: 'image-overlay-text',
+        type: 'image-overlay-text-file',
         imageUrl: '/course/strona 23/Foto/23.jpg',
-        overlayText: 'Centrum',
+        textFile: '/api/course-content/23/PL',
         textPosition: 'top-center-lower',
       }),
       tips: JSON.stringify([]),
@@ -278,7 +258,7 @@ export const MOCK_COURSE = {
       title: '',
       content: JSON.stringify({
         type: 'two-images-container',
-        text: 'Danie w centrum to klasyka i fundament:\ngdy talerz jest prosty i w środku zdjęcia, całość wygląda pięknie, czysto i klasycznie.',
+        textFile: '/api/course-content/24/PL',
         image1Url: '/course/strona 24/Foto/24-1.jpg',
         image2Url: '/course/strona 24/Foto/24-2.jpg',
       }),
@@ -337,9 +317,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify([
-        'W ustawieniach aparatu na twoim telefonie włącz siatkę trójpodziału - ułatwi to znacząco fotografowanie',
-      ]),
+      tips: JSON.stringify([]),
     },
     {
       id: '30',
@@ -421,9 +399,9 @@ export const MOCK_COURSE = {
       pageNumber: 37,
       title: '',
       content: JSON.stringify({
-        type: 'image-overlay-text',
+        type: 'image-overlay-text-file',
         imageUrl: '/course/strona 37/Foto/37.jpg',
-        overlayText: 'Proporcje',
+        textFile: '/api/course-content/37/PL',
         textPosition: 'top-center',
       }),
       tips: JSON.stringify([]),
@@ -474,9 +452,9 @@ export const MOCK_COURSE = {
       pageNumber: 42,
       title: '',
       content: JSON.stringify({
-        type: 'image-overlay-text',
+        type: 'image-overlay-text-file',
         imageUrl: '/course/strona 42/Foto/42.jpg',
-        overlayText: 'Obróbka zdjęć',
+        textFile: '/api/course-content/42/PL',
         textPosition: 'top-center',
       }),
       tips: JSON.stringify([]),
@@ -487,15 +465,7 @@ export const MOCK_COURSE = {
       title: '',
       content: JSON.stringify({
         type: 'simple-text',
-        text:
-          'Dla Twoich potrzeb świetnym programem do obróbki zdjęć będzie Snapseed.\n' +
-          'To w pełni darmowa aplikacja na smartfon.\n\n' +
-          'Pobierz ją i zaczynamy.\n\n' +
-          'Nie rób więcej niż kroki omówione w workbooku.\n' +
-          'Pracujemy nad: światłem, kolorem, ostrością,\n' +
-          'usuwaniem pyłków i kadrowaniem.\n' +
-          'naszym celem jest piękne, naturalnie wyglądające\n' +
-          'zdjęcie kulinarne na białym tle.',
+        textFile: '/api/course-content/43/PL',
       }),
       tips: JSON.stringify([]),
     },

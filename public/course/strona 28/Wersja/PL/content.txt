@@ -1,4 +1,4 @@
-TEGO UNIKAJ!!!
+Tego unikaj!!!
 
 Kiedy danie przesuwa się zbyt w jedną ze stron, pozostawia pustą, niezagospodarowaną przestrzeń.
 

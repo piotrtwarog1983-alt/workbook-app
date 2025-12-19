@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import Pusher from 'pusher-js'
+import { PROGRESS_PAGES } from '@/lib/progress-pages'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { TipCloud } from './TipCloud'
@@ -46,6 +48,29 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null)
   const [animationClass, setAnimationClass] = useState<string>('')
   const [fileTips, setFileTips] = useState<string[]>([])
+  const [exitingPageIndex, setExitingPageIndex] = useState<number | null>(null)
+  const [userUploadId, setUserUploadId] = useState<string | null>(null)
+  const [page45Texts, setPage45Texts] = useState<{ text1: string; text2: string; text3: string }>({
+    text1: '',
+    text2: '',
+    text3: ''
+  })
+  const [page46Texts, setPage46Texts] = useState<{ text1: string; text2: string; text3: string }>({
+    text1: '',
+    text2: '',
+    text3: ''
+  })
+  const [page47Texts, setPage47Texts] = useState<{ text1: string; text2: string; text3: string }>({
+    text1: '',
+    text2: '',
+    text3: ''
+  })
+  const [page32Labels, setPage32Labels] = useState<{ label1: string; label2: string }>({
+    label1: '',
+    label2: ''
+  })
+  const [qrPageContent, setQrPageContent] = useState<string>('')
+  const pusherRef = useRef<Pusher | null>(null)
   
   // Mapowanie języka z kontekstu na format folderów (PL, DE)
   const currentLang = language
@@ -72,6 +97,93 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     localStorage.removeItem('token')
     router.replace('/login')
   }
+
+  // Pobierz uploadId użytkownika i nasłuchuj na nowe uploady
+  useEffect(() => {
+    const fetchUploadIdAndSetupPusher = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+
+        const response = await fetch('/api/user/upload-id', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (data.uploadId) {
+          setUserUploadId(data.uploadId)
+          
+          // Pobierz początkowy stan postępów
+          fetchCompletedPages(data.uploadId)
+        }
+      } catch (error) {
+        console.error('Error fetching upload ID:', error)
+      }
+    }
+
+    fetchUploadIdAndSetupPusher()
+  }, [])
+
+  // Funkcja do pobierania ukończonych stron
+  const fetchCompletedPages = async (uploadIdValue: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      const completed: number[] = []
+
+      for (const pageNumber of PROGRESS_PAGES) {
+        try {
+          const response = await fetch(`/api/check-upload?page=${pageNumber}&uploadId=${uploadIdValue}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          })
+          const data = await response.json()
+          if (data.uploaded && data.imageUrl) {
+            completed.push(pageNumber)
+          }
+        } catch (error) {
+          console.error(`Error checking upload for page ${pageNumber}:`, error)
+        }
+      }
+
+      setCompletedPages(completed)
+    } catch (error) {
+      console.error('Error fetching completed pages:', error)
+    }
+  }
+
+  // Nasłuchuj na Pusher events dla nowych uploadów
+  useEffect(() => {
+    if (!userUploadId) return
+
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+
+    if (pusherKey && pusherCluster) {
+      pusherRef.current = new Pusher(pusherKey, {
+        cluster: pusherCluster,
+      })
+
+      const channel = pusherRef.current.subscribe(`progress-${userUploadId}`)
+      
+      channel.bind('photo:uploaded', (data: { pageNumber: number; imageUrl: string }) => {
+        console.log('CourseViewer: Received photo:uploaded event:', data)
+        // Dodaj stronę do ukończonych jeśli jeszcze jej nie ma
+        setCompletedPages(prev => {
+          if (!prev.includes(data.pageNumber)) {
+            return [...prev, data.pageNumber]
+          }
+          return prev
+        })
+      })
+
+      return () => {
+        channel.unbind_all()
+        channel.unsubscribe()
+        pusherRef.current?.disconnect()
+      }
+    }
+  }, [userUploadId])
 
 useEffect(() => {
   let isActive = true
@@ -157,37 +269,31 @@ useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (isTransitioning) return
       if (e.key === 'ArrowLeft' && currentPageIndex > 0) {
+        setExitingPageIndex(currentPageIndex)
+        setCurrentPageIndex(currentPageIndex - 1)
         setTransitionDirection('down')
         setIsTransitioning(true)
-        setAnimationClass('course-container-slide-out-down')
         setTimeout(() => {
-          setCurrentPageIndex(currentPageIndex - 1)
-          setAnimationClass('course-container-slide-in-down')
-          setTimeout(() => {
-            setIsTransitioning(false)
-            setTransitionDirection(null)
-            setAnimationClass('')
-          }, 800)
+          setIsTransitioning(false)
+          setTransitionDirection(null)
+          setExitingPageIndex(null)
         }, 800)
       } else if (e.key === 'ArrowRight' && currentPageIndex < pages.length - 1) {
+        setExitingPageIndex(currentPageIndex)
+        setCurrentPageIndex(currentPageIndex + 1)
         setTransitionDirection('up')
         setIsTransitioning(true)
-        setAnimationClass('course-container-slide-out-up')
         setTimeout(() => {
-          setCurrentPageIndex(currentPageIndex + 1)
-          setAnimationClass('course-container-slide-in-up')
-          setTimeout(() => {
-            setIsTransitioning(false)
-            setTransitionDirection(null)
-            setAnimationClass('')
-          }, 800)
+          setIsTransitioning(false)
+          setTransitionDirection(null)
+          setExitingPageIndex(null)
         }, 800)
       }
     }
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [currentPageIndex, course, isTransitioning, transitionDirection, animationClass])
+  }, [currentPageIndex, course, isTransitioning])
 
   // Wczytaj tekst z pliku dla strony z overlay lub quote-text
   useEffect(() => {
@@ -198,9 +304,11 @@ useEffect(() => {
     if (!currentPage) return
 
     const pageContent = parseContent(currentPage.content)
-    if ((pageContent?.type === 'image-overlay' || pageContent?.type === 'quote-text' || pageContent?.type === 'image-overlay-text-top' || pageContent?.type === 'text-image-split' || pageContent?.type === 'formatted-text' || pageContent?.type === 'image-overlay-text-file' || pageContent?.type === 'image-overlay-text-white' || pageContent?.type === 'black-header-image' || pageContent?.type === 'white-header-image' || pageContent?.type === 'two-images-top-text' || pageContent?.type === 'three-images-top-text' || pageContent?.type === 'dictionary' || pageContent?.type === 'simple-text') && pageContent?.textFile) {
+    if ((pageContent?.type === 'image-overlay' || pageContent?.type === 'quote-text' || pageContent?.type === 'image-overlay-text-top' || pageContent?.type === 'text-image-split' || pageContent?.type === 'formatted-text' || pageContent?.type === 'image-overlay-text-file' || pageContent?.type === 'image-overlay-text-white' || pageContent?.type === 'black-header-image' || pageContent?.type === 'white-header-image' || pageContent?.type === 'two-images-top-text' || pageContent?.type === 'three-images-top-text' || pageContent?.type === 'dictionary' || pageContent?.type === 'simple-text' || pageContent?.type === 'two-images-container') && pageContent?.textFile) {
       setLoadingText(true)
-      fetch(pageContent.textFile)
+      // Dynamicznie zmień język w URL na podstawie aktualnego języka
+      const textFileUrl = pageContent.textFile.replace(/\/(PL|DE)$/, `/${currentLang}`)
+      fetch(textFileUrl)
         .then((res) => res.json())
         .then((data) => {
           if (data.content) {
@@ -216,7 +324,166 @@ useEffect(() => {
     } else {
       setOverlayText('')
     }
-  }, [currentPageIndex, course])
+  }, [currentPageIndex, course, currentLang])
+
+  // Ładuj teksty dla strony 45 z plików
+  useEffect(() => {
+    if (!course) return
+    
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (!currentPage || currentPage.pageNumber !== 45) return
+
+    const loadTexts = async () => {
+      try {
+        const [res1, res2, res3] = await Promise.all([
+          fetch(`/course/strona 45/Wersja/${currentLang}/text1.txt`),
+          fetch(`/course/strona 45/Wersja/${currentLang}/text2.txt`),
+          fetch(`/course/strona 45/Wersja/${currentLang}/text3.txt`)
+        ])
+        
+        const [text1, text2, text3] = await Promise.all([
+          res1.ok ? res1.text() : '',
+          res2.ok ? res2.text() : '',
+          res3.ok ? res3.text() : ''
+        ])
+        
+        setPage45Texts({ text1, text2, text3 })
+      } catch (err) {
+        console.error('Error loading page 45 texts:', err)
+      }
+    }
+    
+    loadTexts()
+  }, [currentPageIndex, course, currentLang])
+
+  // Ładuj teksty dla strony 46 z plików
+  useEffect(() => {
+    if (!course) return
+    
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (!currentPage || currentPage.pageNumber !== 46) return
+
+    const loadTexts = async () => {
+      try {
+        const [res1, res2, res3] = await Promise.all([
+          fetch(`/course/strona 46/Wersja/${currentLang}/text1.txt`),
+          fetch(`/course/strona 46/Wersja/${currentLang}/text2.txt`),
+          fetch(`/course/strona 46/Wersja/${currentLang}/text3.txt`)
+        ])
+        
+        const [text1, text2, text3] = await Promise.all([
+          res1.ok ? res1.text() : '',
+          res2.ok ? res2.text() : '',
+          res3.ok ? res3.text() : ''
+        ])
+        
+        setPage46Texts({ text1, text2, text3 })
+      } catch (err) {
+        console.error('Error loading page 46 texts:', err)
+      }
+    }
+    
+    loadTexts()
+  }, [currentPageIndex, course, currentLang])
+
+  // Ładuj teksty dla strony 47 z plików
+  useEffect(() => {
+    if (!course) return
+
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (!currentPage || currentPage.pageNumber !== 47) return
+
+    const loadTexts = async () => {
+      try {
+        const [res1, res2, res3] = await Promise.all([
+          fetch(`/course/strona 47/Wersja/${currentLang}/text1.txt`),
+          fetch(`/course/strona 47/Wersja/${currentLang}/text2.txt`),
+          fetch(`/course/strona 47/Wersja/${currentLang}/text3.txt`)
+        ])
+
+        const [text1, text2, text3] = await Promise.all([
+          res1.ok ? res1.text() : '',
+          res2.ok ? res2.text() : '',
+          res3.ok ? res3.text() : ''
+        ])
+
+        setPage47Texts({ text1, text2, text3 })
+      } catch (err) {
+        console.error('Error loading page 47 texts:', err)
+      }
+    }
+
+    loadTexts()
+  }, [currentPageIndex, course, currentLang])
+
+  // Ładuj etykiety dla strony 32 z plików
+  useEffect(() => {
+    if (!course) return
+
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (!currentPage || currentPage.pageNumber !== 32) {
+      setPage32Labels({ label1: '', label2: '' })
+      return
+    }
+
+    const loadLabels = async () => {
+      try {
+        const [res1, res2] = await Promise.all([
+          fetch(`/api/course-text/32/${currentLang}/label1.txt`),
+          fetch(`/api/course-text/32/${currentLang}/label2.txt`)
+        ])
+
+        const [data1, data2] = await Promise.all([
+          res1.ok ? res1.json() : { content: '' },
+          res2.ok ? res2.json() : { content: '' }
+        ])
+
+        setPage32Labels({ 
+          label1: data1.content?.trim() || '- flat lay',
+          label2: data2.content?.trim() || '- 45 stopni'
+        })
+      } catch (err) {
+        console.error('Error loading page 32 labels:', err)
+        setPage32Labels({ label1: '- flat lay', label2: '- 45 stopni' })
+      }
+    }
+
+    loadLabels()
+  }, [currentPageIndex, course, currentLang])
+
+  // Ładuj tekst nagłówka dla stron QR upload (7, 15, 20, 29, 35, 40, 49)
+  const qrUploadPages = [7, 15, 20, 29, 35, 40, 49]
+  useEffect(() => {
+    if (!course) return
+
+    const pages = course.pages || []
+    const currentPage = pages[currentPageIndex]
+    if (!currentPage || !qrUploadPages.includes(currentPage.pageNumber)) {
+      setQrPageContent('')
+      return
+    }
+
+    const loadQrContent = async () => {
+      try {
+        const response = await fetch(`/api/course-content/${currentPage.pageNumber}/${currentLang}`)
+        if (response.ok) {
+          const data = await response.json()
+          setQrPageContent(data.content?.trim() || '')
+        } else {
+          setQrPageContent('')
+        }
+      } catch (err) {
+        console.error('Error loading QR page content:', err)
+        setQrPageContent('')
+      }
+    }
+
+    loadQrContent()
+  }, [currentPageIndex, course, currentLang])
 
   if (loading) {
     return (
@@ -239,34 +506,28 @@ useEffect(() => {
 
   const nextPage = () => {
     if (currentPageIndex < pages.length - 1 && !isTransitioning) {
+      setExitingPageIndex(currentPageIndex)
+      setCurrentPageIndex(currentPageIndex + 1)
       setTransitionDirection('up')
       setIsTransitioning(true)
-      setAnimationClass('course-container-slide-out-up')
       setTimeout(() => {
-        setCurrentPageIndex(currentPageIndex + 1)
-        setAnimationClass('course-container-slide-in-up')
-        setTimeout(() => {
-          setIsTransitioning(false)
-          setTransitionDirection(null)
-          setAnimationClass('')
-        }, 800)
+        setIsTransitioning(false)
+        setTransitionDirection(null)
+        setExitingPageIndex(null)
       }, 800)
     }
   }
 
   const prevPage = () => {
     if (currentPageIndex > 0 && !isTransitioning) {
+      setExitingPageIndex(currentPageIndex)
+      setCurrentPageIndex(currentPageIndex - 1)
       setTransitionDirection('down')
       setIsTransitioning(true)
-      setAnimationClass('course-container-slide-out-down')
       setTimeout(() => {
-        setCurrentPageIndex(currentPageIndex - 1)
-        setAnimationClass('course-container-slide-in-down')
-        setTimeout(() => {
-          setIsTransitioning(false)
-          setTransitionDirection(null)
-          setAnimationClass('')
-        }, 800)
+        setIsTransitioning(false)
+        setTransitionDirection(null)
+        setExitingPageIndex(null)
       }, 800)
     }
   }
@@ -280,18 +541,15 @@ useEffect(() => {
     
     // Następna strona = z dołu do góry (up), poprzednia = z góry do dołu (down)
     const direction = targetIndex > currentPageIndex ? 'up' : 'down'
+    setExitingPageIndex(currentPageIndex)
+    setCurrentPageIndex(targetIndex)
     setTransitionDirection(direction)
     setIsTransitioning(true)
-    setAnimationClass(direction === 'up' ? 'course-container-slide-out-up' : 'course-container-slide-out-down')
     
     setTimeout(() => {
-      setCurrentPageIndex(targetIndex)
-      setAnimationClass(direction === 'up' ? 'course-container-slide-in-up' : 'course-container-slide-in-down')
-      setTimeout(() => {
-        setIsTransitioning(false)
-        setTransitionDirection(null)
-        setAnimationClass('')
-      }, 800)
+      setIsTransitioning(false)
+      setTransitionDirection(null)
+      setExitingPageIndex(null)
     }, 800)
   }
 
@@ -356,7 +614,6 @@ useEffect(() => {
               <div className="w-full lg:w-64 lg:flex-shrink-0">
                 {tips.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t.course.tips}</h3>
                     {tips.map((tip, index) => (
                       <TipCloud key={index} tip={tip} />
                     ))}
@@ -365,11 +622,23 @@ useEffect(() => {
               </div>
 
               {/* Square container for course content */}
-              <div className="w-full lg:w-[855px] flex-shrink-0 relative p-4 rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <div className="relative overflow-hidden rounded-xl">
+              <div className="w-full lg:w-[825px] flex-shrink-0 relative p-4 rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div className="relative overflow-hidden rounded-xl scroll-transition-wrapper" style={{ background: '#ffffff' }}>
+                  {/* Exiting page overlay during transition */}
+                  {isTransitioning && exitingPageIndex !== null && (
+                    <div 
+                      className={`course-container ${transitionDirection === 'up' ? 'page-exit-to-top' : 'page-exit-to-bottom'}`}
+                      style={{ background: '#ffffff' }}
+                    />
+                  )}
+                  {/* Current page */}
                   <div 
-                    className={`course-container bg-white overflow-hidden relative ${animationClass}`}
+                    className={`course-container bg-white overflow-hidden relative ${isTransitioning ? (transitionDirection === 'up' ? 'page-enter-from-bottom' : 'page-enter-from-top') : ''}`}
                   >
+                    <div 
+                      className="absolute inset-0"
+                      style={currentPage.pageNumber !== 38 ? { marginLeft: '-3%' } : {}}
+                    >
                 {isGridLayout ? (
                   // Layout 2x2 dla pierwszej strony
                   <div className="grid grid-cols-2 grid-rows-2 w-full h-full relative">
@@ -430,7 +699,7 @@ useEffect(() => {
                     {content.textPosition === 'left' && (
                       <div className="absolute inset-0 flex items-end">
                         <div className="w-[60%] max-w-[60%] pl-6 md:pl-8 lg:pl-12 pr-4 pb-6 md:pb-8 lg:pb-12">
-                          <div className="text-sm md:text-base lg:text-lg font-sans leading-relaxed text-black">
+                          <div className={`text-sm md:text-base lg:text-lg font-sans leading-relaxed text-black ${currentPage.pageNumber === 2 ? 'font-bold' : ''}`}>
                             {loadingText ? (
                               'Ładowanie...'
                             ) : (
@@ -640,7 +909,7 @@ useEffect(() => {
                                         {/* Jeśli są kolejne linie w tym akapicie, wyświetl je bez pogrubienia */}
                                         {trimmedParagraph.split('\n').slice(1).filter(l => l.trim()).length > 0 && (
                                           <p 
-                                            className="font-serif mb-3 whitespace-pre-line"
+                                            className="font-serif mb-3 whitespace-pre-line text-center"
                                             style={{ 
                                               fontWeight: 'normal', 
                                               fontSize: '1.125rem',
@@ -657,7 +926,7 @@ useEffect(() => {
                                   return (
                                     <p 
                                       key={index} 
-                                      className="font-serif mb-3 whitespace-pre-line"
+                                      className="font-serif mb-3 whitespace-pre-line text-center"
                                       style={{ 
                                         fontWeight: 'normal', 
                                         fontSize: '1.125rem',
@@ -671,7 +940,7 @@ useEffect(() => {
                                 {/* Tekst po separatorze - z większą przerwą, większa czcionka, bez pogrubienia */}
                                 {afterSeparator && (
                                   <p 
-                                    className="font-serif mt-6 whitespace-pre-line"
+                                    className="font-serif mt-6 whitespace-pre-line text-center"
                                     style={{ 
                                       fontWeight: 'normal', 
                                       fontSize: '1.125rem',
@@ -736,7 +1005,7 @@ useEffect(() => {
                     {loadingText ? (
                       <div className="text-gray-400">Ładowanie...</div>
                     ) : (
-                      <div className="w-full max-w-3xl">
+                      <div className="w-full max-w-3xl mx-auto">
                         <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
                           {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => {
                             // Sprawdź czy akapit zaczyna się od ** (pogrubiony nagłówek)
@@ -773,10 +1042,10 @@ useEffect(() => {
                   <PhotoUploadComponent pageNumber={currentPage.pageNumber} />
                 ) : isQRUpload ? (
                   // Tylko QR kod do uploadu zdjęć z postępami
-                  <QRCodeUpload pageNumber={currentPage.pageNumber} />
+                  <QRCodeUpload pageNumber={currentPage.pageNumber} headerText={qrPageContent} />
                 ) : isProgressEvaluation ? (
                   // Ocena postępów z suwakiem
-                  <ProgressEvaluation pageNumber={currentPage.pageNumber} />
+                  <ProgressEvaluation pageNumber={currentPage.pageNumber} language={language as 'PL' | 'DE'} />
                 ) : isForm ? (
                   // Formularz oceny zdjęcia
                   <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
@@ -943,7 +1212,42 @@ useEffect(() => {
                     {content.textPosition === 'top-center' ? (
                       <div
                         className="absolute left-1/2 -translate-x-1/2 w-full max-w-3xl px-6 md:px-8 lg:px-12"
-                        style={{ top: currentPage.pageNumber === 42 ? '15%' : '15%' }}
+                        style={{ top: currentPage.pageNumber === 37 ? '0%' : currentPage.pageNumber === 42 ? '15%' : '15%' }}
+                      >
+                        {loadingText ? (
+                          <div className="text-white text-center">Ładowanie...</div>
+                        ) : (
+                          <div
+                            className={`font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center ${
+                              currentPage.pageNumber === 42
+                                ? 'text-4xl md:text-5xl lg:text-6xl xl:text-7xl'
+                                : currentPage.pageNumber === 45
+                                ? 'text-2xl md:text-3xl lg:text-4xl'
+                                : currentPage.pageNumber === 46
+                                ? 'text-2xl md:text-3xl lg:text-4xl'
+                                : currentPage.pageNumber === 47
+                                ? 'text-2xl md:text-3xl lg:text-4xl'
+                                : 'text-4xl md:text-5xl lg:text-6xl'
+                            }`}
+                          >
+                            {currentPage.pageNumber === 46 ? (
+                              <p>Balans bieli – temperatura. Przesuń suwak, tak żeby zdjęcie było jak najbardziej zbliżone do białego – ani zbyt niebieski, ani za żółte</p>
+                            ) : currentPage.pageNumber === 47 ? (
+                              <p>Balans bieli – odcień. Poszukaj balansu pomiędzy zielenią a fioletem</p>
+                            ) : (
+                              overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                                <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                  {paragraph.trim()}
+                                </p>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : content.textPosition === 'top-center-lower' ? (
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 w-full max-w-3xl px-6 md:px-8 lg:px-12"
+                        style={{ top: currentPage.pageNumber === 23 ? '35%' : '12%' }}
                       >
                         {loadingText ? (
                           <div className="text-white text-center">Ładowanie...</div>
@@ -976,30 +1280,34 @@ useEffect(() => {
                         )}
                       </div>
                     ) : (
-                      <div className={`absolute inset-0 flex ${
-                        content.textPosition === 'top' ? 'items-start justify-center' 
-                        : content.textPosition === 'top-left' ? 'items-start justify-center'
-                        : content.textPosition === 'top-right' ? 'items-start justify-center'
-                        : content.textPosition === 'bottom' ? 'items-end justify-center' 
-                        : content.textPosition === 'bottom-left' ? 'items-end justify-center'
-                        : content.textPosition === 'bottom-right' ? 'items-end justify-center'
-                        : 'items-center justify-center'
-                      } ${
-                        content.textPosition === 'top' ? 'pt-8 md:pt-12 lg:pt-16' 
-                        : content.textPosition === 'top-left' || content.textPosition === 'top-right' ? 'pt-8 md:pt-12 lg:pt-16'
-                        : content.textPosition === 'bottom' ? 'pb-8 md:pb-12 lg:pb-16'
-                        : content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'pb-8 md:pb-12 lg:pb-16'
-                        : ''
-                      } ${
-                        content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' 
-                          ? 'px-6 md:px-8 lg:px-12' 
-                          : 'px-6 md:px-8 lg:px-12'
-                      }`}>
+                      <div 
+                        className={`absolute inset-0 flex ${
+                          content.textPosition === 'top' ? 'items-start justify-center' 
+                          : content.textPosition === 'top-left' ? 'items-start justify-center'
+                          : content.textPosition === 'top-right' ? 'items-start justify-center'
+                          : content.textPosition === 'bottom' ? 'items-end justify-center' 
+                          : content.textPosition === 'bottom-left' ? 'items-end justify-center'
+                          : content.textPosition === 'bottom-right' ? 'items-end justify-center'
+                          : content.textPosition === 'bottom-center' ? 'items-end justify-center'
+                          : 'items-center justify-center'
+                        } ${
+                          content.textPosition === 'top' ? 'pt-8 md:pt-12 lg:pt-16' 
+                          : content.textPosition === 'top-left' || content.textPosition === 'top-right' ? 'pt-8 md:pt-12 lg:pt-16'
+                          : content.textPosition === 'bottom' ? 'pb-8 md:pb-12 lg:pb-16'
+                          : content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'pb-8 md:pb-12 lg:pb-16'
+                          : ''
+                        } ${
+                          content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' 
+                            ? 'px-6 md:px-8 lg:px-12' 
+                            : 'px-6 md:px-8 lg:px-12'
+                        }`}
+                        style={currentPage.pageNumber === 4 ? { paddingBottom: '35%' } : undefined}
+                      >
                         {loadingText ? (
                           <div className="text-white">Ładowanie...</div>
                         ) : (
                           <div className={`w-full ${content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'max-w-2xl' : 'max-w-3xl'}`}>
-                            <div className={`text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center`}>
+                            <div className={`${currentPage.pageNumber === 13 ? 'text-sm md:text-base lg:text-lg xl:text-xl' : currentPage.pageNumber === 12 ? 'text-base md:text-lg lg:text-xl xl:text-2xl' : 'text-lg md:text-xl lg:text-2xl xl:text-3xl'} font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center ${currentPage.pageNumber === 4 ? 'font-bold' : ''}`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1012,60 +1320,60 @@ useEffect(() => {
                     )}
                     {/* 3 kontenery z tekstem na dole dla strony 45 */}
                     {currentPage.pageNumber === 45 && (
-                      <div className="absolute bottom-0 left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12 pb-6 md:pb-8 lg:pb-12">
+                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '0%' }}>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            kontury tracą wyrazistość, a danie jest za jasne, nie widać wielu elementów
+                          <p className="text-xs md:text-sm lg:text-base font-serif text-gray-900">
+                            {page45Texts.text1}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            idealnie wyważone, talerz i jego struktura jest zachowana, a danie widoczne
+                          <p className="text-xs md:text-sm lg:text-base font-serif text-gray-900">
+                            {page45Texts.text2}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            właśnie tak najczęściej wygląda zdjęcie bez obróbki na telefonie. Wystarczy je lekko rozjaśnić, aby nabrało szlachetności
+                          <p className="text-xs md:text-sm lg:text-base font-serif text-gray-900">
+                            {page45Texts.text3}
                           </p>
                         </div>
                       </div>
                     )}
                     {/* 3 kontenery z tekstem na dole dla strony 46 */}
                     {currentPage.pageNumber === 46 && (
-                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '20%' }}>
+                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '13%' }}>
                         <div className="flex-1 text-center">
                           <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            zbyt niebieskie
+                            {page46Texts.text1}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
                           <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            poprawne
+                            {page46Texts.text2}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
                           <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            zbyt żółte
+                            {page46Texts.text3}
                           </p>
                         </div>
                       </div>
                     )}
                     {/* 3 kontenery z tekstem na dole dla strony 47 */}
                     {currentPage.pageNumber === 47 && (
-                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '15%' }}>
+                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '13%' }}>
                         <div className="flex-1 text-center">
                           <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            zbyt zielone
+                            {page47Texts.text1}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
                           <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            poprawne
+                            {page47Texts.text2}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
                           <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
-                            zbyt fioletowe
+                            {page47Texts.text3}
                           </p>
                         </div>
                       </div>
@@ -1138,12 +1446,12 @@ useEffect(() => {
                   </div>
                 ) : isWhiteHeaderImage ? (
                   // Layout z białym tłem, tekstem na górze i zdjęciem 70%
-                  <div className="relative w-full h-full bg-white flex flex-col items-center justify-start">
-                    <div className="flex-none bg-white flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
+                  <div className="relative w-full h-full bg-white flex flex-col items-center justify-center">
+                    <div className="flex-none w-full bg-white flex items-center justify-center px-6 md:px-8 lg:px-12 py-6">
                       {loadingText ? (
                         <div className="text-gray-600">Ładowanie...</div>
                       ) : (
-                        <div className="w-full max-w-4xl">
+                        <div className="w-full max-w-4xl mx-auto">
                           <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
@@ -1154,7 +1462,7 @@ useEffect(() => {
                         </div>
                       )}
                     </div>
-                    <div className="flex-none aspect-square relative mt-8 mb-8 w-[70%]" style={{ minHeight: '400px' }}>
+                    <div className="flex-none aspect-square relative mx-auto w-[70%]" style={{ minHeight: '400px' }}>
                       <Image
                         src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                         alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -1167,14 +1475,20 @@ useEffect(() => {
                   </div>
                 ) : isBlackHeaderImage ? (
                   // Layout z czarnym nagłówkiem i kwadratowym zdjęciem (70% powierzchni)
-                  <div className="relative w-full h-full bg-black flex flex-col items-center justify-start">
+                  <div className="relative w-full h-full bg-black flex flex-col items-center justify-center">
                     {/* Czarne tło z białym tekstem na górze */}
-                    <div className="flex-none bg-black flex items-center justify-center px-6 md:px-8 lg:px-12 py-8 pt-12">
+                    <div 
+                      className="flex-none w-full bg-black flex items-center justify-center px-6 md:px-8 lg:px-12"
+                      style={{ 
+                        paddingTop: currentPage.pageNumber === 25 ? '40px' : (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '24px' : '24px', 
+                        paddingBottom: (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '16px' : '24px' 
+                      }}
+                    >
                       {loadingText ? (
                         <div className="text-white">Ładowanie...</div>
                       ) : (
-                        <div className="w-full max-w-4xl">
-                          <div className="text-base md:text-lg lg:text-xl xl:text-2xl font-serif text-white leading-relaxed whitespace-pre-line text-center">
+                        <div className="w-full max-w-4xl mx-auto">
+                          <div className={`${currentPage.pageNumber === 25 ? 'text-sm md:text-base lg:text-lg xl:text-xl' : 'text-base md:text-lg lg:text-xl xl:text-2xl'} font-serif text-white leading-relaxed whitespace-pre-line text-center`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1184,8 +1498,8 @@ useEffect(() => {
                         </div>
                       )}
                     </div>
-                    {/* Kwadratowy kontener zdjęcia - 70% powierzchni głównego kontenera (77% dla stron 14 i 19) */}
-                    <div className={`flex-none aspect-square relative mt-8 mb-8 ${currentPage.pageNumber === 14 || currentPage.pageNumber === 19 ? 'w-[77%]' : 'w-[70%]'}`} style={{ minHeight: '400px' }}>
+                    {/* Kwadratowy kontener zdjęcia - wycentrowany */}
+                    <div className={`flex-none aspect-square relative mx-auto ${(currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? 'w-[68%]' : 'w-[70%]'}`} style={{ minHeight: (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '350px' : '400px' }}>
                       <Image
                         src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                         alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -1198,17 +1512,17 @@ useEffect(() => {
                   </div>
                 ) : isTwoImagesContainer ? (
                   // Layout z białym tłem, tekstem na górze i dwoma kontenerami na zdjęcia (70% powierzchni)
-                  <div className="relative w-full h-full bg-white flex flex-col">
+                  <div className="relative w-full h-full bg-white flex flex-col items-center justify-center">
                     {/* Tekst wyśrodkowany w pionie między górą a kontenerami zdjęć */}
-                    <div className="flex-1 flex items-center px-6 md:px-8 lg:px-12">
-                      <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed text-left whitespace-pre-line">
-                        {content.text}
+                    <div className="flex-1 flex items-center justify-center px-6 md:px-8 lg:px-12 w-full">
+                      <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed text-center whitespace-pre-line">
+                        {overlayText || content.text}
                       </div>
                     </div>
                     {/* Kontener na dwa zdjęcia - 70% powierzchni całkowitej kontenera głównego */}
-                    <div className="flex-none flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8">
+                    <div className="flex-none flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8 w-full">
                       <div 
-                        className="flex gap-4"
+                        className="flex gap-4 mx-auto"
                         style={{ 
                           width: '95%',
                           aspectRatio: '2 / 1'
@@ -1230,7 +1544,7 @@ useEffect(() => {
                                 style={{ transform: 'translate(-40%, -10%)' }}
                               >
                                 <span className="text-center text-2xl md:text-3xl lg:text-4xl font-serif text-gray-900 drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)]">
-                                  - flat lay
+                                  {page32Labels.label1 || '- flat lay'}
                                 </span>
                               </div>
                             )}
@@ -1251,11 +1565,11 @@ useEffect(() => {
                   </div>
                     ) : isTwoImagesTopText ? (
                   // Layout z białym tłem, tekstem na górze i dwoma kontenerami na zdjęcia
-                  <div className="relative w-full h-full bg-white flex flex-col">
+                  <div className="relative w-full h-full bg-white flex flex-col items-center overflow-visible">
                     {/* Tekst na górze */}
                     <div
-                      className="flex-none px-6 md:px-8 lg:px-12 pt-8 md:pt-12 lg:pt-16"
-                      style={{ paddingTop: '12%' }}
+                      className="flex-none px-6 md:px-8 lg:px-12 w-full"
+                      style={{ paddingTop: '8%' }}
                     >
                       {loadingText ? (
                         <div className="text-gray-400 text-center">Ładowanie...</div>
@@ -1266,9 +1580,7 @@ useEffect(() => {
                               const lines = overlayText.split('\n').filter((l) => l.trim())
                               const title = lines[0] || ''
                               return (
-                                <div className="flex flex-col space-y-6">
-                                  <p className="m-0">{title}</p>
-                                </div>
+                                <p className="m-0">{title}</p>
                               )
                             })()
                           ) : (
@@ -1283,87 +1595,119 @@ useEffect(() => {
                         </div>
                       )}
                     </div>
-                    {/* Nakładka strzałki, aby nachodziła na zdjęcie */}
-                    {content.iconUrl && (
-                      <div
-                        className="absolute pointer-events-none z-20"
-                        style={{ top: '24%', left: '-6%', width: '300px', height: '300px' }}
-                      >
-                        <Image
-                          src={content.iconUrl?.startsWith('/') ? content.iconUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.iconUrl}`}
-                          alt="Ikona kierunku"
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                    )}
-                    {/* Kontener na dwa zdjęcia */}
-                    <div className="flex-1 flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8">
-                      <div 
-                        className="flex gap-4"
-                        style={{ 
-                          width: '95%',
-                          aspectRatio: '2 / 1'
-                        }}
-                      >
-                        {/* Kontener na pierwsze zdjęcie */}
-                        <div className="flex-1 relative aspect-square">
-                          <Image
-                            src={content.image1Url?.startsWith('/') ? content.image1Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image1Url}`}
-                            alt="Zdjęcie 27-1"
-                            fill
-                            className="object-contain"
-                            priority={currentPageIndex === 26}
-                            sizes="(max-width: 768px) 35vw, 280px"
-                          />
-                          {currentPage.pageNumber === 32 && (
-                            <div className="absolute top-[-32%] left-1/2 -translate-x-1/2 w-full flex items-start justify-center pointer-events-none">
-                              <span className="text-center text-2xl md:text-3xl lg:text-4xl font-serif text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
-                                - flat lay
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {/* Kontener na drugie zdjęcie */}
-                        <div className="flex-1 relative aspect-square">
-                          <Image
-                            src={content.image2Url?.startsWith('/') ? content.image2Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image2Url}`}
-                            alt="Zdjęcie 27-2"
-                            fill
-                            className="object-contain"
-                            priority={currentPageIndex === 26}
-                            sizes="(max-width: 768px) 35vw, 280px"
-                          />
-                          {currentPage.pageNumber === 32 && (
-                            <div className="absolute top-[-32%] left-1/2 -translate-x-1/2 w-full flex items-start justify-center pointer-events-none">
-                              <span className="text-center text-2xl md:text-3xl lg:text-4xl font-serif text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
-                                - 45 stopni
-                              </span>
-                            </div>
-                          )}
-                          {currentPage.pageNumber === 32 && content.iconUrlRight && (
-                            <div
-                              className="absolute pointer-events-none z-20"
-                              style={{ top: '-26%', right: '-26%', width: '300px', height: '300px' }}
-                            >
+                    
+                    {/* Kontener na dwa zdjęcia z etykietami - strona 32 */}
+                    {currentPage.pageNumber === 32 ? (
+                      <div className="flex-1 flex items-start justify-center w-full px-4 pb-2 pt-2 relative">
+                        {/* Strzałka lewa - przy krawędzi kontenera, nachodzi na zdjęcie */}
+                        {content.iconUrl && (
+                          <div 
+                            className="absolute pointer-events-none z-10"
+                            style={{ left: '0%', top: '20%', width: '280px', height: '280px' }}
+                          >
+                            <Image
+                              src={content.iconUrl}
+                              alt="Strzałka"
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        {/* Strzałka prawa - przy krawędzi kontenera, nachodzi na zdjęcie */}
+                        {content.iconUrlRight && (
+                          <div 
+                            className="absolute pointer-events-none z-10"
+                            style={{ right: '0%', top: '20%', width: '252px', height: '252px' }}
+                          >
+                            <Image
+                              src={content.iconUrlRight}
+                              alt="Strzałka"
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        <div className="flex gap-8 w-full max-w-[600px]" style={{ marginTop: '30%' }}>
+                          {/* Lewa kolumna - flat lay */}
+                          <div className="flex-1 flex flex-col items-center relative">
+                            <span className="text-xl md:text-2xl font-serif text-black absolute" style={{ top: '-50%' }}>{page32Labels.label1 || '- flat lay'}</span>
+                            <div className="relative w-full aspect-square">
                               <Image
-                                src={content.iconUrlRight?.startsWith('/') ? content.iconUrlRight : `/course/strona ${currentPage.pageNumber}/Foto/${content.iconUrlRight}`}
-                                alt="Ikona kierunku prawa"
+                                src={content.image1Url?.startsWith('/') ? content.image1Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image1Url}`}
+                                alt="Flat lay"
                                 fill
                                 className="object-contain"
+                                priority
+                                sizes="(max-width: 768px) 45vw, 300px"
                               />
                             </div>
-                          )}
+                          </div>
+                          {/* Prawa kolumna - 45 stopni */}
+                          <div className="flex-1 flex flex-col items-center relative">
+                            <span className="text-xl md:text-2xl font-serif text-black absolute" style={{ top: '-50%' }}>{page32Labels.label2 || '- 45 stopni'}</span>
+                            <div className="relative w-full aspect-square">
+                              <Image
+                                src={content.image2Url?.startsWith('/') ? content.image2Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image2Url}`}
+                                alt="45 stopni"
+                                fill
+                                className="object-contain"
+                                priority
+                                sizes="(max-width: 768px) 45vw, 300px"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        {/* Nakładka strzałki dla innych stron */}
+                        {content.iconUrl && (
+                          <div
+                            className="absolute pointer-events-none z-20"
+                            style={{ top: '24%', left: '2%', width: '150px', height: '150px' }}
+                          >
+                            <Image
+                              src={content.iconUrl?.startsWith('/') ? content.iconUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.iconUrl}`}
+                              alt="Ikona kierunku"
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        {/* Kontener na dwa zdjęcia - inne strony */}
+                        <div className="flex-1 flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8 w-full">
+                          <div 
+                            className="flex gap-4 w-full max-w-[90%]"
+                          >
+                            <div className="flex-1 relative aspect-square">
+                              <Image
+                                src={content.image1Url?.startsWith('/') ? content.image1Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image1Url}`}
+                                alt="Zdjęcie 1"
+                                fill
+                                className="object-contain"
+                                sizes="(max-width: 768px) 35vw, 280px"
+                              />
+                            </div>
+                            <div className="flex-1 relative aspect-square">
+                              <Image
+                                src={content.image2Url?.startsWith('/') ? content.image2Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image2Url}`}
+                                alt="Zdjęcie 2"
+                                fill
+                                className="object-contain"
+                                sizes="(max-width: 768px) 35vw, 280px"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : isThreeImagesTopText ? (
                   // Layout z białym tłem, tekstem na górze i trzema kontenerami na zdjęcia (50% wysokości, 3 kolumny)
-                  <div className="relative w-full h-full bg-white flex flex-col">
+                  <div className="relative w-full h-full bg-white flex flex-col items-center">
                     {/* Tekst na górze */}
                     <div
-                      className="flex-none px-6 md:px-8 lg:px-12 pt-8 md:pt-12 lg:pt-16"
+                      className="flex-none px-6 md:px-8 lg:px-12 pt-8 md:pt-12 lg:pt-16 w-full"
                       style={{ paddingTop: '12%' }}
                     >
                       {loadingText ? (
@@ -1457,19 +1801,20 @@ useEffect(() => {
                     Brak treści
                   </div>
                 )}
-
-                    {/* Page indicator */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 text-sm">
-                      {currentPageIndex + 1} / {pages.length}
                     </div>
                   </div>
                 </div>
 
-                {/* Navigation arrows - poza kontenerem */}
+                {/* Page indicator - poza białym kontenerem kursu */}
+                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 text-sm rounded">
+                  {currentPageIndex + 1} / {pages.length}
+                </div>
+
+                {/* Navigation arrows */}
                 {currentPageIndex > 0 && (
                   <button
                     onClick={prevPage}
-                    className="absolute left-0 top-[80%] -translate-y-1/2 -translate-x-20 p-4 z-10 nav-arrow-elegant"
+                    className="absolute left-0 -bottom-2 -translate-x-20 p-4 z-10 nav-arrow-elegant"
                     aria-label="Poprzednia strona"
                   >
                     <svg
@@ -1491,7 +1836,7 @@ useEffect(() => {
                 {currentPageIndex < pages.length - 1 && (
                   <button
                     onClick={nextPage}
-                    className="absolute right-0 top-[80%] -translate-y-1/2 translate-x-20 p-4 z-10 nav-arrow-elegant"
+                    className="absolute right-0 -bottom-2 translate-x-20 p-4 z-10 nav-arrow-elegant"
                     aria-label="Następna strona"
                   >
                     <svg

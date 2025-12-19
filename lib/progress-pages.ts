@@ -1,5 +1,6 @@
 // Strony kursu, na których użytkownik może uploadować zdjęcia postępów
-export const PROGRESS_PAGES = [7, 15, 20, 29, 35, 40, 49] as const
+// Muszą odpowiadać etapom w ProgressTimeline
+export const PROGRESS_PAGES = [11, 17, 22, 31, 37, 42] as const
 
 export type ProgressPageNumber = typeof PROGRESS_PAGES[number]
 
@@ -13,17 +14,20 @@ export function isProgressPage(pageNumber: number): pageNumber is ProgressPageNu
 
 // Mapowanie stron na etapy kursu
 export const PAGE_TO_STAGE: Record<ProgressPageNumber, string> = {
-  7: 'światło',
-  15: 'kompozycja',
-  20: 'kompozycja',
-  29: 'perspektywa',
-  35: 'stylizacja',
-  40: 'edycja',
-  49: 'finał'
+  11: 'światło',
+  17: 'horyzont',
+  22: 'kompozycja',
+  31: 'perspektywa',
+  37: 'proporcje',
+  42: 'retusz'
 }
 
 // Pobierz etykietę etapu dla strony
 export function getStageLabel(pageNumber: ProgressPageNumber): string {
   return PAGE_TO_STAGE[pageNumber] || ''
 }
+
+
+
+
 

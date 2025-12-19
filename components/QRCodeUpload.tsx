@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslation } from '@/lib/LanguageContext'
 
 interface QRCodeUploadProps {
   pageNumber: number
   uploadId?: string
+  headerText?: string
 }
 
-export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
+export function QRCodeUpload({ pageNumber, uploadId, headerText }: QRCodeUploadProps) {
+  const { t } = useTranslation()
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [uploadUrl, setUploadUrl] = useState<string | null>(null)
   const [currentUploadId, setCurrentUploadId] = useState<string | null>(uploadId || null)
@@ -75,13 +78,13 @@ export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center p-8" style={{ background: '#1a1d24' }}>
       <div className="w-full max-w-md text-center space-y-6">
-        <h2 className="text-2xl md:text-3xl font-serif text-white">
-          Prześlij zdjęcie z postępami
+        <h2 className="text-2xl md:text-3xl font-serif text-white whitespace-pre-line">
+          {headerText || t.course.unlockNextStep}
         </h2>
         
         {loading ? (
           <div className="text-gray-400">
-            <div className="animate-pulse">Ładowanie kodu QR...</div>
+            <div className="animate-pulse">{t.course.loadingQR}</div>
           </div>
         ) : error ? (
           <div className="space-y-4">
@@ -92,7 +95,7 @@ export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
             >
-              Odśwież stronę
+              {t.course.refreshPage}
             </button>
           </div>
         ) : qrCodeUrl ? (
@@ -116,15 +119,15 @@ export function QRCodeUpload({ pageNumber, uploadId }: QRCodeUploadProps) {
               </a>
             </div>
             <p className="text-sm text-gray-400">
-              Zeskanuj kod QR telefonem, aby przesłać zdjęcie z postępami
+              {t.course.scanQR}
             </p>
             <p className="text-xs text-gray-500">
-              Lub <a href={uploadUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline hover:text-blue-300">kliknij tutaj</a> aby otworzyć stronę uploadu
+              {t.course.orUploadHere}: <a href={uploadUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline hover:text-blue-300">{t.common.loading.replace('...', '')}</a>
             </p>
           </div>
         ) : (
           <div className="text-red-400 text-sm">
-            Nie udało się wygenerować kodu QR. Odśwież stronę.
+            {t.errors.generic}
           </div>
         )}
       </div>

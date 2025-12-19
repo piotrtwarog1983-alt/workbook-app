@@ -1,0 +1,4 @@
+Scanne den QR-Code mit deinem Handy und öffne den Link. 
+Auf deinem Handy erscheint ein Fenster zum Hinzufügen von Fotos aus der Galerie – füge ein Foto hinzu und bestätige mit der Taste.
+
+

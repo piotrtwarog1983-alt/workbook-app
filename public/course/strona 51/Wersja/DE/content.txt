@@ -1,0 +1,15 @@
+**Flat Lay**
+Foto von oben aufgenommen.
+
+**Belichtungsdreieck**
+Drei Elemente, die zusammen die Helligkeit des Fotos bestimmen:
+- Belichtungszeit (wie lange die Kamera Licht aufnimmt - länger = heller)
+- ISO (wie stark die Kamera die Helligkeit verstärkt - höher = heller)
+- Blende (wie weit das Objektiv öffnet und wie viel Licht hineinkommt)
+...
+
+
+
+
+
+

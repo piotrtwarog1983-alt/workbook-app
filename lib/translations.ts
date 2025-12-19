@@ -106,6 +106,7 @@ export const translations = {
       tips: 'Tipy',
       noTips: 'Brak tipów dla tej strony',
       uploadPhoto: 'Prześlij zdjęcie',
+      unlockNextStep: 'Aby odblokować następny krok, dodaj zdjęcie',
       scanQR: 'Zeskanuj kod QR telefonem',
       orUploadHere: 'lub prześlij zdjęcie tutaj',
       dragAndDrop: 'Przeciągnij i upuść zdjęcie',
@@ -115,6 +116,23 @@ export const translations = {
       uploadError: 'Błąd podczas przesyłania zdjęcia',
       pageNavigation: 'Nawigacja stron',
       goToPage: 'Przejdź do strony',
+      loadingQR: 'Ładowanie kodu QR...',
+      refreshPage: 'Odśwież stronę',
+      // Upload
+      submitPhoto: 'Prześlij swoje zdjęcie',
+      dragOrClick: 'Przeciągnij zdjęcie tutaj lub kliknij, aby wybrać',
+      supportedFormats: 'Obsługiwane formaty: JPG, PNG, WEBP',
+      photoUploaded: 'Zdjęcie zostało przesłane pomyślnie!',
+      uploadOther: 'Prześlij inne zdjęcie',
+      uploadFromPhone: 'Lub prześlij z telefonu:',
+      waitingForUpload: 'Czekam na przesłanie zdjęcia z telefonu...',
+      scanQRToUpload: 'Zeskanuj kod QR telefonem, aby otworzyć stronę do przesłania zdjęcia bezpośrednio z urządzenia mobilnego',
+      mustBeLoggedIn: 'Musisz być zalogowany, aby przesłać zdjęcie',
+      failedToGetUploadId: 'Nie udało się pobrać identyfikatora uploadu',
+      failedToLoadUserData: 'Nie udało się załadować danych użytkownika',
+      pleaseSelectImage: 'Proszę wybrać plik graficzny',
+      noUploadId: 'Brak identyfikatora uploadu. Odśwież stronę.',
+      uploadFailed: 'Nie udało się przesłać zdjęcia. Spróbuj ponownie.',
     },
 
     // Pasek postępów
@@ -163,6 +181,23 @@ export const translations = {
       resetBody: 'Kliknij poniższy link, aby zresetować hasło:',
       resetExpiry: 'Link wygaśnie za 1 godzinę.',
       resetIgnore: 'Jeśli nie prosiłeś o resetowanie hasła, zignoruj tę wiadomość.',
+    },
+
+    // Upload page
+    upload: {
+      title: 'Prześlij zdjęcie',
+      success: 'Zdjęcie zostało przesłane pomyślnie!',
+      closeWindow: 'Możesz zamknąć to okno.',
+      selectFromGallery: 'Wybierz zdjęcie z galerii',
+      selectOther: 'Wybierz inne zdjęcie',
+      submitPhoto: 'Prześlij zdjęcie',
+      uploading: 'Przesyłanie...',
+      invalidLink: 'Błąd: Nieprawidłowy link',
+      invalidLinkDesc: 'Link do uploadu jest nieprawidłowy. Sprawdź kod QR ponownie.',
+      missingParams: 'Brak wymaganych parametrów w linku',
+      missingData: 'Brak wymaganych danych',
+      uploadFailed: 'Nie udało się przesłać zdjęcia. Spróbuj ponownie.',
+      pleaseSelectImage: 'Proszę wybrać plik graficzny',
     },
 
     // Błędy API
@@ -280,6 +315,7 @@ export const translations = {
       tips: 'Tipps',
       noTips: 'Keine Tipps für diese Seite',
       uploadPhoto: 'Foto hochladen',
+      unlockNextStep: 'Um den nächsten Schritt freizuschalten, fügen Sie ein Foto hinzu',
       scanQR: 'QR-Code mit dem Handy scannen',
       orUploadHere: 'oder Foto hier hochladen',
       dragAndDrop: 'Foto hierher ziehen',
@@ -289,6 +325,23 @@ export const translations = {
       uploadError: 'Fehler beim Hochladen',
       pageNavigation: 'Seitennavigation',
       goToPage: 'Zur Seite gehen',
+      loadingQR: 'QR-Code wird geladen...',
+      refreshPage: 'Seite aktualisieren',
+      // Upload
+      submitPhoto: 'Laden Sie Ihr Foto hoch',
+      dragOrClick: 'Ziehen Sie das Foto hierher oder klicken Sie, um auszuwählen',
+      supportedFormats: 'Unterstützte Formate: JPG, PNG, WEBP',
+      photoUploaded: 'Foto wurde erfolgreich hochgeladen!',
+      uploadOther: 'Anderes Foto hochladen',
+      uploadFromPhone: 'Oder vom Handy hochladen:',
+      waitingForUpload: 'Warte auf Foto-Upload vom Handy...',
+      scanQRToUpload: 'Scannen Sie den QR-Code mit Ihrem Handy, um die Seite zum Hochladen von Fotos direkt vom Mobilgerät zu öffnen',
+      mustBeLoggedIn: 'Sie müssen angemeldet sein, um ein Foto hochzuladen',
+      failedToGetUploadId: 'Upload-ID konnte nicht abgerufen werden',
+      failedToLoadUserData: 'Benutzerdaten konnten nicht geladen werden',
+      pleaseSelectImage: 'Bitte wählen Sie eine Bilddatei',
+      noUploadId: 'Keine Upload-ID. Seite aktualisieren.',
+      uploadFailed: 'Foto konnte nicht hochgeladen werden. Versuchen Sie es erneut.',
     },
 
     // Fortschrittsleiste
@@ -339,6 +392,23 @@ export const translations = {
       resetIgnore: 'Wenn Sie kein Zurücksetzen des Passworts angefordert haben, ignorieren Sie diese Nachricht.',
     },
 
+    // Upload-Seite
+    upload: {
+      title: 'Foto hochladen',
+      success: 'Foto wurde erfolgreich hochgeladen!',
+      closeWindow: 'Sie können dieses Fenster schließen.',
+      selectFromGallery: 'Foto aus Galerie auswählen',
+      selectOther: 'Anderes Foto auswählen',
+      submitPhoto: 'Foto hochladen',
+      uploading: 'Wird hochgeladen...',
+      invalidLink: 'Fehler: Ungültiger Link',
+      invalidLinkDesc: 'Der Upload-Link ist ungültig. Überprüfen Sie den QR-Code erneut.',
+      missingParams: 'Fehlende erforderliche Parameter im Link',
+      missingData: 'Fehlende erforderliche Daten',
+      uploadFailed: 'Foto konnte nicht hochgeladen werden. Versuchen Sie es erneut.',
+      pleaseSelectImage: 'Bitte wählen Sie eine Bilddatei',
+    },
+
     // API-Fehler
     errors: {
       generic: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
@@ -351,4 +421,8 @@ export const translations = {
 } as const
 
 export type TranslationKeys = typeof translations.PL
+
+
+
+
 

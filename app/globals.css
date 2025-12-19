@@ -16,10 +16,10 @@ body {
 /* Custom styles for course platform */
 .course-container {
   position: relative !important;
-  display: block !important;
   margin: 0 auto !important;
   background: white !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 /* Mobile: square container using aspect-ratio */
@@ -32,15 +32,15 @@ body {
   }
 }
 
-/* Desktop: fixed 855x855 square */
+/* Desktop: fixed rectangle - wider */
 @media (min-width: 1024px) {
   .course-container {
-    width: 855px !important;
-    height: 855px !important;
-    max-width: 855px !important;
-    max-height: 855px !important;
-    min-width: 855px !important;
-    min-height: 855px !important;
+    width: 825px !important;
+    height: 750px !important;
+    max-width: 825px !important;
+    max-height: 750px !important;
+    min-width: 825px !important;
+    min-height: 750px !important;
     flex-shrink: 0 !important;
   }
 }
@@ -174,65 +174,65 @@ body {
   color: rgba(255, 255, 255, 1) !important;
 }
 
-/* Smooth page transition animations */
-@keyframes slideOutUp {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(-100%);
-    opacity: 0.3;
-  }
+/* Scroll-like page transition - like phone scrolling */
+.scroll-transition-wrapper {
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: 750px;
+  background: white;
 }
 
-@keyframes slideOutDown {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(100%);
-    opacity: 0.3;
-  }
+/* Entering page animations */
+@keyframes scrollEnterFromBottom {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
 }
 
-@keyframes slideInUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0.3;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+@keyframes scrollEnterFromTop {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(0); }
 }
 
-@keyframes slideInDown {
-  from {
-    transform: translateY(-100%);
-    opacity: 0.3;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* Exiting page animations */
+@keyframes scrollExitToTop {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
 }
 
-.course-container-slide-out-up {
-  animation: slideOutUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes scrollExitToBottom {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
 }
 
-.course-container-slide-out-down {
-  animation: slideOutDown 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* New page entering from bottom (scroll up/next) */
+.page-enter-from-bottom {
+  animation: scrollEnterFromBottom 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-.course-container-slide-in-up {
-  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* Old page exiting to top (scroll up/next) */
+.page-exit-to-top {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  animation: scrollExitToTop 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-.course-container-slide-in-down {
-  animation: slideInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* New page entering from top (scroll down/prev) */
+.page-enter-from-top {
+  animation: scrollEnterFromTop 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* Old page exiting to bottom (scroll down/prev) */
+.page-exit-to-bottom {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  animation: scrollExitToBottom 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 /* Elegant buttons */
