@@ -532,7 +532,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['To Twoje finałowe zdjęcie - pokaż wszystko czego się nauczyłeś!']),
+      tips: JSON.stringify([]),
     },
     {
       id: '50',
