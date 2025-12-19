@@ -22,25 +22,43 @@ export function DictionaryInline() {
   const parseContentToTerms = (content: string): GlossaryTerm[] => {
     const terms: GlossaryTerm[] = []
     
-    // Podziel na bloki oddzielone podwójnymi nowymi liniami
-    const blocks = content.split(/\n\n+/).filter(block => block.trim())
+    // Normalizuj końce linii
+    const normalizedContent = content.replace(/\r\n/g, '\n')
+    const lines = normalizedContent.split('\n')
+    
+    // Grupuj linie w bloki (oddzielone pustymi liniami)
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    for (const line of lines) {
+      if (line.trim() === '') {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line.trim())
+      }
+    }
+    
+    // Dodaj ostatni blok jeśli nie jest pusty
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
     
     // Pomiń pierwszy blok (tytuł "Słownik fotografa" / "Fotografen-Wörterbuch")
     const termBlocks = blocks.slice(1)
     
     termBlocks.forEach((block, index) => {
-      const lines = block.split('\n').filter(line => line.trim())
-      if (lines.length >= 1) {
-        const term = lines[0].trim()
-        const definition = lines.slice(1).join(' ').trim()
+      if (block.length >= 2) {
+        const term = block[0]
+        const definition = block.slice(1).join(' ')
         
-        if (term && definition) {
-          terms.push({
-            id: `term-${index}`,
-            term,
-            definition
-          })
-        }
+        terms.push({
+          id: `term-${index}`,
+          term,
+          definition
+        })
       }
     })
     
