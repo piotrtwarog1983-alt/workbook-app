@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Pusher from 'pusher-js'
-import { PROGRESS_PAGES } from '@/lib/progress-pages'
+import { PROGRESS_PAGES, isProgressPage } from '@/lib/progress-pages'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { TipCloud } from './TipCloud'
@@ -518,8 +518,23 @@ useEffect(() => {
   const pages: CoursePage[] = course.pages || []
   const currentPage = pages[currentPageIndex]
 
+  // Sprawdź czy można przejść do następnej strony
+  // Blokuje jeśli aktualna strona wymaga uploadu zdjęcia i nie zostało ono dodane
+  const canGoToNextPage = (): boolean => {
+    if (!currentPage) return false
+    const pageNumber = currentPage.pageNumber
+    
+    // Jeśli strona wymaga uploadu (jest stroną z QR), sprawdź czy zdjęcie zostało dodane
+    if (isProgressPage(pageNumber)) {
+      return completedPages.includes(pageNumber)
+    }
+    
+    // Inne strony - można przejść dalej
+    return true
+  }
+
   const nextPage = () => {
-    if (currentPageIndex < pages.length - 1 && !isTransitioning) {
+    if (currentPageIndex < pages.length - 1 && !isTransitioning && canGoToNextPage()) {
       setExitingPageIndex(currentPageIndex)
       setCurrentPageIndex(currentPageIndex + 1)
       setTransitionDirection('up')
@@ -1838,22 +1853,44 @@ useEffect(() => {
                 {currentPageIndex < pages.length - 1 && (
                   <button
                     onClick={nextPage}
-                    className="absolute right-0 -bottom-2 translate-x-20 p-4 z-10 nav-arrow-elegant"
-                    aria-label="Następna strona"
+                    disabled={!canGoToNextPage()}
+                    className={`absolute right-0 -bottom-2 translate-x-20 p-4 z-10 ${
+                      canGoToNextPage() 
+                        ? 'nav-arrow-elegant' 
+                        : 'opacity-30 cursor-not-allowed bg-gray-800/50 rounded-full'
+                    }`}
+                    aria-label={canGoToNextPage() ? t.common.next : t.course.unlockNextStep}
+                    title={canGoToNextPage() ? t.common.next : t.course.unlockNextStep}
                   >
-                    <svg
-                      className="w-6 h-6 text-gray-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                    {canGoToNextPage() ? (
+                      <svg
+                        className="w-6 h-6 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-6 h-6 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    )}
                   </button>
                 )}
               </div>
