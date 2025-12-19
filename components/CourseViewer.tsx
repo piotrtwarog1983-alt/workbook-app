@@ -1244,17 +1244,11 @@ useEffect(() => {
                                 : 'text-4xl md:text-5xl lg:text-6xl'
                             }`}
                           >
-                            {currentPage.pageNumber === 46 ? (
-                              <p>Balans bieli – temperatura. Przesuń suwak, tak żeby zdjęcie było jak najbardziej zbliżone do białego – ani zbyt niebieski, ani za żółte</p>
-                            ) : currentPage.pageNumber === 47 ? (
-                              <p>Balans bieli – odcień. Poszukaj balansu pomiędzy zielenią a fioletem</p>
-                            ) : (
-                              overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-                                <p key={index} className={index > 0 ? 'mt-4' : ''}>
-                                  {paragraph.trim()}
-                                </p>
-                              ))
-                            )}
+                            {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                              <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                {paragraph.trim()}
+                              </p>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -1279,17 +1273,11 @@ useEffect(() => {
                                 : 'text-4xl md:text-5xl lg:text-6xl'
                             }`}
                           >
-                            {currentPage.pageNumber === 46 ? (
-                              <p>Balans bieli – temperatura. Przesuń suwak, tak żeby zdjęcie było jak najbardziej zbliżone do białego – ani zbyt niebieski, ani za żółte</p>
-                            ) : currentPage.pageNumber === 47 ? (
-                              <p>Balans bieli – odcień. Poszukaj balansu pomiędzy zielenią a fioletem</p>
-                            ) : (
-                              overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-                                <p key={index} className={index > 0 ? 'mt-4' : ''}>
-                                  {paragraph.trim()}
-                                </p>
-                              ))
-                            )}
+                            {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                              <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                {paragraph.trim()}
+                              </p>
+                            ))}
                           </div>
                         )}
                       </div>
