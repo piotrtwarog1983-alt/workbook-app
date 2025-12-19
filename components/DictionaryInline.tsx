@@ -68,7 +68,7 @@ export function DictionaryInline() {
   const fetchTerms = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/course-content/51/${language}`)
+      const response = await fetch(`/api/dictionary-content/${language}`)
       if (response.ok) {
         const data = await response.json()
         if (data.content) {
