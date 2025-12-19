@@ -116,9 +116,9 @@ export function VideoPlayer({ pageNumber }: VideoPlayerProps) {
         Video
       </h3>
 
-      <div className="relative flex-1 flex flex-col">
-        {/* Video container */}
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black/40">
+      <div className="relative flex-1 flex flex-col items-center">
+        {/* Video container - portrait format 9:16 */}
+        <div className="relative w-48 aspect-[9/16] rounded-lg overflow-hidden bg-black/40">
           {isLoading && !error && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500"></div>
