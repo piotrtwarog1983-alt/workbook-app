@@ -74,6 +74,8 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     label2: ''
   })
   const [qrPageContent, setQrPageContent] = useState<string>('')
+  const [qrUploading, setQrUploading] = useState(false)
+  const [qrUploadStatus, setQrUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const pusherRef = useRef<Pusher | null>(null)
   
   // Mapowanie języka z kontekstu na format folderów (PL, DE)
@@ -1162,46 +1164,119 @@ useEffect(() => {
                         </div>
                         {/* Przycisk aparatu na stronie 6 - tylko mobile */}
                         {currentPage.pageNumber === 6 && isMobile && (
-                          <button
-                            onClick={() => {
-                              // Otwórz TYLKO aparat w telefonie (nie galerię)
-                              const input = document.createElement('input')
-                              input.type = 'file'
-                              input.accept = 'image/*'
-                              input.capture = 'environment' // Wymusza użycie kamery
-                              input.onchange = (e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0]
-                                if (file) {
-                                  console.log('Zrobiono zdjęcie:', file.name)
-                                  // Tutaj można dodać podgląd lub zapisać
+                          <div className="mt-8 flex flex-col items-center gap-3">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const token = localStorage.getItem('token')
+                                  if (!token) {
+                                    alert('Musisz być zalogowany')
+                                    return
+                                  }
+
+                                  setQrUploading(true)
+                                  setQrUploadStatus('idle')
+
+                                  // Pobierz uploadId (użyj istniejącego lub pobierz nowy)
+                                  let uploadId = userUploadId
+                                  if (!uploadId) {
+                                    const response = await fetch('/api/user/upload-id', {
+                                      headers: { 'Authorization': `Bearer ${token}` }
+                                    })
+                                    const data = await response.json()
+                                    if (!data.uploadId) {
+                                      alert('Nie udało się pobrać ID użytkownika')
+                                      setQrUploading(false)
+                                      return
+                                    }
+                                    uploadId = data.uploadId
+                                    setUserUploadId(uploadId)
+                                  }
+
+                                  // Otwórz aparat w telefonie
+                                  const input = document.createElement('input')
+                                  input.type = 'file'
+                                  input.accept = 'image/*'
+                                  input.capture = 'environment' // Wymusza użycie kamery
+                                  input.onchange = async (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0]
+                                    if (file) {
+                                      try {
+                                        const formData = new FormData()
+                                        formData.append('image', file)
+                                        formData.append('pageNumber', currentPage.pageNumber.toString())
+                                        formData.append('uploadId', uploadId!)
+
+                                        const uploadResponse = await fetch('/api/upload-photo', {
+                                          method: 'POST',
+                                          headers: { 'Authorization': `Bearer ${token}` },
+                                          body: formData
+                                        })
+
+                                        if (uploadResponse.ok) {
+                                          setQrUploadStatus('success')
+                                          setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
+                                          setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                        } else {
+                                          setQrUploadStatus('error')
+                                          setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                        }
+                                      } catch (err) {
+                                        console.error('Upload error:', err)
+                                        setQrUploadStatus('error')
+                                        setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                      } finally {
+                                        setQrUploading(false)
+                                      }
+                                    } else {
+                                      setQrUploading(false)
+                                    }
+                                  }
+                                  input.click()
+                                } catch (err) {
+                                  console.error('Error:', err)
+                                  alert('Wystąpił błąd')
+                                  setQrUploading(false)
                                 }
-                              }
-                              input.click()
-                            }}
-                            className="mt-8 inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all"
-                          >
-                            <svg 
-                              xmlns="http://www.w3.org/2000/svg" 
-                              className="h-6 w-6" 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              stroke="currentColor"
+                              }}
+                              disabled={qrUploading}
+                              className={`inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all ${qrUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" 
-                              />
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" 
-                              />
-                            </svg>
-                            {t.course.openCamera}
-                          </button>
+                              {qrUploading ? (
+                                <>
+                                  <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  {language === 'DE' ? 'Wird hochgeladen...' : 'Przesyłanie...'}
+                                </>
+                              ) : (
+                                <>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  {t.course.openCamera}
+                                </>
+                              )}
+                            </button>
+                            {qrUploadStatus === 'success' && (
+                              <div className="text-green-600 text-sm font-semibold animate-pulse flex items-center gap-2">
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                {language === 'DE' ? 'Foto wurde hochgeladen!' : 'Zdjęcie zostało przesłane!'}
+                              </div>
+                            )}
+                            {qrUploadStatus === 'error' && (
+                              <div className="text-red-600 text-sm font-semibold flex items-center gap-2">
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                {language === 'DE' ? 'Fehler beim Hochladen' : 'Błąd podczas przesyłania'}
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}
@@ -1258,95 +1333,217 @@ useEffect(() => {
                   <PhotoUploadComponent pageNumber={currentPage.pageNumber} />
                 ) : isQRUpload ? (
                   // QR kod do uploadu zdjęć z postępami - tylko desktop
-                  // Na mobile pokazujemy przycisk galerii z uploadem
+                  // Na mobile pokazujemy przyciski aparatu i galerii z uploadem
                   isMobile ? (
                     <div className="relative w-full h-full flex flex-col items-center justify-center p-8 bg-white">
                       {/* Nagłówek */}
                       {qrPageContent && (
-                        <h2 className="text-2xl md:text-3xl font-serif text-gray-900 text-center mb-8 px-4">
+                        <h2 className="text-xl md:text-2xl font-serif text-gray-900 text-center mb-6 px-4">
                           {qrPageContent}
                         </h2>
                       )}
-                      {/* Przycisk galerii - otwiera galerię i uploaduje */}
-                      <button
-                        onClick={async () => {
-                          // Pobierz uploadId i otwórz galerię
-                          try {
-                            const token = localStorage.getItem('token')
-                            if (!token) {
-                              alert('Musisz być zalogowany')
-                              return
-                            }
+                      
+                      {/* Kontener na przyciski */}
+                      <div className="flex flex-col gap-4 w-full max-w-xs">
+                        {/* Przycisk aparatu - otwiera aparat i uploaduje */}
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem('token')
+                              if (!token) {
+                                alert('Musisz być zalogowany')
+                                return
+                              }
 
-                            // Pobierz uploadId
-                            const response = await fetch('/api/user/upload-id', {
-                              headers: { 'Authorization': `Bearer ${token}` }
-                            })
-                            const data = await response.json()
-                            
-                            if (!data.uploadId) {
-                              alert('Nie udało się pobrać ID użytkownika')
-                              return
-                            }
+                              setQrUploading(true)
+                              setQrUploadStatus('idle')
 
-                            // Otwórz galerię (bez capture - pozwala wybrać z galerii)
-                            const input = document.createElement('input')
-                            input.type = 'file'
-                            input.accept = 'image/*'
-                            // BEZ input.capture - pozwala wybrać z galerii
-                            input.onchange = async (e) => {
-                              const file = (e.target as HTMLInputElement).files?.[0]
-                              if (file) {
-                                // Upload zdjęcia
-                                const formData = new FormData()
-                                formData.append('image', file)
-                                formData.append('page', currentPage.pageNumber.toString())
-                                formData.append('uploadId', data.uploadId)
+                              // Pobierz uploadId (użyj istniejącego lub pobierz nowy)
+                              let uploadId = userUploadId
+                              if (!uploadId) {
+                                const response = await fetch('/api/user/upload-id', {
+                                  headers: { 'Authorization': `Bearer ${token}` }
+                                })
+                                const data = await response.json()
+                                if (!data.uploadId) {
+                                  alert('Nie udało się pobrać ID użytkownika')
+                                  setQrUploading(false)
+                                  return
+                                }
+                                uploadId = data.uploadId
+                                setUserUploadId(uploadId)
+                              }
 
-                                try {
-                                  const uploadResponse = await fetch('/api/upload-photo', {
-                                    method: 'POST',
-                                    headers: { 'Authorization': `Bearer ${token}` },
-                                    body: formData
-                                  })
+                              // Otwórz aparat w telefonie
+                              const input = document.createElement('input')
+                              input.type = 'file'
+                              input.accept = 'image/*'
+                              input.capture = 'environment' // Wymusza użycie kamery
+                              input.onchange = async (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) {
+                                  try {
+                                    const formData = new FormData()
+                                    formData.append('image', file)
+                                    formData.append('pageNumber', currentPage.pageNumber.toString())
+                                    formData.append('uploadId', uploadId!)
 
-                                  if (uploadResponse.ok) {
-                                    alert('Zdjęcie zostało przesłane!')
-                                    // Odśwież completedPages
-                                    setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
-                                  } else {
-                                    alert('Błąd podczas przesyłania')
+                                    const uploadResponse = await fetch('/api/upload-photo', {
+                                      method: 'POST',
+                                      headers: { 'Authorization': `Bearer ${token}` },
+                                      body: formData
+                                    })
+
+                                    if (uploadResponse.ok) {
+                                      setQrUploadStatus('success')
+                                      setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
+                                      setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                    } else {
+                                      setQrUploadStatus('error')
+                                      setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                    }
+                                  } catch (err) {
+                                    console.error('Upload error:', err)
+                                    setQrUploadStatus('error')
+                                    setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                  } finally {
+                                    setQrUploading(false)
                                   }
-                                } catch (err) {
-                                  console.error('Upload error:', err)
-                                  alert('Błąd podczas przesyłania')
+                                } else {
+                                  setQrUploading(false)
                                 }
                               }
+                              input.click()
+                            } catch (err) {
+                              console.error('Error:', err)
+                              alert('Wystąpił błąd')
+                              setQrUploading(false)
                             }
-                            input.click()
-                          } catch (err) {
-                            console.error('Error:', err)
-                            alert('Wystąpił błąd')
-                          }
-                        }}
-                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-green-600 hover:to-green-700 active:scale-95 transition-all"
-                      >
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          className="h-6 w-6" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor"
+                          }}
+                          disabled={qrUploading}
+                          className={`inline-flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all ${qrUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                          />
-                        </svg>
-                        Wybierz z galerii
-                      </button>
+                          {qrUploading ? (
+                            <>
+                              <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              {language === 'DE' ? 'Wird hochgeladen...' : 'Przesyłanie...'}
+                            </>
+                          ) : (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              {language === 'DE' ? 'Foto aufnehmen' : 'Zrób zdjęcie'}
+                            </>
+                          )}
+                        </button>
+
+                        {/* Przycisk galerii - otwiera galerię i uploaduje */}
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem('token')
+                              if (!token) {
+                                alert('Musisz być zalogowany')
+                                return
+                              }
+
+                              setQrUploading(true)
+                              setQrUploadStatus('idle')
+
+                              // Pobierz uploadId (użyj istniejącego lub pobierz nowy)
+                              let uploadId = userUploadId
+                              if (!uploadId) {
+                                const response = await fetch('/api/user/upload-id', {
+                                  headers: { 'Authorization': `Bearer ${token}` }
+                                })
+                                const data = await response.json()
+                                if (!data.uploadId) {
+                                  alert('Nie udało się pobrać ID użytkownika')
+                                  setQrUploading(false)
+                                  return
+                                }
+                                uploadId = data.uploadId
+                                setUserUploadId(uploadId)
+                              }
+
+                              // Otwórz galerię (bez capture)
+                              const input = document.createElement('input')
+                              input.type = 'file'
+                              input.accept = 'image/*'
+                              // BEZ input.capture - pozwala wybrać z galerii
+                              input.onchange = async (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) {
+                                  try {
+                                    const formData = new FormData()
+                                    formData.append('image', file)
+                                    formData.append('pageNumber', currentPage.pageNumber.toString())
+                                    formData.append('uploadId', uploadId!)
+
+                                    const uploadResponse = await fetch('/api/upload-photo', {
+                                      method: 'POST',
+                                      headers: { 'Authorization': `Bearer ${token}` },
+                                      body: formData
+                                    })
+
+                                    if (uploadResponse.ok) {
+                                      setQrUploadStatus('success')
+                                      setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
+                                      setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                    } else {
+                                      setQrUploadStatus('error')
+                                      setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                    }
+                                  } catch (err) {
+                                    console.error('Upload error:', err)
+                                    setQrUploadStatus('error')
+                                    setTimeout(() => setQrUploadStatus('idle'), 3000)
+                                  } finally {
+                                    setQrUploading(false)
+                                  }
+                                } else {
+                                  setQrUploading(false)
+                                }
+                              }
+                              input.click()
+                            } catch (err) {
+                              console.error('Error:', err)
+                              alert('Wystąpił błąd')
+                              setQrUploading(false)
+                            }
+                          }}
+                          disabled={qrUploading}
+                          className={`inline-flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-green-600 hover:to-green-700 active:scale-95 transition-all ${qrUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {language === 'DE' ? 'Aus Galerie wählen' : 'Wybierz z galerii'}
+                        </button>
+                      </div>
+
+                      {/* Status uploadu */}
+                      {qrUploadStatus === 'success' && (
+                        <div className="mt-4 text-green-600 text-base font-semibold animate-pulse flex items-center gap-2">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          {language === 'DE' ? 'Foto wurde hochgeladen!' : 'Zdjęcie zostało przesłane!'}
+                        </div>
+                      )}
+                      {qrUploadStatus === 'error' && (
+                        <div className="mt-4 text-red-600 text-base font-semibold flex items-center gap-2">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          {language === 'DE' ? 'Fehler beim Hochladen' : 'Błąd podczas przesyłania'}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     // Desktop - pokaż QR kod
