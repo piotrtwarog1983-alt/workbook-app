@@ -1881,7 +1881,9 @@ useEffect(() => {
                         paddingTop: currentPage.pageNumber === 25 ? '40px' 
                           : (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '24px' 
                           : '24px', 
-                        paddingBottom: (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '16px' : '24px',
+                        paddingBottom: (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '16px' 
+                          : currentPage.pageNumber === 39 && isMobile ? '48px' 
+                          : '24px',
                         marginTop: currentPage.pageNumber === 39 && isMobile ? '-3%' : '0'
                       }}
                     >
