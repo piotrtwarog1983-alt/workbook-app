@@ -950,8 +950,8 @@ useEffect(() => {
                   // MOBILE: Zdjęcie na dole, tekst nad nim - wycentrowany (Strona 5)
                   isMobile && currentPage.pageNumber === 5 ? (
                     <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
-                      {/* Tekst nad zdjęciem - przesunięty w dół, może nachodzić na zdjęcie */}
-                      <div className="flex-1 px-6 pt-6 pb-12 bg-white flex items-end justify-center">
+                      {/* Tekst nad zdjęciem - przesunięty bardzo nisko, nachodzi na zdjęcie */}
+                      <div className="flex-1 px-6 pt-6 pb-32 bg-white flex items-end justify-center">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
