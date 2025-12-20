@@ -1538,7 +1538,7 @@ useEffect(() => {
                   )
                 ) : isImageOverlayTextFile ? (
                   // Layout z zdjęciem na cały kontener i tekstem z pliku nałożonym na zdjęcie
-                  // Na mobile dla wybranych stron (4,8,11,13,18,23,26,37,42) - layout jak strona 2
+                  // Na mobile dla wybranych stron (4,8,11,13,18,23,26,31,37,42) - layout jak strona 2
                   isMobile && mobileImageTopTextPages.has(currentPage.pageNumber) ? (
                     // MOBILE: Zdjęcie na górze, tekst pod kontenerem
                     <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
@@ -1554,7 +1554,9 @@ useEffect(() => {
                         />
                       </div>
                       {/* Tekst pod zdjęciem - na dole */}
-                      <div className="flex-1 px-6 pb-8 bg-white flex items-end justify-center">
+                      <div className={`flex-1 px-6 pb-8 bg-white flex justify-center ${
+                        currentPage.pageNumber === 31 ? 'items-start pt-4' : 'items-end'
+                      }`}>
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
