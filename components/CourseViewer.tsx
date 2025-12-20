@@ -645,6 +645,9 @@ useEffect(() => {
   const isTwoImagesTopText = content?.type === 'two-images-top-text'
   const isImageTopTextBottom = content?.type === 'image-top-text-bottom'
   const isThreeImagesTopText = content?.type === 'three-images-top-text'
+  
+  // Strony które na mobile mają mieć layout jak strona 2 (zdjęcie góra, tekst dół)
+  const mobileImageTopTextPages = new Set([4, 8, 11, 13, 18, 23, 26, 37, 42])
 
   // Strony, które mają mieć czarny tekst zamiast białego
   const pagesWithBlackText = new Set([3, 8, 12, 13, 18, 31, 45, 46, 47, 51])
@@ -1288,7 +1291,39 @@ useEffect(() => {
                   </div>
                 ) : isImageOverlayTextFile ? (
                   // Layout z zdjęciem na cały kontener i tekstem z pliku nałożonym na zdjęcie
-                  <div className="relative w-full h-full">
+                  // Na mobile dla wybranych stron (4,8,11,13,18,23,26,37,42) - layout jak strona 2
+                  isMobile && mobileImageTopTextPages.has(currentPage.pageNumber) ? (
+                    // MOBILE: Zdjęcie na górze, tekst pod kontenerem
+                    <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
+                      {/* Zdjęcie na górze */}
+                      <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover object-top"
+                          priority={false}
+                          sizes="100vw"
+                        />
+                      </div>
+                      {/* Tekst pod zdjęciem - na dole */}
+                      <div className="flex-1 px-6 pb-8 bg-white flex items-end justify-center">
+                        {loadingText ? (
+                          <div className="text-gray-400 text-center">Ładowanie...</div>
+                        ) : (
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                            {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                              <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                {paragraph.trim()}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    // DESKTOP lub mobile dla innych stron: oryginalny layout z tekstem na zdjęciu
+                    <div className="relative w-full h-full">
                     <Image
                       src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                       alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -1456,6 +1491,7 @@ useEffect(() => {
                       </div>
                     )}
                   </div>
+                  )
                 ) : isImageOverlayTextWhite ? (
                   // Layout z zdjęciem na cały kontener i białym tekstem z pliku nałożonym na zdjęcie
                   <div className="relative w-full h-full">
