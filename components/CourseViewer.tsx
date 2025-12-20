@@ -678,14 +678,16 @@ useEffect(() => {
             }}
           >
             <div className="flex flex-col lg:flex-row gap-1 lg:gap-8 items-start">
-              {/* Tips - po lewej stronie (ukryte na mobile) */}
-              {!isMobile && tips.length > 0 && (
+              {/* Tips - po lewej stronie (ukryte na mobile, zawsze widoczne na desktop) */}
+              {!isMobile && (
                 <div className="w-64 flex-shrink-0">
-                  <div className="space-y-3">
-                    {tips.map((tip, index) => (
-                      <TipCloud key={index} tip={tip} />
-                    ))}
-                  </div>
+                  {tips.length > 0 && (
+                    <div className="space-y-3">
+                      {tips.map((tip, index) => (
+                        <TipCloud key={index} tip={tip} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
