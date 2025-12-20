@@ -53,6 +53,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [exitingPageIndex, setExitingPageIndex] = useState<number | null>(null)
   const [userUploadId, setUserUploadId] = useState<string | null>(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [page45Texts, setPage45Texts] = useState<{ text1: string; text2: string; text3: string }>({
     text1: '',
     text2: '',
@@ -635,8 +636,6 @@ useEffect(() => {
   const shouldUseBlackText = pagesWithBlackText.has(currentPage.pageNumber)
 
   // Check if we're on mobile
-  const [isMobile, setIsMobile] = useState(false)
-  
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024)
     checkMobile()
