@@ -1780,34 +1780,78 @@ useEffect(() => {
                     )}
                   </div>
                 ) : isImageTopTextBottom ? (
-                  // Layout ze zdjęciem na górze i tekstem wyśrodkowanym na dole (strona 2)
-                  <div className="relative w-full h-full bg-white flex flex-col">
-                    {/* Zdjęcie na górze - 60% wysokości */}
-                    <div className="relative w-full" style={{ height: '55%' }}>
-                      <Image
-                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                        fill
-                        className="object-cover object-top"
-                        priority={currentPageIndex === 1}
-                        sizes="(max-width: 768px) 100vw, 825px"
-                      />
+                  // Layout strona 2 - różny dla desktop i mobile
+                  isMobile ? (
+                    // MOBILE: Zdjęcie na górze, tekst pod kontenerem
+                    <div className="relative w-full h-full bg-white flex flex-col">
+                      {/* Zdjęcie na górze - 60% wysokości */}
+                      <div className="relative w-full" style={{ height: '60%' }}>
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover object-top"
+                          priority={currentPageIndex === 1}
+                          sizes="100vw"
+                        />
+                      </div>
+                      {/* Tekst wyśrodkowany na dole - 40% wysokości */}
+                      <div className="flex-1 flex items-center justify-center px-4 py-2">
+                        {loadingText ? (
+                          <div className="text-gray-400 text-center text-sm">Ładowanie...</div>
+                        ) : (
+                          <div className="text-xs sm:text-sm font-sans text-gray-900 leading-relaxed text-center">
+                            {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                              <p key={index} className={index > 0 ? 'mt-2' : ''}>
+                                {paragraph.trim()}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {/* Tekst wyśrodkowany na dole - 40% wysokości */}
-                    <div className="flex-1 flex items-center justify-center px-6 md:px-8 lg:px-12 py-4">
-                      {loadingText ? (
-                        <div className="text-gray-400 text-center">Ładowanie...</div>
-                      ) : (
-                        <div className="text-sm md:text-base lg:text-lg font-sans text-gray-900 leading-relaxed text-center max-w-2xl">
-                          {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-                            <p key={index} className={index > 0 ? 'mt-4' : ''}>
-                              {paragraph.trim()}
-                            </p>
-                          ))}
+                  ) : (
+                    // DESKTOP: Oryginalny layout - zdjęcie pełne, tekst na zdjęciu po lewej
+                    <div className="relative w-full h-full">
+                      {/* Zdjęcie jako tło */}
+                      <div className="absolute inset-0">
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover"
+                          priority={currentPageIndex === 1}
+                          sizes="825px"
+                        />
+                      </div>
+                      {/* Tekst na zdjęciu - lewa strona, dół */}
+                      <div className="absolute inset-0 flex items-end">
+                        <div className="w-[60%] max-w-[60%] pl-6 md:pl-8 lg:pl-12 pr-4 pb-6 md:pb-8 lg:pb-12">
+                          <div className="text-sm md:text-base lg:text-lg font-sans leading-relaxed text-black font-bold">
+                            {loadingText ? (
+                              'Ładowanie...'
+                            ) : (
+                              overlayText.split(/\n\s*\n/).filter(p => p.trim()).map((paragraph: string, index: number) => {
+                                const trimmedParagraph = paragraph.trim()
+                                const isSecondParagraph = trimmedParagraph.includes('Fotografowałam') || 
+                                                          trimmedParagraph.includes('gwiazdkami Michelin') ||
+                                                          trimmedParagraph.includes('JRE Guide')
+                                return (
+                                  <p 
+                                    key={index} 
+                                    className={isSecondParagraph ? 'mt-10 mb-10' : index === 0 ? 'mb-6' : 'mt-6'}
+                                    style={isSecondParagraph ? { marginTop: '2.5rem', marginBottom: '2.5rem' } : undefined}
+                                  >
+                                    {trimmedParagraph}
+                                  </p>
+                                )
+                              })
+                            )}
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  )
                 ) : isThreeImagesTopText ? (
                   // Layout z białym tłem, tekstem na górze i trzema kontenerami na zdjęcia (50% wysokości, 3 kolumny)
                   <div className="relative w-full h-full bg-white flex flex-col items-center">
