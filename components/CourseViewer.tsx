@@ -1573,19 +1573,24 @@ useEffect(() => {
                   ) : (
                     // DESKTOP lub mobile dla innych stron: oryginalny layout z tekstem na zdjęciu
                     <div className="relative w-full h-full">
-                    <Image
-                      src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                      alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                      fill
-                      className="object-cover"
-                      style={
-                        currentPage.pageNumber === 12 && isMobile 
-                          ? { objectPosition: 'center 35%' } 
-                          : undefined
-                      }
-                      priority={currentPageIndex === 11}
-                      sizes="(max-width: 768px) 100vw, 800px"
-                    />
+                    <div 
+                      className={currentPage.pageNumber === 45 && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
+                      style={currentPage.pageNumber === 45 && isMobile ? { top: '15%' } : undefined}
+                    >
+                      <Image
+                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                        fill
+                        className="object-cover"
+                        style={
+                          currentPage.pageNumber === 12 && isMobile 
+                            ? { objectPosition: 'center 35%' } 
+                            : undefined
+                        }
+                        priority={currentPageIndex === 11}
+                        sizes="(max-width: 768px) 100vw, 800px"
+                      />
+                    </div>
                     {/* Tekst nałożony na zdjęcie */}
                     {content.textPosition === 'top-center' ? (
                       <div
