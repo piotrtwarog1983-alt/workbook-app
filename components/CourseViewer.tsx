@@ -638,13 +638,169 @@ useEffect(() => {
       {/* Konfetti na stronie 51 (finał kursu) */}
       {currentPage.pageNumber === 51 && <Confetti />}
       
-      <div className="max-w-[1700px] mx-auto px-2 sm:px-4 lg:ml-6 lg:mr-auto lg:px-6 py-4 lg:py-8">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      {/* Mobile: Horizontal scroll container */}
+      <div className="lg:hidden h-screen overflow-x-auto snap-x snap-mandatory mobile-scroll-container">
+        <div className="flex h-full">
+          {/* SLIDE 1: Kurs */}
+          <div className="min-w-full h-full snap-start snap-always flex flex-col px-2 py-3">
+            {/* Page indicator + swipe hint */}
+            <div className="flex justify-between items-center mb-2 px-1">
+              <div className="text-white/70 text-sm font-medium">
+                {currentPageIndex + 1} / {pages.length}
+              </div>
+              <div className="text-white/40 text-xs flex items-center gap-1">
+                <span>Menu</span>
+                <svg className="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+            
+            {/* Course container - full height vertical */}
+            <div className="flex-1 relative rounded-xl glow-wrapper overflow-hidden" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div className="relative overflow-hidden rounded-xl h-full" style={{ background: '#ffffff' }}>
+                {/* Exiting page overlay during transition */}
+                {isTransitioning && exitingPageIndex !== null && (
+                  <div 
+                    className={`absolute inset-0 ${transitionDirection === 'up' ? 'page-exit-to-top' : 'page-exit-to-bottom'}`}
+                    style={{ background: '#ffffff' }}
+                  />
+                )}
+                {/* Current page - use aspect-ratio container */}
+                <div 
+                  className={`course-container bg-white overflow-hidden relative ${isTransitioning ? (transitionDirection === 'up' ? 'page-enter-from-bottom' : 'page-enter-from-top') : ''}`}
+                >
+                  <div 
+                    className="absolute inset-0"
+                    style={currentPage.pageNumber !== 38 ? { marginLeft: '-3%' } : {}}
+                  >
+                    {/* Mobile uses same content as desktop - see below */}
+                    <div className="flex items-center justify-center w-full h-full text-gray-600 text-sm">
+                      {/* Placeholder - mobile content will be rendered via CSS */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile navigation buttons */}
+            <div className="flex justify-center gap-4 mt-3">
+              <button
+                onClick={prevPage}
+                disabled={currentPageIndex === 0}
+                className={`p-3 rounded-xl ${currentPageIndex === 0 ? 'opacity-30' : 'btn-elegant'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <button
+                onClick={nextPage}
+                disabled={!canGoToNextPage() || currentPageIndex >= pages.length - 1}
+                className={`p-3 rounded-xl ${(!canGoToNextPage() || currentPageIndex >= pages.length - 1) ? 'opacity-30' : 'btn-elegant'}`}
+              >
+                {canGoToNextPage() ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {/* SLIDE 2: Funkcje (postępy, słownik, wiadomości, video) */}
+          <div className="min-w-full h-full snap-start snap-always flex flex-col px-2 py-3">
+            {/* Header with back hint and logout */}
+            <div className="flex justify-between items-center mb-2 px-1">
+              <div className="text-white/40 text-xs flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Kurs</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 btn-elegant rounded-lg"
+                aria-label={t.common.logout}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Functions panel */}
+            <div className="flex-1 overflow-hidden rounded-xl">
+              {activePanel === 'gallery' && (
+                <ProgressGallery onProgressUpdate={setCompletedPages} />
+              )}
+              {activePanel === 'dictionary' && (
+                <div className="w-full h-full p-4 panel-elegant panel-glow overflow-auto rounded-xl">
+                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.dictionary.title}</h3>
+                  <DictionaryInline />
+                </div>
+              )}
+              {activePanel === 'chat' && (
+                <div className="w-full h-full p-4 panel-elegant panel-glow overflow-auto rounded-xl">
+                  <ChatBox />
+                </div>
+              )}
+              {activePanel === 'video' && currentPage && (
+                <VideoPlayer pageNumber={currentPage.pageNumber} />
+              )}
+            </div>
+            
+            {/* Panel switching buttons */}
+            <div className="flex gap-3 mt-3 justify-center">
+              <button
+                onClick={() => setActivePanel('gallery')}
+                className={`w-12 h-12 flex items-center justify-center rounded-xl ${activePanel === 'gallery' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setActivePanel('dictionary')}
+                className={`w-12 h-12 flex items-center justify-center rounded-xl ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setActivePanel('chat')}
+                className={`w-12 h-12 flex items-center justify-center rounded-xl ${activePanel === 'chat' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setActivePanel('video')}
+                className={`w-12 h-12 flex items-center justify-center rounded-xl ${activePanel === 'video' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop: Original layout */}
+      <div className="hidden lg:block max-w-[1700px] ml-6 mr-auto px-6 py-8">
+        <div className="flex flex-row gap-8 items-start">
           {/* Left side - Tips and course content */}
-          <div className="w-full lg:flex-1 order-1 lg:order-0 flex-shrink-0">
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-              {/* Tips - po lewej stronie (ukryte na mobile) */}
-              <div className="hidden lg:block w-full lg:w-64 lg:flex-shrink-0">
+          <div className="flex-1 flex-shrink-0">
+            <div className="flex flex-row gap-8 items-start">
+              {/* Tips - po lewej stronie */}
+              <div className="w-64 flex-shrink-0">
                 {tips.length > 0 && (
                   <div className="space-y-3">
                     {tips.map((tip, index) => (
@@ -654,8 +810,8 @@ useEffect(() => {
                 )}
               </div>
 
-              {/* Container for course content - square on desktop, vertical on mobile */}
-              <div className="w-full lg:w-[825px] flex-shrink-0 relative p-2 sm:p-3 lg:p-4 rounded-xl lg:rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              {/* Container for course content */}
+              <div className="w-[825px] flex-shrink-0 relative p-4 rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <div className="relative overflow-hidden rounded-xl scroll-transition-wrapper" style={{ background: '#ffffff' }}>
                   {/* Exiting page overlay during transition */}
                   {isTransitioning && exitingPageIndex !== null && (
@@ -1916,8 +2072,8 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Gallery z postępami - po prawej stronie */}
-          <div className="w-full lg:w-[32rem] order-2 lg:order-1 flex-shrink-0 mt-8 lg:ml-24 relative">
+          {/* Gallery z postępami - po prawej stronie (tylko desktop) */}
+          <div className="w-[32rem] flex-shrink-0 ml-24 relative">
             {/* Przełącznik języka i wylogowanie */}
             <div className="flex items-center justify-between mb-4 gap-2 w-full">
               <div className="flex-1 min-w-0">
@@ -1945,8 +2101,8 @@ useEffect(() => {
               </button>
             </div>
             
-            {/* Kontener z przełączanymi widokami - responsywna wysokość */}
-            <div className="mt-4 h-[400px] sm:h-[500px] lg:h-[680px] overflow-hidden rounded-xl lg:rounded-2xl">
+            {/* Kontener z przełączanymi widokami */}
+            <div className="mt-4 h-[680px] overflow-hidden rounded-2xl">
               {activePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}

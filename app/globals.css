@@ -31,6 +31,15 @@ body {
     min-height: 0 !important;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* Hide scrollbar for mobile horizontal scroll */
+  .mobile-scroll-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .mobile-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Desktop: fixed rectangle - wider */
