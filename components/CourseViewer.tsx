@@ -1576,6 +1576,11 @@ useEffect(() => {
                       alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
                       fill
                       className="object-cover"
+                      style={
+                        currentPage.pageNumber === 12 && isMobile 
+                          ? { objectPosition: 'center 35%' } 
+                          : undefined
+                      }
                       priority={currentPageIndex === 11}
                       sizes="(max-width: 768px) 100vw, 800px"
                     />
@@ -1660,11 +1665,7 @@ useEffect(() => {
                             ? 'px-6 md:px-8 lg:px-12' 
                             : 'px-6 md:px-8 lg:px-12'
                         }`}
-                        style={
-                          currentPage.pageNumber === 4 ? { paddingBottom: '35%' }
-                          : currentPage.pageNumber === 12 && isMobile ? { paddingTop: '35%' }
-                          : undefined
-                        }
+                        style={currentPage.pageNumber === 4 ? { paddingBottom: '35%' } : undefined}
                       >
                         {loadingText ? (
                           <div className="text-white">Ładowanie...</div>
