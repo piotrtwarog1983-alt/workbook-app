@@ -43,14 +43,16 @@ body {
   overflow: hidden !important;
 }
 
-/* Mobile: vertical rectangle container (Instagram-like) */
+/* Mobile: vertical rectangle container - fits in viewport */
 @media (max-width: 1023px) {
   .course-container {
     width: 100% !important;
     max-width: 100% !important;
-    aspect-ratio: 9 / 16 !important;
+    /* Wysokość = viewport - navigation bar (80px) - padding (16px) */
+    height: calc(100vh - 100px) !important;
+    max-height: calc(100vh - 100px) !important;
+    aspect-ratio: unset !important;
     min-height: 0 !important;
-    height: auto !important;
     -webkit-overflow-scrolling: touch;
     overflow: hidden !important;
   }
@@ -60,6 +62,7 @@ body {
   .scroll-transition-wrapper {
     width: 100% !important;
     max-width: 100% !important;
+    height: 100% !important;
     overflow: hidden !important;
   }
   
