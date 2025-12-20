@@ -22,10 +22,9 @@ export const MOCK_COURSE = {
       pageNumber: 2,
       title: '',
       content: JSON.stringify({
-        type: 'image-overlay',
+        type: 'image-top-text-bottom',
         imageUrl: '/course/strona 2/Foto/portret.jpg',
         textFile: '/api/course-content/2/PL',
-        textPosition: 'left',
       }),
       tips: JSON.stringify([]),
     },
