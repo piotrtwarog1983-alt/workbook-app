@@ -1561,7 +1561,7 @@ useEffect(() => {
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className={`${[4, 11, 23, 31, 37, 42].includes(currentPage.pageNumber) && isMobile ? 'text-lg sm:text-xl' : 'text-sm sm:text-base'} font-sans text-gray-900 leading-relaxed text-center px-2`}>
+                          <div className={`${[4, 11, 23, 31, 37, 42].includes(currentPage.pageNumber) && isMobile ? 'text-4xl sm:text-5xl' : 'text-sm sm:text-base'} font-sans text-gray-900 leading-relaxed text-center px-2`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1774,7 +1774,7 @@ useEffect(() => {
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className={`${currentPage.pageNumber === 26 && isMobile ? 'text-lg sm:text-xl' : 'text-sm sm:text-base'} font-sans text-gray-900 leading-relaxed text-center px-2`}>
+                          <div className={`${currentPage.pageNumber === 26 && isMobile ? 'text-4xl sm:text-5xl' : 'text-sm sm:text-base'} font-sans text-gray-900 leading-relaxed text-center px-2`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
