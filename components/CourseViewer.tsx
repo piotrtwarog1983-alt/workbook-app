@@ -1646,7 +1646,7 @@ useEffect(() => {
                     ) : (
                       <div 
                         className={`absolute inset-0 flex ${
-                          content.textPosition === 'top' ? 'items-start justify-center' 
+                          content.textPosition === 'top' ? (currentPage.pageNumber === 12 && isMobile ? 'items-end justify-center' : 'items-start justify-center')
                           : content.textPosition === 'top-left' ? 'items-start justify-center'
                           : content.textPosition === 'top-right' ? 'items-start justify-center'
                           : content.textPosition === 'bottom' ? 'items-end justify-center' 
@@ -1655,7 +1655,7 @@ useEffect(() => {
                           : content.textPosition === 'bottom-center' ? 'items-end justify-center'
                           : 'items-center justify-center'
                         } ${
-                          content.textPosition === 'top' ? 'pt-8 md:pt-12 lg:pt-16' 
+                          content.textPosition === 'top' ? (currentPage.pageNumber === 12 && isMobile ? 'pb-8' : 'pt-8 md:pt-12 lg:pt-16')
                           : content.textPosition === 'top-left' || content.textPosition === 'top-right' ? 'pt-8 md:pt-12 lg:pt-16'
                           : content.textPosition === 'bottom' ? 'pb-8 md:pb-12 lg:pb-16'
                           : content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'pb-8 md:pb-12 lg:pb-16'
