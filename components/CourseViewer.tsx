@@ -1784,8 +1784,8 @@ useEffect(() => {
                   isMobile ? (
                     // MOBILE: Zdjęcie na górze, tekst pod kontenerem
                     <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
-                      {/* Zdjęcie na górze - mniejsza wysokość */}
-                      <div className="relative w-full flex-shrink-0" style={{ height: '45vh', minHeight: '300px' }}>
+                      {/* Zdjęcie na górze - mniejsza wysokość dla więcej miejsca na tekst */}
+                      <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
                         <Image
                           src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                           alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -1795,12 +1795,12 @@ useEffect(() => {
                           sizes="100vw"
                         />
                       </div>
-                      {/* Tekst pod zdjęciem - scrollable jeśli potrzeba */}
-                      <div className="flex-shrink-0 px-6 py-6 bg-white">
+                      {/* Tekst pod zdjęciem - więcej miejsca */}
+                      <div className="flex-1 px-6 py-8 bg-white flex items-start justify-center">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2 pt-4">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
