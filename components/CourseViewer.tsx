@@ -1220,8 +1220,8 @@ useEffect(() => {
                     {loadingText ? (
                       <div className="text-gray-400">Ładowanie...</div>
                     ) : (
-                      <div className="w-full max-w-3xl mx-auto">
-                        <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center">
+                      <div className="w-full max-w-3xl mx-auto" style={currentPage.pageNumber === 48 && language === 'DE' ? { textAlign: 'center' } : undefined}>
+                        <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line text-center" style={currentPage.pageNumber === 48 && language === 'DE' ? { textAlign: 'center' } : undefined}>
                           {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => {
                             // Sprawdź czy akapit zaczyna się od ** (pogrubiony nagłówek)
                             const isBold = paragraph.trim().startsWith('**') && paragraph.trim().endsWith('**')
@@ -1229,7 +1229,7 @@ useEffect(() => {
                             
                             if (isBold) {
                               return (
-                                <p key={index} className="font-bold mb-3 mt-6 first:mt-0 text-center">
+                                <p key={index} className="font-bold mb-3 mt-6 first:mt-0 text-center" style={currentPage.pageNumber === 48 && language === 'DE' ? { textAlign: 'center' } : undefined}>
                                   {cleanParagraph}
                                 </p>
                               )
@@ -1237,7 +1237,7 @@ useEffect(() => {
                               // Sprawdź czy akapit zawiera ** w środku (pogrubiony fragment)
                               const parts = paragraph.split(/(\*\*.*?\*\*)/g)
                               return (
-                                <p key={index} className="mb-4 text-center">
+                                <p key={index} className="mb-4 text-center" style={currentPage.pageNumber === 48 && language === 'DE' ? { textAlign: 'center' } : undefined}>
                                   {parts.map((part, partIndex) => {
                                     if (part.startsWith('**') && part.endsWith('**')) {
                                       return <strong key={partIndex}>{part.replace(/\*\*/g, '')}</strong>
