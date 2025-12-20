@@ -1795,12 +1795,12 @@ useEffect(() => {
                           sizes="100vw"
                         />
                       </div>
-                      {/* Tekst pod zdjęciem - więcej miejsca */}
-                      <div className="flex-1 px-6 py-8 bg-white flex items-start justify-center">
+                      {/* Tekst pod zdjęciem - na dole ekranu */}
+                      <div className="flex-1 px-6 pb-8 bg-white flex items-end justify-center">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2 pt-4">
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
