@@ -1574,8 +1574,8 @@ useEffect(() => {
                     // DESKTOP lub mobile dla innych stron: oryginalny layout z tekstem na zdjęciu
                   <div className="relative w-full h-full">
                     <div 
-                      className={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46) && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
-                      style={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46) && isMobile ? { top: '15%' } : undefined}
+                      className={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46 || currentPage.pageNumber === 47) && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
+                      style={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46 || currentPage.pageNumber === 47) && isMobile ? { top: '15%' } : undefined}
                     >
                     <Image
                       src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
@@ -1731,19 +1731,19 @@ useEffect(() => {
                     )}
                     {/* 3 kontenery z tekstem na dole dla strony 47 */}
                     {currentPage.pageNumber === 47 && (
-                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '13%' }}>
+                      <div className={`absolute left-0 right-0 flex gap-2 md:gap-6 px-2 md:px-8 lg:px-12 ${isMobile ? 'flex-row' : 'flex-col md:flex-row'}`} style={{ bottom: '13%' }}>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} md:text-base lg:text-lg font-serif text-gray-900`}>
                             {page47Texts.text1}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} md:text-base lg:text-lg font-serif text-gray-900`}>
                             {page47Texts.text2}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} md:text-base lg:text-lg font-serif text-gray-900`}>
                             {page47Texts.text3}
                           </p>
                         </div>
