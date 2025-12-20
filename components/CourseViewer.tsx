@@ -1554,9 +1554,7 @@ useEffect(() => {
                         />
                       </div>
                       {/* Tekst pod zdjęciem - na dole */}
-                      <div className={`flex-1 px-6 pb-8 bg-white flex justify-center ${
-                        currentPage.pageNumber === 31 ? 'items-start pt-4' : 'items-end'
-                      }`}>
+                      <div className="flex-1 px-6 pb-8 bg-white flex items-end justify-center">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
