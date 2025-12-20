@@ -1214,7 +1214,7 @@ useEffect(() => {
                       alignItems: (currentPage.pageNumber === 10 && language === 'DE') || (currentPage.pageNumber === 44 && language === 'DE' && isMobile) || (currentPage.pageNumber === 48 && language === 'DE') ? 'flex-start' : 'center',
                       paddingTop: currentPage.pageNumber === 10 && language === 'DE' ? '6rem' 
                         : currentPage.pageNumber === 44 && language === 'DE' && isMobile ? 'calc(2rem + 25%)' 
-                        : currentPage.pageNumber === 48 && language === 'DE' ? 'calc(2rem + 15%)'
+                        : currentPage.pageNumber === 48 && language === 'DE' ? 'calc(2rem + 25%)'
                         : '2rem'
                     }}
                   >
