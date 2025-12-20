@@ -531,7 +531,12 @@ useEffect(() => {
 
   // Sprawdź czy można przejść do następnej strony
   // Blokuje jeśli aktualna strona wymaga uploadu zdjęcia i nie zostało ono dodane
+  // TODO: Przywróć blokowanie po zakończeniu prac nad responsywnością
   const canGoToNextPage = (): boolean => {
+    // TYMCZASOWO WYŁĄCZONE NA CZAS PRAC
+    return true
+    
+    /*
     if (!currentPage) return false
     const pageNumber = currentPage.pageNumber
     
@@ -542,6 +547,7 @@ useEffect(() => {
     
     // Inne strony - można przejść dalej
     return true
+    */
   }
 
   const nextPage = () => {
