@@ -1969,7 +1969,9 @@ useEffect(() => {
                     {/* Tekst na górze */}
                     <div
                       className="flex-none px-6 md:px-8 lg:px-12 w-full"
-                      style={{ paddingTop: currentPage.pageNumber === 32 && isMobile ? '23%' : '8%' }}
+                      style={{ 
+                        paddingTop: (currentPage.pageNumber === 32 || currentPage.pageNumber === 38) && isMobile ? '23%' : '8%' 
+                      }}
                     >
                       {loadingText ? (
                         <div className="text-gray-400 text-center">Ładowanie...</div>
@@ -2075,7 +2077,12 @@ useEffect(() => {
                           </div>
                         )}
                         {/* Kontener na dwa zdjęcia - inne strony */}
-                        <div className="flex-1 flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8 w-full">
+                        <div 
+                          className="flex-1 flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8 w-full"
+                          style={{ 
+                            paddingTop: currentPage.pageNumber === 38 && isMobile ? '15%' : '0%' 
+                          }}
+                        >
                           <div 
                             className="flex gap-4 w-full max-w-[90%]"
                           >
