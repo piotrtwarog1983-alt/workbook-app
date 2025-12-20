@@ -949,13 +949,24 @@ useEffect(() => {
                   // Layout z obrazem jako tłem i tekstem na górze
                   // MOBILE: Zdjęcie na dole, tekst nad nim - wycentrowany (Strona 5)
                   isMobile && currentPage.pageNumber === 5 ? (
-                    <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
-                      {/* Tekst nad zdjęciem - przesunięty bardzo nisko, nachodzi na zdjęcie */}
-                      <div className="flex-1 px-6 pt-6 pb-32 bg-white flex items-end justify-center">
+                    <div className="relative w-full h-full bg-white">
+                      {/* Zdjęcie na samym dole */}
+                      <div className="absolute bottom-0 left-0 right-0" style={{ height: '50vh', minHeight: '300px' }}>
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover object-top"
+                          priority={false}
+                          sizes="100vw"
+                        />
+                      </div>
+                      {/* Tekst nad zdjęciem - nachodzi na zdjęcie, wycentrowany poziomo, na dole */}
+                      <div className="absolute inset-0 flex items-end justify-center pb-8 px-6">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2 bg-white bg-opacity-90 p-4 rounded-lg">
                             {(() => {
                               if (!overlayText) return null
                               
@@ -1003,17 +1014,6 @@ useEffect(() => {
                             })()}
                           </div>
                         )}
-                      </div>
-                      {/* Zdjęcie na samym dole */}
-                      <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
-                        <Image
-                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                          fill
-                          className="object-cover"
-                          priority={false}
-                          sizes="100vw"
-                        />
                       </div>
                     </div>
                   ) : (
