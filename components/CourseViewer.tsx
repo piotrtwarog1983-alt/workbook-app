@@ -107,6 +107,14 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     }
   }, [currentPageIndex, course])
 
+  // Check if we're on mobile (must be with other hooks)
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   // Funkcja wylogowania - zapisz ostatnią stronę przed wylogowaniem
   const handleLogout = () => {
     // Zapisz ostatnią stronę przed wylogowaniem
@@ -634,14 +642,6 @@ useEffect(() => {
   // Strony, które mają mieć czarny tekst zamiast białego
   const pagesWithBlackText = new Set([3, 8, 12, 13, 18, 31, 45, 46, 47, 51])
   const shouldUseBlackText = pagesWithBlackText.has(currentPage.pageNumber)
-
-  // Check if we're on mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   return (
     <div 
