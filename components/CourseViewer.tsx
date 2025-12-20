@@ -640,11 +640,11 @@ useEffect(() => {
       {currentPage.pageNumber === 51 && <Confetti />}
       
       {/* Main responsive layout */}
-      <div className="max-w-[1700px] mx-auto px-2 lg:px-6 lg:ml-6 lg:mr-auto py-4 lg:py-8">
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
+      <div className="max-w-[1700px] mx-auto px-1 sm:px-2 lg:px-6 lg:ml-6 lg:mr-auto py-2 lg:py-8 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-2 lg:gap-8 items-start">
           {/* Left side - Tips and course content */}
-          <div className="w-full lg:flex-1 lg:flex-shrink-0">
-            <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
+          <div className="w-full max-w-full lg:flex-1 lg:flex-shrink-0 overflow-hidden">
+            <div className="flex flex-col lg:flex-row gap-2 lg:gap-8 items-start">
               {/* Tips - po lewej stronie (ukryte na mobile) */}
               <div className="hidden lg:block w-64 flex-shrink-0">
                 {tips.length > 0 && (
@@ -657,7 +657,7 @@ useEffect(() => {
               </div>
 
               {/* Container for course content - responsive */}
-              <div className="w-full lg:w-[825px] flex-shrink-0 relative p-2 lg:p-4 rounded-xl lg:rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div className="w-full max-w-full lg:w-[825px] lg:flex-shrink-0 relative p-1 sm:p-2 lg:p-4 rounded-xl lg:rounded-2xl glow-wrapper overflow-hidden" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <div className="relative overflow-hidden rounded-xl scroll-transition-wrapper" style={{ background: '#ffffff' }}>
                   {/* Exiting page overlay during transition */}
                   {isTransitioning && exitingPageIndex !== null && (

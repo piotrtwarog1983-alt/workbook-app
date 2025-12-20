@@ -11,6 +11,11 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: #1a1d24;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 /* Custom styles for course platform */
@@ -26,10 +31,18 @@ body {
 @media (max-width: 1023px) {
   .course-container {
     width: 100% !important;
-    max-width: calc(100vw - 1rem) !important;
+    max-width: 100% !important;
     aspect-ratio: 9 / 16 !important;
     min-height: 0 !important;
+    height: auto !important;
     -webkit-overflow-scrolling: touch;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure main wrapper doesn't overflow */
+  .glow-wrapper {
+    max-width: calc(100vw - 1rem) !important;
+    overflow: hidden !important;
   }
   
   /* Hide scrollbar for mobile horizontal scroll */
