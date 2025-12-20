@@ -1,4 +1,3 @@
-*
 Beginnen wir mit den Telefoneinstellungen. Wenn dein Smartphone es erlaubt, aktiviere:
 
 **Porträtmodus**
@@ -16,6 +15,7 @@ Der Blitz leuchtet direkt von vorne auf das Gericht. Das ist das schlechteste Li
 — das Gericht sieht flach und weniger appetitlich aus.
 
 Schalte am Telefon den **Augenschutz** und den Blaulichtfilter (z.B. Night Shift) aus. Diese Modi erwärmen den Bildschirm und verfälschen die Farben.
+
 
 
 
