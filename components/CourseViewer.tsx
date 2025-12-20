@@ -696,7 +696,7 @@ useEffect(() => {
                       {tips.map((tip, index) => (
                         <TipCloud key={index} tip={tip} />
                       ))}
-                    </div>
+          </div>
                   )}
                 </div>
               )}
@@ -1018,24 +1018,24 @@ useEffect(() => {
                     </div>
                   ) : (
                     // DESKTOP: Oryginalny layout - zdjęcie pełne, tekst na górze
-                    <div className="relative w-full h-full">
-                      {/* Zdjęcie jako tło - rozciągnięte na całym kontenerze */}
-                      <div className="absolute inset-0">
-                        <Image
-                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                          fill
-                          className="object-cover"
-                          priority={currentPageIndex === 4}
-                          sizes="(max-width: 768px) 100vw, 800px"
-                        />
-                      </div>
-                      {/* Tekst na górze */}
-                      <div className="absolute top-0 left-0 right-0 pt-8 px-6 md:px-8 lg:px-12">
-                        {loadingText ? (
-                          <div className="text-gray-400">Ładowanie...</div>
-                        ) : (
-                          <div className="text-black">
+                  <div className="relative w-full h-full">
+                    {/* Zdjęcie jako tło - rozciągnięte na całym kontenerze */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                        fill
+                        className="object-cover"
+                        priority={currentPageIndex === 4}
+                        sizes="(max-width: 768px) 100vw, 800px"
+                      />
+                    </div>
+                    {/* Tekst na górze */}
+                    <div className="absolute top-0 left-0 right-0 pt-8 px-6 md:px-8 lg:px-12">
+                      {loadingText ? (
+                        <div className="text-gray-400">Ładowanie...</div>
+                      ) : (
+                        <div className="text-black">
                           {(() => {
                             if (!overlayText) return null
                             
@@ -1120,7 +1120,7 @@ useEffect(() => {
                         </div>
                       )}
                     </div>
-                    </div>
+                  </div>
                   )
                 ) : currentPage?.imageUrl ? (
                   <div className="relative w-full h-full">
@@ -1511,32 +1511,32 @@ useEffect(() => {
                     </div>
                   ) : (
                     // DESKTOP lub inne strony: oryginalny layout
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                        fill
-                        className="object-cover"
-                        priority={currentPageIndex === 7}
-                        sizes="(max-width: 768px) 100vw, 800px"
-                      />
-                      {/* Tekst nałożony na zdjęcie na górze */}
-                      <div className="absolute inset-0 flex items-start justify-center pt-16 md:pt-20 lg:pt-24 px-6 md:px-8 lg:px-12">
-                        {loadingText ? (
-                          <div className="text-white">Ładowanie...</div>
-                        ) : (
-                          <div className="w-full max-w-3xl">
-                            <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
-                              {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-                                <p key={index} className={index > 0 ? 'mt-4' : ''}>
-                                  {paragraph.trim()}
-                                </p>
-                              ))}
-                            </div>
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                      alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                      fill
+                      className="object-cover"
+                      priority={currentPageIndex === 7}
+                      sizes="(max-width: 768px) 100vw, 800px"
+                    />
+                    {/* Tekst nałożony na zdjęcie na górze */}
+                    <div className="absolute inset-0 flex items-start justify-center pt-16 md:pt-20 lg:pt-24 px-6 md:px-8 lg:px-12">
+                      {loadingText ? (
+                        <div className="text-white">Ładowanie...</div>
+                      ) : (
+                        <div className="w-full max-w-3xl">
+                          <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
+                            {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                              <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                {paragraph.trim()}
+                              </p>
+                            ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
+                  </div>
                   )
                 ) : isImageOverlayTextFile ? (
                   // Layout z zdjęciem na cały kontener i tekstem z pliku nałożonym na zdjęcie
@@ -1572,24 +1572,24 @@ useEffect(() => {
                     </div>
                   ) : (
                     // DESKTOP lub mobile dla innych stron: oryginalny layout z tekstem na zdjęciu
-                    <div className="relative w-full h-full">
+                  <div className="relative w-full h-full">
                     <div 
-                      className={currentPage.pageNumber === 45 && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
-                      style={currentPage.pageNumber === 45 && isMobile ? { top: '15%' } : undefined}
+                      className={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46) && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
+                      style={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46) && isMobile ? { top: '15%' } : undefined}
                     >
-                      <Image
-                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                        fill
-                        className="object-cover"
+                    <Image
+                      src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                      alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                      fill
+                      className="object-cover"
                         style={
                           currentPage.pageNumber === 12 && isMobile 
                             ? { objectPosition: 'center 35%' } 
                             : undefined
                         }
-                        priority={currentPageIndex === 11}
-                        sizes="(max-width: 768px) 100vw, 800px"
-                      />
+                      priority={currentPageIndex === 11}
+                      sizes="(max-width: 768px) 100vw, 800px"
+                    />
                     </div>
                     {/* Tekst nałożony na zdjęcie */}
                     {content.textPosition === 'top-center' ? (
@@ -1614,12 +1614,12 @@ useEffect(() => {
                             }`}
                           >
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-                              <p key={index} className={index > 0 ? 'mt-4' : ''}>
-                                {paragraph.trim()}
-                              </p>
+                                <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                  {paragraph.trim()}
+                                </p>
                             ))}
                           </div>
-                        )}
+                            )}
                       </div>
                     ) : content.textPosition === 'top-center-lower' ? (
                       <div
@@ -1654,23 +1654,23 @@ useEffect(() => {
                       <div 
                         className={`absolute inset-0 flex ${
                           content.textPosition === 'top' ? (currentPage.pageNumber === 12 && isMobile ? 'items-end justify-center' : 'items-start justify-center')
-                          : content.textPosition === 'top-left' ? 'items-start justify-center'
-                          : content.textPosition === 'top-right' ? 'items-start justify-center'
-                          : content.textPosition === 'bottom' ? 'items-end justify-center' 
-                          : content.textPosition === 'bottom-left' ? 'items-end justify-center'
-                          : content.textPosition === 'bottom-right' ? 'items-end justify-center'
+                        : content.textPosition === 'top-left' ? 'items-start justify-center'
+                        : content.textPosition === 'top-right' ? 'items-start justify-center'
+                        : content.textPosition === 'bottom' ? 'items-end justify-center' 
+                        : content.textPosition === 'bottom-left' ? 'items-end justify-center'
+                        : content.textPosition === 'bottom-right' ? 'items-end justify-center'
                           : content.textPosition === 'bottom-center' ? 'items-end justify-center'
-                          : 'items-center justify-center'
-                        } ${
+                        : 'items-center justify-center'
+                      } ${
                           content.textPosition === 'top' ? (currentPage.pageNumber === 12 && isMobile ? 'pb-8' : 'pt-8 md:pt-12 lg:pt-16')
-                          : content.textPosition === 'top-left' || content.textPosition === 'top-right' ? 'pt-8 md:pt-12 lg:pt-16'
-                          : content.textPosition === 'bottom' ? 'pb-8 md:pb-12 lg:pb-16'
-                          : content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'pb-8 md:pb-12 lg:pb-16'
-                          : ''
-                        } ${
-                          content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' 
-                            ? 'px-6 md:px-8 lg:px-12' 
-                            : 'px-6 md:px-8 lg:px-12'
+                        : content.textPosition === 'top-left' || content.textPosition === 'top-right' ? 'pt-8 md:pt-12 lg:pt-16'
+                        : content.textPosition === 'bottom' ? 'pb-8 md:pb-12 lg:pb-16'
+                        : content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' ? 'pb-8 md:pb-12 lg:pb-16'
+                        : ''
+                      } ${
+                        content.textPosition === 'top-left' || content.textPosition === 'top-right' || content.textPosition === 'bottom-left' || content.textPosition === 'bottom-right' 
+                          ? 'px-6 md:px-8 lg:px-12' 
+                          : 'px-6 md:px-8 lg:px-12'
                         }`}
                         style={currentPage.pageNumber === 4 ? { paddingBottom: '35%' } : undefined}
                       >
@@ -1711,19 +1711,19 @@ useEffect(() => {
                     )}
                     {/* 3 kontenery z tekstem na dole dla strony 46 */}
                     {currentPage.pageNumber === 46 && (
-                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '13%' }}>
+                      <div className={`absolute left-0 right-0 flex gap-2 md:gap-6 px-2 md:px-8 lg:px-12 ${isMobile ? 'flex-row' : 'flex-col md:flex-row'}`} style={{ bottom: '13%' }}>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} md:text-base lg:text-lg font-serif text-gray-900`}>
                             {page46Texts.text1}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} md:text-base lg:text-lg font-serif text-gray-900`}>
                             {page46Texts.text2}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-sm md:text-base lg:text-lg font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} md:text-base lg:text-lg font-serif text-gray-900`}>
                             {page46Texts.text3}
                           </p>
                         </div>
@@ -1785,7 +1785,7 @@ useEffect(() => {
                     </div>
                   ) : (
                     // DESKTOP lub inne strony: oryginalny layout
-                    <div className="relative w-full h-full">
+                  <div className="relative w-full h-full">
                     <Image
                       src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                       alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -2000,7 +2000,7 @@ useEffect(() => {
                               const lines = overlayText.split('\n').filter((l) => l.trim())
                               const title = lines[0] || ''
                               return (
-                                <p className="m-0">{title}</p>
+                                  <p className="m-0">{title}</p>
                               )
                             })()
                           ) : (
@@ -2081,46 +2081,46 @@ useEffect(() => {
                     ) : (
                       <>
                         {/* Nakładka strzałki dla innych stron */}
-                        {content.iconUrl && (
-                          <div
-                            className="absolute pointer-events-none z-20"
+                    {content.iconUrl && (
+                      <div
+                        className="absolute pointer-events-none z-20"
                             style={{ top: '24%', left: '2%', width: '150px', height: '150px' }}
-                          >
-                            <Image
-                              src={content.iconUrl?.startsWith('/') ? content.iconUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.iconUrl}`}
-                              alt="Ikona kierunku"
-                              fill
-                              className="object-contain"
-                            />
-                          </div>
-                        )}
+                      >
+                        <Image
+                          src={content.iconUrl?.startsWith('/') ? content.iconUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.iconUrl}`}
+                          alt="Ikona kierunku"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    )}
                         {/* Kontener na dwa zdjęcia - inne strony */}
-                        <div 
+                      <div 
                           className="flex-1 flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8 w-full"
-                          style={{ 
+                        style={{ 
                             paddingTop: currentPage.pageNumber === 38 && isMobile ? '15%' : '0%' 
-                          }}
-                        >
+                        }}
+                      >
                           <div 
                             className="flex gap-4 w-full max-w-[90%]"
                           >
-                            <div className="flex-1 relative aspect-square">
-                              <Image
-                                src={content.image1Url?.startsWith('/') ? content.image1Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image1Url}`}
+                        <div className="flex-1 relative aspect-square">
+                          <Image
+                            src={content.image1Url?.startsWith('/') ? content.image1Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image1Url}`}
                                 alt="Zdjęcie 1"
-                                fill
-                                className="object-contain"
-                                sizes="(max-width: 768px) 35vw, 280px"
-                              />
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 35vw, 280px"
+                          />
                             </div>
-                            <div className="flex-1 relative aspect-square">
-                              <Image
-                                src={content.image2Url?.startsWith('/') ? content.image2Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image2Url}`}
+                        <div className="flex-1 relative aspect-square">
+                          <Image
+                            src={content.image2Url?.startsWith('/') ? content.image2Url : `/course/strona ${currentPage.pageNumber}/Foto/${content.image2Url}`}
                                 alt="Zdjęcie 2"
-                                fill
-                                className="object-contain"
-                                sizes="(max-width: 768px) 35vw, 280px"
-                              />
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 35vw, 280px"
+                          />
                             </div>
                           </div>
                         </div>
@@ -2134,7 +2134,7 @@ useEffect(() => {
                     <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
                       {/* Zdjęcie na górze - mniejsza wysokość dla więcej miejsca na tekst */}
                       <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
-                        <Image
+                              <Image
                           src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                           alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
                           fill
@@ -2154,10 +2154,10 @@ useEffect(() => {
                                 {paragraph.trim()}
                               </p>
                             ))}
-                          </div>
-                        )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
                   ) : (
                     // DESKTOP: Oryginalny layout - zdjęcie pełne, tekst na zdjęciu po lewej
                     <div className="relative w-full h-full">
@@ -2171,7 +2171,7 @@ useEffect(() => {
                           priority={currentPageIndex === 1}
                           sizes="825px"
                         />
-                      </div>
+                    </div>
                       {/* Tekst na zdjęciu - lewa strona, dół */}
                       <div className="absolute inset-0 flex items-end">
                         <div className="w-[60%] max-w-[60%] pl-6 md:pl-8 lg:pl-12 pr-4 pb-6 md:pb-8 lg:pb-12">
@@ -2195,7 +2195,7 @@ useEffect(() => {
                                 )
                               })
                             )}
-                          </div>
+                  </div>
                         </div>
                       </div>
                     </div>
@@ -2359,19 +2359,19 @@ useEffect(() => {
                     title={canGoToNextPage() ? t.common.next : t.course.unlockNextStep}
                   >
                     {canGoToNextPage() ? (
-                      <svg
+                    <svg
                         className="w-6 h-6 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
                           d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                      />
+                    </svg>
                     ) : (
                       <svg
                         className="w-6 h-6 text-gray-500"
@@ -2399,7 +2399,7 @@ useEffect(() => {
             <div className="flex items-center justify-between mb-4 gap-2 w-full">
               <div className="flex-1 min-w-0">
                 <ProgressTimeline completedPages={completedPages} onNavigate={goToPage} />
-              </div>
+                </div>
               <button
                 onClick={handleLogout}
                 className="w-10 h-10 flex items-center justify-center btn-elegant flex-shrink-0"
@@ -2420,7 +2420,7 @@ useEffect(() => {
                   />
                 </svg>
               </button>
-            </div>
+              </div>
             
             {/* Kontener z przełączanymi widokami */}
             <div className="mt-4 h-[680px] overflow-hidden rounded-2xl">
@@ -2441,12 +2441,12 @@ useEffect(() => {
               {activePanel === 'video' && currentPage && (
                 <VideoPlayer pageNumber={currentPage.pageNumber} />
               )}
-            </div>
+          </div>
 
             {/* Panel switching buttons */}
             <div className="flex gap-3 mt-4">
               {/* Gallery button - ikona aparatu */}
-              <button
+            <button
                 onClick={() => setActivePanel('gallery')}
                 className={`w-14 h-14 flex items-center justify-center ${activePanel === 'gallery' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
                 aria-label={t.course.yourProgress}
@@ -2471,10 +2471,10 @@ useEffect(() => {
                     d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-              </button>
+            </button>
 
               {/* Dictionary button - ikona książki */}
-              <button
+            <button
                 onClick={() => setActivePanel('dictionary')}
                 className={`w-14 h-14 flex items-center justify-center ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
                 aria-label={t.dictionary.title}
@@ -2485,7 +2485,7 @@ useEffect(() => {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                >
+            >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -2493,7 +2493,7 @@ useEffect(() => {
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                   />
                 </svg>
-              </button>
+            </button>
 
               {/* Chat button - ikona wiadomości */}
               <button
@@ -2616,14 +2616,14 @@ useEffect(() => {
                           </svg>
                         )}
                       </button>
-                    </div>
+              </div>
                   </>
-                )}
+            )}
               </div>
             </div>
           </div>
 
-        </div>
+              </div>
       </div>
 
       {/* Mobile: Floating navigation and menu button */}
@@ -2674,7 +2674,7 @@ useEffect(() => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-      </div>
+          </div>
 
       {/* Mobile: Functions modal */}
       {showMobileMenu && (
@@ -2709,9 +2709,9 @@ useEffect(() => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-              </div>
-            </div>
-            
+        </div>
+      </div>
+
             {/* Panel switching buttons */}
             <div className="flex gap-2 mb-4 justify-center">
               <button
