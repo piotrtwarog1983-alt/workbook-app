@@ -2248,7 +2248,13 @@ useEffect(() => {
                   </div>
                 ) : currentPage.pageNumber === 51 && isDictionary ? (
                   // Strona 51 - finał kursu - wycentrowany tekst dużą czcionką
-                  <div className="relative w-full h-full flex items-center justify-center p-8 bg-white overflow-y-auto">
+                  <div 
+                    className="relative w-full h-full flex justify-center p-8 bg-white overflow-y-auto"
+                    style={{
+                      alignItems: currentPage.pageNumber === 51 && language === 'DE' ? 'flex-start' : 'center',
+                      paddingTop: currentPage.pageNumber === 51 && language === 'DE' ? 'calc(2rem + 20%)' : '2rem'
+                    }}
+                  >
                     {loadingText ? (
                       <div className="text-gray-400">Ładowanie...</div>
                     ) : (
