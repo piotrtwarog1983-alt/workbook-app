@@ -329,7 +329,7 @@ useEffect(() => {
     if (!currentPage) return
 
     const pageContent = parseContent(currentPage.content)
-    if ((pageContent?.type === 'image-overlay' || pageContent?.type === 'quote-text' || pageContent?.type === 'image-overlay-text-top' || pageContent?.type === 'text-image-split' || pageContent?.type === 'formatted-text' || pageContent?.type === 'image-overlay-text-file' || pageContent?.type === 'image-overlay-text-white' || pageContent?.type === 'black-header-image' || pageContent?.type === 'white-header-image' || pageContent?.type === 'two-images-top-text' || pageContent?.type === 'three-images-top-text' || pageContent?.type === 'dictionary' || pageContent?.type === 'simple-text' || pageContent?.type === 'two-images-container') && pageContent?.textFile) {
+    if ((pageContent?.type === 'image-overlay' || pageContent?.type === 'quote-text' || pageContent?.type === 'image-overlay-text-top' || pageContent?.type === 'text-image-split' || pageContent?.type === 'formatted-text' || pageContent?.type === 'image-overlay-text-file' || pageContent?.type === 'image-overlay-text-white' || pageContent?.type === 'black-header-image' || pageContent?.type === 'white-header-image' || pageContent?.type === 'two-images-top-text' || pageContent?.type === 'three-images-top-text' || pageContent?.type === 'dictionary' || pageContent?.type === 'simple-text' || pageContent?.type === 'two-images-container' || pageContent?.type === 'image-top-text-bottom') && pageContent?.textFile) {
       setLoadingText(true)
       // Dynamicznie zmień język w URL na podstawie aktualnego języka
       const textFileUrl = pageContent.textFile.replace(/\/(PL|DE)$/, `/${currentLang}`)
