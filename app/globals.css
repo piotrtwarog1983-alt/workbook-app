@@ -39,10 +39,20 @@ html {
     overflow: hidden !important;
   }
   
-  /* Ensure main wrapper doesn't overflow */
-  .glow-wrapper {
-    max-width: calc(100vw - 1rem) !important;
+  /* Force all containers to respect viewport */
+  .glow-wrapper,
+  .scroll-transition-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
     overflow: hidden !important;
+  }
+  
+  /* Scale down any oversized content */
+  .course-container img,
+  .course-container canvas,
+  .course-container svg {
+    max-width: 100% !important;
+    height: auto !important;
   }
   
   /* Hide scrollbar for mobile horizontal scroll */

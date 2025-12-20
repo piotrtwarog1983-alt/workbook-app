@@ -635,12 +635,12 @@ useEffect(() => {
   const shouldUseBlackText = pagesWithBlackText.has(currentPage.pageNumber)
 
   return (
-    <div className="min-h-screen" style={{ background: '#1a1d24' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#1a1d24', maxWidth: '100vw' }}>
       {/* Konfetti na stronie 51 (finał kursu) */}
       {currentPage.pageNumber === 51 && <Confetti />}
       
       {/* Main responsive layout */}
-      <div className="max-w-[1700px] mx-auto px-1 sm:px-2 lg:px-6 lg:ml-6 lg:mr-auto py-2 lg:py-8 overflow-hidden">
+      <div className="w-full max-w-[100vw] lg:max-w-[1700px] mx-auto px-1 sm:px-2 lg:px-6 lg:ml-6 lg:mr-auto py-2 lg:py-8 overflow-hidden box-border">
         <div className="flex flex-col lg:flex-row gap-2 lg:gap-8 items-start">
           {/* Left side - Tips and course content */}
           <div className="w-full max-w-full lg:flex-1 lg:flex-shrink-0 overflow-hidden">

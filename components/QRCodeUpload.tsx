@@ -79,9 +79,9 @@ export function QRCodeUpload({ pageNumber, uploadId, headerText }: QRCodeUploadP
   }
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center p-8" style={{ background: '#1a1d24' }}>
-      <div className="w-full max-w-md text-center space-y-6">
-        <h2 className="text-2xl md:text-3xl font-serif text-white whitespace-pre-line">
+    <div className="relative w-full h-full flex items-center justify-center p-2 sm:p-4 md:p-8 overflow-hidden" style={{ background: '#1a1d24' }}>
+      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md text-center space-y-3 sm:space-y-4 md:space-y-6">
+        <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-serif text-white whitespace-pre-line px-2">
           {headerText || t.course.unlockNextStep}
         </h2>
         
@@ -102,29 +102,27 @@ export function QRCodeUpload({ pageNumber, uploadId, headerText }: QRCodeUploadP
             </button>
           </div>
         ) : qrCodeUrl ? (
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-3 md:space-y-4">
             <div className="flex justify-center">
               <a
                 href={uploadUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-4 bg-white rounded-lg border-2 border-gray-600 hover:border-green-400 transition-colors inline-block"
+                className="p-2 sm:p-3 md:p-4 bg-white rounded-lg border-2 border-gray-600 hover:border-green-400 transition-colors inline-block max-w-full"
               >
                 {/* Używamy zwykłego img dla zewnętrznego API QR */}
                 <img
                   src={qrCodeUrl}
                   alt="QR kod do uploadu"
-                  width={300}
-                  height={300}
-                  className="rounded"
+                  className="rounded w-full max-w-[180px] sm:max-w-[220px] md:max-w-[280px] h-auto"
                   style={{ display: 'block' }}
                 />
               </a>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-400 px-2">
               {t.course.scanQR}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 px-2">
               {t.course.orUploadHere}: <a href={uploadUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline hover:text-blue-300">{t.common.loading.replace('...', '')}</a>
             </p>
           </div>
