@@ -1660,7 +1660,11 @@ useEffect(() => {
                             ? 'px-6 md:px-8 lg:px-12' 
                             : 'px-6 md:px-8 lg:px-12'
                         }`}
-                        style={currentPage.pageNumber === 4 ? { paddingBottom: '35%' } : undefined}
+                        style={
+                          currentPage.pageNumber === 4 ? { paddingBottom: '35%' }
+                          : currentPage.pageNumber === 12 && isMobile ? { paddingTop: '35%' }
+                          : undefined
+                        }
                       >
                         {loadingText ? (
                           <div className="text-white">Ładowanie...</div>
