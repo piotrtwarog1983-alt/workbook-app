@@ -634,30 +634,76 @@ useEffect(() => {
   const pagesWithBlackText = new Set([3, 8, 12, 13, 18, 31, 45, 46, 47, 51])
   const shouldUseBlackText = pagesWithBlackText.has(currentPage.pageNumber)
 
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   return (
-    <div className="min-h-screen lg:overflow-visible overflow-hidden mobile-container" style={{ background: '#1a1d24' }}>
+    <div 
+      className="min-h-screen" 
+      style={{ 
+        background: '#1a1d24',
+        width: isMobile ? '100%' : 'auto',
+        maxWidth: isMobile ? '100vw' : 'none',
+        overflowX: isMobile ? 'hidden' : 'visible',
+        overflowY: 'auto'
+      }}
+    >
       {/* Konfetti na stronie 51 (finał kursu) */}
       {currentPage.pageNumber === 51 && <Confetti />}
       
       {/* Main responsive layout */}
-      <div className="w-full lg:max-w-[1700px] mx-auto px-0 lg:px-6 lg:ml-6 lg:mr-auto py-1 lg:py-8 lg:overflow-visible overflow-hidden">
+      <div 
+        className="mx-auto"
+        style={{
+          width: isMobile ? '100%' : 'auto',
+          maxWidth: isMobile ? '100%' : '1700px',
+          padding: isMobile ? '4px' : '32px 24px',
+          marginLeft: isMobile ? '0' : '24px',
+          overflow: isMobile ? 'hidden' : 'visible'
+        }}
+      >
         <div className="flex flex-col lg:flex-row gap-1 lg:gap-8 items-start">
           {/* Left side - Tips and course content */}
-          <div className="w-full lg:max-w-none lg:flex-1 lg:flex-shrink-0 lg:overflow-visible overflow-hidden">
+          <div 
+            style={{
+              width: isMobile ? '100%' : 'auto',
+              maxWidth: isMobile ? '100%' : 'none',
+              overflow: isMobile ? 'hidden' : 'visible'
+            }}
+          >
             <div className="flex flex-col lg:flex-row gap-1 lg:gap-8 items-start">
               {/* Tips - po lewej stronie (ukryte na mobile) */}
-              <div className="hidden lg:block w-64 flex-shrink-0">
-                {tips.length > 0 && (
+              {!isMobile && tips.length > 0 && (
+                <div className="w-64 flex-shrink-0">
                   <div className="space-y-3">
                     {tips.map((tip, index) => (
                       <TipCloud key={index} tip={tip} />
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Container for course content - responsive */}
-              <div className="w-full lg:w-[825px] lg:max-w-[825px] lg:flex-shrink-0 relative p-0 lg:p-4 lg:rounded-2xl glow-wrapper lg:overflow-visible overflow-hidden" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div 
+                className="glow-wrapper"
+                style={{ 
+                  width: isMobile ? '100%' : '825px',
+                  maxWidth: isMobile ? '100%' : '825px',
+                  padding: isMobile ? '0' : '16px',
+                  borderRadius: isMobile ? '0' : '16px',
+                  background: 'rgba(35, 40, 50, 0.4)', 
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  overflow: isMobile ? 'hidden' : 'visible',
+                  flexShrink: 0
+                }}
+              >
                 <div className="relative overflow-hidden rounded-xl scroll-transition-wrapper" style={{ background: '#ffffff' }}>
                   {/* Exiting page overlay during transition */}
                   {isTransitioning && exitingPageIndex !== null && (
