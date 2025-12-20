@@ -1561,7 +1561,7 @@ useEffect(() => {
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                          <div className={`${[4, 11, 23, 31, 37, 42].includes(currentPage.pageNumber) && isMobile ? 'text-lg sm:text-xl' : 'text-sm sm:text-base'} font-sans text-gray-900 leading-relaxed text-center px-2`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
@@ -1573,7 +1573,7 @@ useEffect(() => {
                     </div>
                   ) : (
                     // DESKTOP lub mobile dla innych stron: oryginalny layout z tekstem na zdjęciu
-                  <div className="relative w-full h-full">
+                    <div className="relative w-full h-full">
                     <div 
                       className={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46 || currentPage.pageNumber === 47) && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
                       style={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46 || currentPage.pageNumber === 47) && isMobile ? { top: '15%' } : undefined}
@@ -1774,7 +1774,7 @@ useEffect(() => {
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                          <div className={`${currentPage.pageNumber === 26 && isMobile ? 'text-lg sm:text-xl' : 'text-sm sm:text-base'} font-sans text-gray-900 leading-relaxed text-center px-2`}>
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
