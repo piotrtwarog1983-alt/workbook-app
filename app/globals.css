@@ -22,13 +22,14 @@ body {
   overflow: hidden !important;
 }
 
-/* Mobile: square container using aspect-ratio */
+/* Mobile: vertical rectangle container (Instagram-like) */
 @media (max-width: 1023px) {
   .course-container {
     width: 100% !important;
-    max-width: calc(100vw - 2rem) !important;
-    aspect-ratio: 1 / 1 !important;
+    max-width: calc(100vw - 1rem) !important;
+    aspect-ratio: 9 / 16 !important;
     min-height: 0 !important;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

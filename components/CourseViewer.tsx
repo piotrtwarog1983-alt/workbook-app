@@ -638,13 +638,13 @@ useEffect(() => {
       {/* Konfetti na stronie 51 (finał kursu) */}
       {currentPage.pageNumber === 51 && <Confetti />}
       
-      <div className="max-w-[1700px] ml-6 mr-auto px-6 py-8">
+      <div className="max-w-[1700px] mx-auto px-2 sm:px-4 lg:ml-6 lg:mr-auto lg:px-6 py-4 lg:py-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Left side - Tips and course content */}
           <div className="w-full lg:flex-1 order-1 lg:order-0 flex-shrink-0">
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-              {/* Tips - po lewej stronie */}
-              <div className="w-full lg:w-64 lg:flex-shrink-0">
+              {/* Tips - po lewej stronie (ukryte na mobile) */}
+              <div className="hidden lg:block w-full lg:w-64 lg:flex-shrink-0">
                 {tips.length > 0 && (
                   <div className="space-y-3">
                     {tips.map((tip, index) => (
@@ -654,8 +654,8 @@ useEffect(() => {
                 )}
               </div>
 
-              {/* Square container for course content */}
-              <div className="w-full lg:w-[825px] flex-shrink-0 relative p-4 rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              {/* Container for course content - square on desktop, vertical on mobile */}
+              <div className="w-full lg:w-[825px] flex-shrink-0 relative p-2 sm:p-3 lg:p-4 rounded-xl lg:rounded-2xl glow-wrapper" style={{ background: 'rgba(35, 40, 50, 0.4)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <div className="relative overflow-hidden rounded-xl scroll-transition-wrapper" style={{ background: '#ffffff' }}>
                   {/* Exiting page overlay during transition */}
                   {isTransitioning && exitingPageIndex !== null && (
@@ -1846,11 +1846,11 @@ useEffect(() => {
                   {currentPageIndex + 1} / {pages.length}
                 </div>
 
-                {/* Navigation arrows */}
+                {/* Navigation arrows - hidden on mobile */}
                 {currentPageIndex > 0 && (
                   <button
                     onClick={prevPage}
-                    className="absolute left-0 -bottom-2 -translate-x-20 p-4 z-10 nav-arrow-elegant"
+                    className="hidden lg:block absolute left-0 -bottom-2 -translate-x-20 p-4 z-10 nav-arrow-elegant"
                     aria-label="Poprzednia strona"
                   >
                     <svg
@@ -1873,7 +1873,7 @@ useEffect(() => {
                   <button
                     onClick={nextPage}
                     disabled={!canGoToNextPage()}
-                    className={`absolute right-0 -bottom-2 translate-x-20 p-4 z-10 ${
+                    className={`hidden lg:block absolute right-0 -bottom-2 translate-x-20 p-4 z-10 ${
                       canGoToNextPage() 
                         ? 'nav-arrow-elegant' 
                         : 'opacity-30 cursor-not-allowed bg-gray-800/50 rounded-full'
@@ -1945,8 +1945,8 @@ useEffect(() => {
               </button>
             </div>
             
-            {/* Kontener z przełączanymi widokami - stała wysokość */}
-            <div className="mt-4 h-[680px] overflow-hidden rounded-2xl">
+            {/* Kontener z przełączanymi widokami - responsywna wysokość */}
+            <div className="mt-4 h-[400px] sm:h-[500px] lg:h-[680px] overflow-hidden rounded-xl lg:rounded-2xl">
               {activePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
