@@ -1900,7 +1900,13 @@ useEffect(() => {
                       )}
                     </div>
                     {/* Kwadratowy kontener zdjęcia - wycentrowany */}
-                    <div className={`flex-none aspect-square relative mx-auto ${(currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? 'w-[68%]' : 'w-[70%]'}`} style={{ minHeight: (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '350px' : '400px' }}>
+                    <div 
+                      className={`flex-none aspect-square relative mx-auto ${(currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? 'w-[68%]' : 'w-[70%]'}`} 
+                      style={{ 
+                        minHeight: (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '350px' : '400px',
+                        paddingTop: currentPage.pageNumber === 39 && isMobile ? '5%' : '0'
+                      }}
+                    >
                       <Image
                         src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                         alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
