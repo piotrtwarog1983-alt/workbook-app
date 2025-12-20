@@ -1999,8 +1999,8 @@ useEffect(() => {
                     {/* Kontener na dwa zdjęcia z etykietami - strona 32 */}
                     {currentPage.pageNumber === 32 ? (
                       <div className="flex-1 flex items-start justify-center w-full px-4 pb-2 pt-2 relative">
-                        {/* Strzałka lewa - przy krawędzi kontenera, nachodzi na zdjęcie */}
-                        {content.iconUrl && (
+                        {/* Strzałka lewa - przy krawędzi kontenera, nachodzi na zdjęcie - tylko desktop */}
+                        {content.iconUrl && !isMobile && (
                           <div 
                             className="absolute pointer-events-none z-10"
                             style={{ left: '0%', top: '20%', width: '280px', height: '280px' }}
@@ -2013,8 +2013,8 @@ useEffect(() => {
                             />
                           </div>
                         )}
-                        {/* Strzałka prawa - przy krawędzi kontenera, nachodzi na zdjęcie */}
-                        {content.iconUrlRight && (
+                        {/* Strzałka prawa - przy krawędzi kontenera, nachodzi na zdjęcie - tylko desktop */}
+                        {content.iconUrlRight && !isMobile && (
                           <div 
                             className="absolute pointer-events-none z-10"
                             style={{ right: '0%', top: '20%', width: '252px', height: '252px' }}
