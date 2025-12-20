@@ -1796,13 +1796,13 @@ useEffect(() => {
                         />
                       </div>
                       {/* Tekst wyśrodkowany na dole - 40% wysokości */}
-                      <div className="flex-1 flex items-center justify-center px-4 py-2">
+                      <div className="flex-1 flex items-center justify-center px-6 py-3">
                         {loadingText ? (
-                          <div className="text-gray-400 text-center text-sm">Ładowanie...</div>
+                          <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
-                          <div className="text-xs sm:text-sm font-sans text-gray-900 leading-relaxed text-center">
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-                              <p key={index} className={index > 0 ? 'mt-2' : ''}>
+                              <p key={index} className={index > 0 ? 'mt-3' : ''}>
                                 {paragraph.trim()}
                               </p>
                             ))}
