@@ -1164,17 +1164,16 @@ useEffect(() => {
                         {currentPage.pageNumber === 6 && isMobile && (
                           <button
                             onClick={() => {
-                              // Otwórz aparat w telefonie
+                              // Otwórz TYLKO aparat w telefonie (nie galerię)
                               const input = document.createElement('input')
                               input.type = 'file'
                               input.accept = 'image/*'
-                              input.capture = 'environment' // Użyj tylnej kamery
+                              input.capture = 'environment' // Wymusza użycie kamery
                               input.onchange = (e) => {
                                 const file = (e.target as HTMLInputElement).files?.[0]
                                 if (file) {
-                                  // Tutaj można dodać logikę przetwarzania zdjęcia
-                                  console.log('Wybrano zdjęcie:', file.name)
-                                  // Można otworzyć podgląd lub zapisać do stanu
+                                  console.log('Zrobiono zdjęcie:', file.name)
+                                  // Tutaj można dodać podgląd lub zapisać
                                 }
                               }
                               input.click()
@@ -1250,7 +1249,7 @@ useEffect(() => {
                   <PhotoUploadComponent pageNumber={currentPage.pageNumber} />
                 ) : isQRUpload ? (
                   // QR kod do uploadu zdjęć z postępami - tylko desktop
-                  // Na mobile pokazujemy przycisk aparatu
+                  // Na mobile pokazujemy przycisk galerii z uploadem
                   isMobile ? (
                     <div className="relative w-full h-full flex flex-col items-center justify-center p-8 bg-white">
                       {/* Nagłówek */}
@@ -1259,25 +1258,69 @@ useEffect(() => {
                           {qrPageContent}
                         </h2>
                       )}
-                      {/* Przycisk aparatu/galerii */}
+                      {/* Przycisk galerii - otwiera galerię i uploaduje */}
                       <button
-                        onClick={() => {
-                          // Otwórz aparat/galerię w telefonie
-                          const input = document.createElement('input')
-                          input.type = 'file'
-                          input.accept = 'image/*'
-                          input.capture = 'environment' // Użyj tylnej kamery
-                          input.onchange = (e) => {
-                            const file = (e.target as HTMLInputElement).files?.[0]
-                            if (file) {
-                              // Tutaj można dodać logikę uploadu zdjęcia
-                              console.log('Wybrano zdjęcie:', file.name)
-                              // TODO: Upload logic
+                        onClick={async () => {
+                          // Pobierz uploadId i otwórz galerię
+                          try {
+                            const token = localStorage.getItem('token')
+                            if (!token) {
+                              alert('Musisz być zalogowany')
+                              return
                             }
+
+                            // Pobierz uploadId
+                            const response = await fetch('/api/user/upload-id', {
+                              headers: { 'Authorization': `Bearer ${token}` }
+                            })
+                            const data = await response.json()
+                            
+                            if (!data.uploadId) {
+                              alert('Nie udało się pobrać ID użytkownika')
+                              return
+                            }
+
+                            // Otwórz galerię (bez capture - pozwala wybrać z galerii)
+                            const input = document.createElement('input')
+                            input.type = 'file'
+                            input.accept = 'image/*'
+                            // BEZ input.capture - pozwala wybrać z galerii
+                            input.onchange = async (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0]
+                              if (file) {
+                                // Upload zdjęcia
+                                const formData = new FormData()
+                                formData.append('image', file)
+                                formData.append('page', currentPage.pageNumber.toString())
+                                formData.append('uploadId', data.uploadId)
+
+                                try {
+                                  const uploadResponse = await fetch('/api/upload-photo', {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${token}` },
+                                    body: formData
+                                  })
+
+                                  if (uploadResponse.ok) {
+                                    alert('Zdjęcie zostało przesłane!')
+                                    // Odśwież completedPages
+                                    setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
+                                  } else {
+                                    alert('Błąd podczas przesyłania')
+                                  }
+                                } catch (err) {
+                                  console.error('Upload error:', err)
+                                  alert('Błąd podczas przesyłania')
+                                }
+                              }
+                            }
+                            input.click()
+                          } catch (err) {
+                            console.error('Error:', err)
+                            alert('Wystąpił błąd')
                           }
-                          input.click()
                         }}
-                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all"
+                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-green-600 hover:to-green-700 active:scale-95 transition-all"
                       >
                         <svg 
                           xmlns="http://www.w3.org/2000/svg" 
@@ -1290,16 +1333,10 @@ useEffect(() => {
                             strokeLinecap="round" 
                             strokeLinejoin="round" 
                             strokeWidth={2} 
-                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" 
-                          />
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" 
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
                           />
                         </svg>
-                        {t.course.openCamera}
+                        Wybierz z galerii
                       </button>
                     </div>
                   ) : (
