@@ -647,7 +647,7 @@ useEffect(() => {
   const isThreeImagesTopText = content?.type === 'three-images-top-text'
   
   // Strony które na mobile mają mieć layout jak strona 2 (zdjęcie góra, tekst dół)
-  const mobileImageTopTextPages = new Set([4, 8, 11, 13, 18, 23, 26, 37, 42])
+  const mobileImageTopTextPages = new Set([4, 8, 11, 13, 18, 23, 26, 31, 37, 42])
 
   // Strony, które mają mieć czarny tekst zamiast białego
   const pagesWithBlackText = new Set([3, 8, 12, 13, 18, 31, 45, 46, 47, 51])
