@@ -43,7 +43,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sprawdź pliki w Blob Storage
+    // Najpierw sprawdź bazę danych (szybsze i bardziej niezawodne)
+    const progressPhoto = await prisma.progressPhoto.findUnique({
+      where: {
+        uploadId_pageNumber: {
+          uploadId: uploadId,
+          pageNumber: parseInt(pageNumber),
+        },
+      },
+    })
+
+    if (progressPhoto) {
+      return NextResponse.json({
+        uploaded: true,
+        imageUrl: progressPhoto.imageUrl,
+      })
+    }
+
+    // Fallback: Sprawdź pliki w Blob Storage (dla starych uploadów)
     const prefix = `uploads/${uploadId}/page-${pageNumber}/`
     
     const { blobs } = await list({
@@ -60,6 +77,19 @@ export async function GET(request: NextRequest) {
       const timeB = new Date(b.uploadedAt).getTime()
       return timeB - timeA
     })[0]
+
+    // Zapisz do bazy danych dla przyszłych zapytań
+    try {
+      await prisma.progressPhoto.create({
+        data: {
+          uploadId: uploadId,
+          pageNumber: parseInt(pageNumber),
+          imageUrl: latestBlob.url,
+        },
+      })
+    } catch (e) {
+      // Ignoruj błąd jeśli już istnieje (race condition)
+    }
 
     return NextResponse.json({
       uploaded: true,

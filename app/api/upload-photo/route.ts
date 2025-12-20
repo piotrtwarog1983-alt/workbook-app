@@ -65,6 +65,25 @@ export async function POST(request: NextRequest) {
       access: 'public', // Plik będzie publicznie dostępny
     })
 
+    // Zapisz URL w bazie danych (upsert - aktualizuj jeśli istnieje)
+    await prisma.progressPhoto.upsert({
+      where: {
+        uploadId_pageNumber: {
+          uploadId: uploadId,
+          pageNumber: parseInt(pageNumber),
+        },
+      },
+      update: {
+        imageUrl: blob.url,
+        updatedAt: new Date(),
+      },
+      create: {
+        uploadId: uploadId,
+        pageNumber: parseInt(pageNumber),
+        imageUrl: blob.url,
+      },
+    })
+
     // Wyślij event przez Pusher - real-time update dla desktop view
     await triggerPusherEvent(`progress-${uploadId}`, 'photo:uploaded', {
       pageNumber: parseInt(pageNumber),

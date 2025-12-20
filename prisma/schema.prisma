@@ -198,3 +198,17 @@ model UserConsent {
   @@index([consentType])
 }
 
+// Zdjęcia postępów - przechowuje URL zdjęć uploadowanych przez użytkowników
+model ProgressPhoto {
+  id         String   @id @default(cuid())
+  uploadId   String   // uploadId użytkownika
+  pageNumber Int      // Numer strony kursu
+  imageUrl   String   // URL zdjęcia w Blob Storage
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([uploadId, pageNumber]) // Jedno zdjęcie na stronę
+  @@index([uploadId])
+  @@index([pageNumber])
+}
+
