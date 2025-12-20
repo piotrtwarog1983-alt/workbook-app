@@ -1213,7 +1213,7 @@ useEffect(() => {
                     style={{
                       alignItems: (currentPage.pageNumber === 10 && language === 'DE') || (currentPage.pageNumber === 44 && language === 'DE' && isMobile) ? 'flex-start' : 'center',
                       paddingTop: currentPage.pageNumber === 10 && language === 'DE' ? '6rem' 
-                        : currentPage.pageNumber === 44 && language === 'DE' && isMobile ? 'calc(2rem + 15%)' 
+                        : currentPage.pageNumber === 44 && language === 'DE' && isMobile ? 'calc(2rem + 25%)' 
                         : '2rem'
                     }}
                   >
