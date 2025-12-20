@@ -1969,7 +1969,7 @@ useEffect(() => {
                     {/* Tekst na górze */}
                     <div
                       className="flex-none px-6 md:px-8 lg:px-12 w-full"
-                      style={{ paddingTop: '8%' }}
+                      style={{ paddingTop: currentPage.pageNumber === 32 ? '23%' : '8%' }}
                     >
                       {loadingText ? (
                         <div className="text-gray-400 text-center">Ładowanie...</div>
@@ -2027,7 +2027,7 @@ useEffect(() => {
                             />
                           </div>
                         )}
-                        <div className="flex gap-8 w-full max-w-[600px]" style={{ marginTop: '30%' }}>
+                        <div className="flex gap-8 w-full max-w-[600px]" style={{ marginTop: '45%' }}>
                           {/* Lewa kolumna - flat lay */}
                           <div className="flex-1 flex flex-col items-center relative">
                             <span className="text-xl md:text-2xl font-serif text-black absolute" style={{ top: '-50%' }}>{page32Labels.label1 || '- flat lay'}</span>
