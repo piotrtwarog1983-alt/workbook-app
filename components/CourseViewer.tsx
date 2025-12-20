@@ -1211,8 +1211,10 @@ useEffect(() => {
                   <div 
                     className="relative w-full h-full flex justify-center p-8 bg-white overflow-y-auto"
                     style={{
-                      alignItems: currentPage.pageNumber === 10 && language === 'DE' ? 'flex-start' : 'center',
-                      paddingTop: currentPage.pageNumber === 10 && language === 'DE' ? '6rem' : '2rem'
+                      alignItems: (currentPage.pageNumber === 10 && language === 'DE') || (currentPage.pageNumber === 44 && language === 'DE' && isMobile) ? 'flex-start' : 'center',
+                      paddingTop: currentPage.pageNumber === 10 && language === 'DE' ? '6rem' 
+                        : currentPage.pageNumber === 44 && language === 'DE' && isMobile ? 'calc(2rem + 15%)' 
+                        : '2rem'
                     }}
                   >
                     {loadingText ? (
