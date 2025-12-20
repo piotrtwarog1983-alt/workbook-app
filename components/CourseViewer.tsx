@@ -1263,32 +1263,65 @@ useEffect(() => {
                   </div>
                 ) : isTextImageSplit ? (
                   // Layout z zdjęciem na cały kontener i tekstem nałożonym na górze
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                      alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                      fill
-                      className="object-cover"
-                      priority={currentPageIndex === 7}
-                      sizes="(max-width: 768px) 100vw, 800px"
-                    />
-                    {/* Tekst nałożony na zdjęcie na górze */}
-                    <div className="absolute inset-0 flex items-start justify-center pt-16 md:pt-20 lg:pt-24 px-6 md:px-8 lg:px-12">
-                      {loadingText ? (
-                        <div className="text-white">Ładowanie...</div>
-                      ) : (
-                        <div className="w-full max-w-3xl">
-                          <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
+                  // Strona 8 - na mobile jak strona 2
+                  isMobile && currentPage.pageNumber === 8 ? (
+                    // MOBILE: Zdjęcie na górze, tekst pod kontenerem
+                    <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
+                      {/* Zdjęcie na górze */}
+                      <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover object-top"
+                          priority={false}
+                          sizes="100vw"
+                        />
+                      </div>
+                      {/* Tekst pod zdjęciem - na dole */}
+                      <div className="flex-1 px-6 pb-8 bg-white flex items-end justify-center">
+                        {loadingText ? (
+                          <div className="text-gray-400 text-center">Ładowanie...</div>
+                        ) : (
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
                             {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
                               <p key={index} className={index > 0 ? 'mt-4' : ''}>
                                 {paragraph.trim()}
                               </p>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    // DESKTOP lub inne strony: oryginalny layout
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                        fill
+                        className="object-cover"
+                        priority={currentPageIndex === 7}
+                        sizes="(max-width: 768px) 100vw, 800px"
+                      />
+                      {/* Tekst nałożony na zdjęcie na górze */}
+                      <div className="absolute inset-0 flex items-start justify-center pt-16 md:pt-20 lg:pt-24 px-6 md:px-8 lg:px-12">
+                        {loadingText ? (
+                          <div className="text-white">Ładowanie...</div>
+                        ) : (
+                          <div className="w-full max-w-3xl">
+                            <div className="text-base md:text-lg lg:text-xl font-serif text-gray-900 leading-relaxed whitespace-pre-line">
+                              {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                                <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                  {paragraph.trim()}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
                 ) : isImageOverlayTextFile ? (
                   // Layout z zdjęciem na cały kontener i tekstem z pliku nałożonym na zdjęcie
                   // Na mobile dla wybranych stron (4,8,11,13,18,23,26,37,42) - layout jak strona 2
@@ -1494,7 +1527,39 @@ useEffect(() => {
                   )
                 ) : isImageOverlayTextWhite ? (
                   // Layout z zdjęciem na cały kontener i białym tekstem z pliku nałożonym na zdjęcie
-                  <div className="relative w-full h-full">
+                  // Strona 26 - na mobile jak strona 2
+                  isMobile && currentPage.pageNumber === 26 ? (
+                    // MOBILE: Zdjęcie na górze, tekst pod kontenerem
+                    <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
+                      {/* Zdjęcie na górze */}
+                      <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover object-top"
+                          priority={false}
+                          sizes="100vw"
+                        />
+                      </div>
+                      {/* Tekst pod zdjęciem - na dole */}
+                      <div className="flex-1 px-6 pb-8 bg-white flex items-end justify-center">
+                        {loadingText ? (
+                          <div className="text-gray-400 text-center">Ładowanie...</div>
+                        ) : (
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                            {overlayText.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+                              <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                {paragraph.trim()}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    // DESKTOP lub inne strony: oryginalny layout
+                    <div className="relative w-full h-full">
                     <Image
                       src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                       alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -1557,6 +1622,7 @@ useEffect(() => {
                       </div>
                     )}
                   </div>
+                  )
                 ) : isWhiteHeaderImage ? (
                   // Layout z białym tłem, tekstem na górze i zdjęciem 70%
                   <div className="relative w-full h-full bg-white flex flex-col items-center justify-center">
