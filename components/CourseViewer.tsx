@@ -1784,8 +1784,8 @@ useEffect(() => {
                   isMobile ? (
                     // MOBILE: Zdjęcie na górze, tekst pod kontenerem
                     <div className="relative w-full h-full bg-white flex flex-col">
-                      {/* Zdjęcie na górze - 60% wysokości */}
-                      <div className="relative w-full" style={{ height: '60%' }}>
+                      {/* Zdjęcie na górze - 50% wysokości */}
+                      <div className="relative w-full" style={{ height: '50%' }}>
                         <Image
                           src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
                           alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
@@ -1795,8 +1795,8 @@ useEffect(() => {
                           sizes="100vw"
                         />
                       </div>
-                      {/* Tekst wyśrodkowany na dole - 40% wysokości */}
-                      <div className="flex-1 flex items-center justify-center px-6 py-3">
+                      {/* Tekst wyśrodkowany na dole - 50% wysokości */}
+                      <div className="flex-1 flex items-center justify-center px-6 py-4">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
