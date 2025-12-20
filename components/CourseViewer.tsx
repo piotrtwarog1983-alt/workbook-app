@@ -1686,19 +1686,19 @@ useEffect(() => {
                     )}
                     {/* 3 kontenery z tekstem na dole dla strony 45 */}
                     {currentPage.pageNumber === 45 && (
-                      <div className="absolute left-0 right-0 flex flex-col md:flex-row gap-4 md:gap-6 px-6 md:px-8 lg:px-12" style={{ bottom: '0%' }}>
+                      <div className={`absolute left-0 right-0 flex gap-2 md:gap-6 px-2 md:px-8 lg:px-12 ${isMobile ? 'flex-row' : 'flex-col md:flex-row'}`} style={{ bottom: '0%' }}>
                         <div className="flex-1 text-center">
-                          <p className="text-xs md:text-sm lg:text-base font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} md:text-sm lg:text-base font-serif text-gray-900`}>
                             {page45Texts.text1}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-xs md:text-sm lg:text-base font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} md:text-sm lg:text-base font-serif text-gray-900`}>
                             {page45Texts.text2}
                           </p>
                         </div>
                         <div className="flex-1 text-center">
-                          <p className="text-xs md:text-sm lg:text-base font-serif text-gray-900">
+                          <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} md:text-sm lg:text-base font-serif text-gray-900`}>
                             {page45Texts.text3}
                           </p>
                         </div>
