@@ -961,8 +961,8 @@ useEffect(() => {
                           sizes="100vw"
                         />
                       </div>
-                      {/* Tekst nad zdjęciem - nachodzi na zdjęcie, wycentrowany poziomo i pionowo */}
-                      <div className="absolute inset-0 flex items-center justify-center px-6">
+                      {/* Tekst nad zdjęciem - nachodzi na zdjęcie, wysoko */}
+                      <div className="absolute inset-0 flex items-start justify-center pt-16 px-6">
                         {loadingText ? (
                           <div className="text-gray-400 text-center">Ładowanie...</div>
                         ) : (
