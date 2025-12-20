@@ -947,24 +947,95 @@ useEffect(() => {
                   </div>
                 ) : isImageOverlayTextTop ? (
                   // Layout z obrazem jako tłem i tekstem na górze
-                  <div className="relative w-full h-full">
-                    {/* Zdjęcie jako tło - rozciągnięte na całym kontenerze */}
-                    <div className="absolute inset-0">
-                      <Image
-                        src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
-                        alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
-                        fill
-                        className="object-cover"
-                        priority={currentPageIndex === 4}
-                        sizes="(max-width: 768px) 100vw, 800px"
-                      />
+                  // MOBILE: Zdjęcie na dole, tekst nad nim - wycentrowany (Strona 5)
+                  isMobile && currentPage.pageNumber === 5 ? (
+                    <div className="relative w-full h-full bg-white flex flex-col overflow-y-auto">
+                      {/* Tekst nad zdjęciem - wycentrowany poziomo i pionowo */}
+                      <div className="flex-1 px-6 py-6 bg-white flex items-center justify-center">
+                        {loadingText ? (
+                          <div className="text-gray-400 text-center">Ładowanie...</div>
+                        ) : (
+                          <div className="text-sm sm:text-base font-sans text-gray-900 leading-relaxed text-center px-2">
+                            {(() => {
+                              if (!overlayText) return null
+                              
+                              // Podziel tekst na części (separator ---)
+                              const parts = overlayText.split('---')
+                              const beforeSeparator = parts[0].trim()
+                              const afterSeparator = parts[1]?.trim() || ''
+                              
+                              // Podziel część przed separatorem na akapity
+                              const paragraphs = beforeSeparator.split(/\n\s*\n/).filter(p => p.trim())
+                              
+                              return (
+                                <>
+                                  {paragraphs.map((paragraph: string, index: number) => {
+                                    const trimmedParagraph = paragraph.trim()
+                                    // Pierwszy akapit to tytuł "Gotowy? Zaczynamy!"
+                                    if (index === 0 && trimmedParagraph.includes('Gotowy')) {
+                                      const titleLine = trimmedParagraph.split('\n')[0].trim()
+                                      return (
+                                        <div key={index}>
+                                          <h2 className="font-bold text-xl mb-3 text-center">
+                                            {titleLine}
+                                          </h2>
+                                          {trimmedParagraph.split('\n').slice(1).filter(l => l.trim()).length > 0 && (
+                                            <p className="mb-3 whitespace-pre-line text-center">
+                                              {trimmedParagraph.split('\n').slice(1).join('\n').trim()}
+                                            </p>
+                                          )}
+                                        </div>
+                                      )
+                                    }
+                                    return (
+                                      <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                                        {trimmedParagraph}
+                                      </p>
+                                    )
+                                  })}
+                                  {afterSeparator && (
+                                    <div className="mt-6 pt-4 border-t border-gray-300">
+                                      <p className="whitespace-pre-line">{afterSeparator}</p>
+                                    </div>
+                                  )}
+                                </>
+                              )
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Zdjęcie na samym dole */}
+                      <div className="relative w-full flex-shrink-0" style={{ height: '35vh', minHeight: '250px' }}>
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover"
+                          priority={false}
+                          sizes="100vw"
+                        />
+                      </div>
                     </div>
-                    {/* Tekst na górze */}
-                    <div className="absolute top-0 left-0 right-0 pt-8 px-6 md:px-8 lg:px-12">
-                      {loadingText ? (
-                        <div className="text-gray-400">Ładowanie...</div>
-                      ) : (
-                        <div className="text-black">
+                  ) : (
+                    // DESKTOP: Oryginalny layout - zdjęcie pełne, tekst na górze
+                    <div className="relative w-full h-full">
+                      {/* Zdjęcie jako tło - rozciągnięte na całym kontenerze */}
+                      <div className="absolute inset-0">
+                        <Image
+                          src={content.imageUrl?.startsWith('/') ? content.imageUrl : `/course/strona ${currentPage.pageNumber}/Foto/${content.imageUrl}`}
+                          alt={currentPage.title || `Strona ${currentPage.pageNumber}`}
+                          fill
+                          className="object-cover"
+                          priority={currentPageIndex === 4}
+                          sizes="(max-width: 768px) 100vw, 800px"
+                        />
+                      </div>
+                      {/* Tekst na górze */}
+                      <div className="absolute top-0 left-0 right-0 pt-8 px-6 md:px-8 lg:px-12">
+                        {loadingText ? (
+                          <div className="text-gray-400">Ładowanie...</div>
+                        ) : (
+                          <div className="text-black">
                           {(() => {
                             if (!overlayText) return null
                             
@@ -1049,7 +1120,8 @@ useEffect(() => {
                         </div>
                       )}
                     </div>
-                  </div>
+                    </div>
+                  )
                 ) : currentPage?.imageUrl ? (
                   <div className="relative w-full h-full">
                     <Image
