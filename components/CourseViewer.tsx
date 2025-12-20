@@ -1160,6 +1160,50 @@ useEffect(() => {
                           </div>
                         ))}
                         </div>
+                        {/* Przycisk aparatu na stronie 6 - tylko mobile */}
+                        {currentPage.pageNumber === 6 && isMobile && (
+                          <button
+                            onClick={() => {
+                              // Otwórz aparat w telefonie
+                              const input = document.createElement('input')
+                              input.type = 'file'
+                              input.accept = 'image/*'
+                              input.capture = 'environment' // Użyj tylnej kamery
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) {
+                                  // Tutaj można dodać logikę przetwarzania zdjęcia
+                                  console.log('Wybrano zdjęcie:', file.name)
+                                  // Można otworzyć podgląd lub zapisać do stanu
+                                }
+                              }
+                              input.click()
+                            }}
+                            className="mt-8 inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 active:scale-95 transition-all"
+                          >
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className="h-6 w-6" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" 
+                              />
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" 
+                              />
+                            </svg>
+                            {t('course.openCamera')}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

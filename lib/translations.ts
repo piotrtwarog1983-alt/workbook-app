@@ -119,6 +119,7 @@ export const translations = {
       goToPage: 'Przejdź do strony',
       loadingQR: 'Ładowanie kodu QR...',
       refreshPage: 'Odśwież stronę',
+      openCamera: 'Otwórz aparat',
       // Upload
       submitPhoto: 'Prześlij swoje zdjęcie',
       dragOrClick: 'Przeciągnij zdjęcie tutaj lub kliknij, aby wybrać',
@@ -330,6 +331,7 @@ export const translations = {
       goToPage: 'Zur Seite gehen',
       loadingQR: 'QR-Code wird geladen...',
       refreshPage: 'Seite aktualisieren',
+      openCamera: 'Kamera öffnen',
       // Upload
       submitPhoto: 'Laden Sie Ihr Foto hoch',
       dragOrClick: 'Ziehen Sie das Foto hierher oder klicken Sie, um auszuwählen',
@@ -425,6 +427,7 @@ export const translations = {
 } as const
 
 export type TranslationKeys = typeof translations.PL
+
 
 
 
