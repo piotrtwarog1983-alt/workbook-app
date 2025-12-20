@@ -1911,16 +1911,16 @@ useEffect(() => {
                 ) : isTwoImagesContainer ? (
                   // Layout z białym tłem, tekstem na górze i dwoma kontenerami na zdjęcia (70% powierzchni)
                   <div className="relative w-full h-full bg-white flex flex-col items-center justify-center">
-                    {/* Tekst wyśrodkowany w pionie między górą a kontenerami zdjęć */}
+                    {/* Tekst przesunięty 20% w dół */}
                     <div 
-                      className={`flex-1 flex justify-center px-6 md:px-8 lg:px-12 w-full items-center`}
+                      className="flex-1 flex justify-center px-6 md:px-8 lg:px-12 w-full items-start pt-24"
                     >
                       <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif text-gray-900 leading-relaxed text-center whitespace-pre-line">
                         {overlayText || content.text}
                       </div>
                     </div>
-                    {/* Kontener na dwa zdjęcia - 70% powierzchni całkowitej kontenera głównego */}
-                    <div className="flex-none flex items-center justify-center gap-4 px-6 md:px-8 lg:px-12 pb-8 w-full">
+                    {/* Kontener na dwa zdjęcia - większy (zdjęcia lekko w górę) */}
+                    <div className="flex-none flex items-start justify-center gap-4 px-6 md:px-8 lg:px-12 pb-4 w-full" style={{ flex: '1.2' }}>
                       <div 
                         className="flex gap-4 mx-auto"
                         style={{ 
