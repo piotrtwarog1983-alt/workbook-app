@@ -78,6 +78,11 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [qrUploadStatus, setQrUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const pusherRef = useRef<Pusher | null>(null)
   
+  // Touch/swipe handling for mobile
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null)
+  const minSwipeDistance = 50 // Minimalna odległość swipe w pikselach
+  
   // Mapowanie języka z kontekstu na format folderów (PL, DE)
   const currentLang = language
 
@@ -321,6 +326,45 @@ useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [currentPageIndex, course, isTransitioning])
+
+  // Touch/swipe handlers for mobile navigation
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null) // Reset touchEnd
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    })
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    })
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distanceX = touchStart.x - touchEnd.x
+    const distanceY = touchStart.y - touchEnd.y
+    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY)
+    
+    // Tylko poziomy swipe (jak na Instagramie)
+    if (isHorizontalSwipe && Math.abs(distanceX) > minSwipeDistance) {
+      if (distanceX > 0) {
+        // Swipe w lewo = następna strona
+        nextPage()
+      } else {
+        // Swipe w prawo = poprzednia strona
+        prevPage()
+      }
+    }
+    
+    // Reset touch state
+    setTouchStart(null)
+    setTouchEnd(null)
+  }
 
   // Wczytaj tekst z pliku dla strony z overlay lub quote-text
   useEffect(() => {
@@ -728,6 +772,9 @@ useEffect(() => {
                   {/* Current page */}
                   <div 
                     className={`course-container bg-white overflow-hidden relative ${isTransitioning ? (transitionDirection === 'up' ? 'page-enter-from-bottom' : 'page-enter-from-top') : ''}`}
+                    onTouchStart={isMobile ? onTouchStart : undefined}
+                    onTouchMove={isMobile ? onTouchMove : undefined}
+                    onTouchEnd={isMobile ? onTouchEnd : undefined}
                   >
                     <div 
                       className="absolute inset-0"
@@ -1770,7 +1817,7 @@ useEffect(() => {
                     </div>
                   ) : (
                     // DESKTOP lub mobile dla innych stron: oryginalny layout z tekstem na zdjęciu
-                    <div className="relative w-full h-full">
+                  <div className="relative w-full h-full">
                     <div 
                       className={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46 || currentPage.pageNumber === 47) && isMobile ? "absolute left-0 right-0 bottom-0" : "absolute inset-0"}
                       style={(currentPage.pageNumber === 45 || currentPage.pageNumber === 46 || currentPage.pageNumber === 47) && isMobile ? { top: '15%' } : undefined}
@@ -2830,44 +2877,18 @@ useEffect(() => {
               </div>
       </div>
 
-      {/* Mobile: Floating navigation and menu button */}
+      {/* Mobile: Floating navigation - swipe hint + page indicator + menu */}
       <div className="lg:hidden fixed bottom-4 left-0 right-0 flex justify-center items-center gap-3 z-40 px-4">
-        {/* Page indicator */}
-        <div className="bg-gray-900/80 backdrop-blur-sm text-white/80 text-sm px-3 py-2 rounded-full">
-          {currentPageIndex + 1} / {pages.length}
-        </div>
-        
-        {/* Previous button */}
-        <button
-          onClick={prevPage}
-          disabled={currentPageIndex === 0}
-          className={`w-12 h-12 rounded-full flex items-center justify-center ${
-            currentPageIndex === 0 ? 'bg-gray-700/50 opacity-30' : 'bg-gray-900/80 backdrop-blur-sm'
-          }`}
-        >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Swipe hint with arrows */}
+        <div className="bg-gray-900/80 backdrop-blur-sm text-white/60 text-xs px-3 py-2 rounded-full flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-        </button>
-        
-        {/* Next button */}
-        <button
-          onClick={nextPage}
-          disabled={!canGoToNextPage() || currentPageIndex >= pages.length - 1}
-          className={`w-12 h-12 rounded-full flex items-center justify-center ${
-            (!canGoToNextPage() || currentPageIndex >= pages.length - 1) ? 'bg-gray-700/50 opacity-30' : 'bg-gray-900/80 backdrop-blur-sm'
-          }`}
-        >
-          {canGoToNextPage() ? (
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          )}
-        </button>
+          <span>{currentPageIndex + 1} / {pages.length}</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
         
         {/* Menu button */}
         <button
@@ -2878,7 +2899,7 @@ useEffect(() => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-          </div>
+      </div>
 
       {/* Mobile: Functions modal */}
       {showMobileMenu && (
