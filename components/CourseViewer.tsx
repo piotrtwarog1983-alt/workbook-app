@@ -81,7 +81,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   // Touch/swipe handling for mobile
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
   const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null)
-  const minSwipeDistance = 50 // Minimalna odległość swipe w pikselach
+  const minSwipeDistance = 30 // Minimalna odległość swipe w pikselach (zmniejszone dla łatwiejszego swipe)
   
   // Mapowanie języka z kontekstu na format folderów (PL, DE)
   const currentLang = language
@@ -2877,23 +2877,31 @@ useEffect(() => {
               </div>
       </div>
 
-      {/* Mobile: Floating navigation - swipe hint + page indicator + menu */}
+      {/* Mobile: Instagram-style progress bar + menu button */}
       <div className="lg:hidden fixed bottom-4 left-0 right-0 flex justify-center items-center gap-3 z-40 px-4">
-        {/* Swipe hint with arrows */}
-        <div className="bg-gray-900/80 backdrop-blur-sm text-white/60 text-xs px-3 py-2 rounded-full flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span>{currentPageIndex + 1} / {pages.length}</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+        {/* Instagram-style progress dots/bars */}
+        <div className="bg-gray-900/70 backdrop-blur-sm px-3 py-2 rounded-full flex items-center gap-1">
+          {pages.slice(0, Math.min(pages.length, 20)).map((_: any, idx: number) => (
+            <div
+              key={idx}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                idx === currentPageIndex 
+                  ? 'w-4 bg-orange-500' 
+                  : idx < currentPageIndex 
+                    ? 'w-1.5 bg-white/60' 
+                    : 'w-1.5 bg-white/30'
+              }`}
+            />
+          ))}
+          {pages.length > 20 && (
+            <span className="text-white/50 text-[10px] ml-1">+{pages.length - 20}</span>
+          )}
         </div>
         
         {/* Menu button */}
         <button
           onClick={() => setShowMobileMenu(true)}
-          className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-500/90 backdrop-blur-sm"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-orange-500/90 backdrop-blur-sm"
         >
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
