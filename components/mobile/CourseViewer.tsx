@@ -2399,8 +2399,8 @@ useEffect(() => {
                     {/* Czarne tło z białym tekstem na górze */}
                     <div 
                       className={`flex-none w-full flex items-center justify-center px-6 md:px-8 lg:px-12 ${[7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '' : 'bg-black'}`}
-                      style={[7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? { background: '#1a1a1a' } : {}}
                       style={{ 
+                        ...([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? { background: '#1a1a1a' } : {}),
                         paddingTop: currentPage.pageNumber === 25 ? '40px' 
                           : (currentPage.pageNumber === 14 || currentPage.pageNumber === 19) ? '24px' 
                           : '24px', 

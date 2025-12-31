@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { ProgressGallery } from '../ProgressGallery'
-import { DictionaryInline } from '../DictionaryInline'
-import { ChatBox } from '../ChatBox'
-import { VideoPlayer, VIDEO_PAGES } from '../VideoPlayer'
-import { ProgressTimeline } from '../ProgressTimeline'
+import { ProgressGallery } from '../shared/ProgressGallery'
+import { DictionaryInline } from '../shared/DictionaryInline'
+import { ChatBox } from '../shared/ChatBox'
+import { VideoPlayer, VIDEO_PAGES } from '../shared/VideoPlayer'
+import { ProgressTimeline } from '../shared/ProgressTimeline'
 import { useLanguage } from '@/lib/LanguageContext'
 
 interface FunctionsPanelProps {

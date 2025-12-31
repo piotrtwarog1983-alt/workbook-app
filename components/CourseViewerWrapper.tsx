@@ -30,10 +30,9 @@ const MobileCourseViewer = dynamic(
 
 interface CourseViewerWrapperProps {
   courseSlug: string
-  initialPage?: number
 }
 
-export function CourseViewerWrapper({ courseSlug, initialPage }: CourseViewerWrapperProps) {
+export function CourseViewerWrapper({ courseSlug }: CourseViewerWrapperProps) {
   const { device, isLoading } = useDevice()
 
   if (isLoading) {
@@ -46,10 +45,10 @@ export function CourseViewerWrapper({ courseSlug, initialPage }: CourseViewerWra
 
   // Renderuj odpowiednią wersję na podstawie wykrytego urządzenia
   if (device === 'mobile') {
-    return <MobileCourseViewer courseSlug={courseSlug} initialPage={initialPage} />
+    return <MobileCourseViewer courseSlug={courseSlug} />
   }
 
-  return <DesktopCourseViewer courseSlug={courseSlug} initialPage={initialPage} />
+  return <DesktopCourseViewer courseSlug={courseSlug} />
 }
 
 

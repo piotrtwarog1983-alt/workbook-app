@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ProgressGallery } from '../ProgressGallery'
-import { DictionaryInline } from '../DictionaryInline'
-import { ChatBox } from '../ChatBox'
-import { VideoPlayer } from '../VideoPlayer'
+import { ProgressGallery } from '../shared/ProgressGallery'
+import { DictionaryInline } from '../shared/DictionaryInline'
+import { ChatBox } from '../shared/ChatBox'
+import { VideoPlayer } from '../shared/VideoPlayer'
 import { useLanguage } from '@/lib/LanguageContext'
 import { Language } from '@/lib/translations'
 
