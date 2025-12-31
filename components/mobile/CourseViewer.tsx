@@ -83,10 +83,8 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [qrUploadStatus, setQrUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const pusherRef = useRef<Pusher | null>(null)
   
-  // Touch/swipe handling for mobile
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
-  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null)
-  const minSwipeDistance = 30 // Minimalna odległość swipe w pikselach (zmniejszone dla łatwiejszego swipe)
+  // Touch/swipe navigation wyłączona - koliduje ze scrollowaniem strony
+  // Użytkownicy mogą korzystać z przycisków nawigacji lub paska postępu
   
   // Mapowanie języka z kontekstu na format folderów (PL, DE, EN Usa)
   // langFolder - dla bezpośredniego dostępu do plików public
@@ -338,44 +336,7 @@ useEffect(() => {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [currentPageIndex, course, isTransitioning])
 
-  // Touch/swipe handlers for mobile navigation
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null) // Reset touchEnd
-    setTouchStart({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY
-    })
-  }
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY
-    })
-  }
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
-    
-    const distanceX = touchStart.x - touchEnd.x
-    const distanceY = touchStart.y - touchEnd.y
-    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX)
-    
-    // Tylko pionowy swipe (góra-dół)
-    if (isVerticalSwipe && Math.abs(distanceY) > minSwipeDistance) {
-      if (distanceY > 0) {
-        // Swipe w górę = następna strona
-        nextPage()
-      } else {
-        // Swipe w dół = poprzednia strona
-        prevPage()
-      }
-    }
-    
-    // Reset touch state
-    setTouchStart(null)
-    setTouchEnd(null)
-  }
+  // Touch/swipe handlers wyłączone - nawigacja przez przyciski i pasek postępu
 
   // Wczytaj tekst z pliku dla strony z overlay lub quote-text
   useEffect(() => {
@@ -914,9 +875,8 @@ useEffect(() => {
                     style={{ 
                       background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff'
                     }}
-                    onTouchStart={isMobile ? onTouchStart : undefined}
-                    onTouchMove={isMobile ? onTouchMove : undefined}
-                    onTouchEnd={isMobile ? onTouchEnd : undefined}
+                    // Wyłączono swipe navigation - koliduje ze scrollowaniem
+                    // Użytkownicy mogą korzystać z przycisków nawigacji lub paska postępu
                   >
                     <div 
                       className="absolute inset-0"
