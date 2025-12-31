@@ -857,11 +857,11 @@ useEffect(() => {
                   borderRadius: isMobile ? '0' : '16px',
                   background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || isProgressEvaluation || currentPage.pageNumber === 19) ? '#000000' : 'rgba(35, 40, 50, 0.4)', 
                   border: isMobile ? 'none' : (currentPage.pageNumber === 16 || currentPage.pageNumber === 1) ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
-                  overflow: isMobile ? 'hidden' : 'visible',
+                  overflow: isMobile ? 'auto' : 'visible',
                   flexShrink: 0
                 }}
               >
-                <div className={`relative overflow-hidden ${isMobile ? 'rounded-none' : 'rounded-xl'} scroll-transition-wrapper`} style={{ background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff' }}>
+                <div className={`relative ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'} ${isMobile ? 'rounded-none' : 'rounded-xl'} scroll-transition-wrapper`} style={{ background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff', WebkitOverflowScrolling: isMobile ? 'touch' : undefined }}>
                   {/* Exiting page overlay during transition */}
                   {isTransitioning && exitingPageIndex !== null && (
                     <div 
@@ -871,12 +871,11 @@ useEffect(() => {
                   )}
                   {/* Current page */}
                   <div 
-                    className={`course-container overflow-hidden relative ${isTransitioning ? (transitionDirection === 'up' ? 'page-enter-from-bottom' : 'page-enter-from-top') : ''}`}
+                    className={`course-container overflow-y-auto relative ${isTransitioning ? (transitionDirection === 'up' ? 'page-enter-from-bottom' : 'page-enter-from-top') : ''}`}
                     style={{ 
-                      background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff'
+                      background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff',
+                      WebkitOverflowScrolling: 'touch' // Smooth scrolling na iOS
                     }}
-                    // Wyłączono swipe navigation - koliduje ze scrollowaniem
-                    // Użytkownicy mogą korzystać z przycisków nawigacji lub paska postępu
                   >
                     <div 
                       className="absolute inset-0"
