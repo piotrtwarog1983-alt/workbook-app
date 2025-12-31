@@ -83,8 +83,11 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [qrUploadStatus, setQrUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const pusherRef = useRef<Pusher | null>(null)
   
-  // Touch/swipe navigation wyłączona - koliduje ze scrollowaniem strony
-  // Użytkownicy mogą korzystać z przycisków nawigacji lub paska postępu
+  // Horizontal swipe navigation (left/right) - nie koliduje ze scrollowaniem pionowym
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
+  const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null)
+  const minSwipeDistance = 50 // Minimalna odległość swipe w pikselach
   
   // Mapowanie języka z kontekstu na format folderów (PL, DE, EN Usa)
   // langFolder - dla bezpośredniego dostępu do plików public
@@ -336,7 +339,68 @@ useEffect(() => {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [currentPageIndex, course, isTransitioning])
 
-  // Touch/swipe handlers wyłączone - nawigacja przez przyciski i pasek postępu
+  // Horizontal swipe handlers - swipe lewo/prawo zmienia strony
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX)
+    setTouchStartY(e.touches[0].clientY)
+    setIsHorizontalSwipe(null)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX === null || touchStartY === null) return
+    
+    const currentX = e.touches[0].clientX
+    const currentY = e.touches[0].clientY
+    const diffX = Math.abs(currentX - touchStartX)
+    const diffY = Math.abs(currentY - touchStartY)
+    
+    // Określ czy to swipe poziomy czy pionowy (tylko raz)
+    if (isHorizontalSwipe === null && (diffX > 10 || diffY > 10)) {
+      setIsHorizontalSwipe(diffX > diffY)
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || !isHorizontalSwipe || isTransitioning || !course) {
+      setTouchStartX(null)
+      setTouchStartY(null)
+      setIsHorizontalSwipe(null)
+      return
+    }
+
+    const touchEndX = e.changedTouches[0].clientX
+    const distance = touchStartX - touchEndX
+    const pages = course.pages || []
+
+    // Swipe w lewo (następna strona)
+    if (distance > minSwipeDistance && currentPageIndex < pages.length - 1) {
+      setExitingPageIndex(currentPageIndex)
+      setCurrentPageIndex(currentPageIndex + 1)
+      setTransitionDirection('up')
+      setIsTransitioning(true)
+      setTimeout(() => {
+        setIsTransitioning(false)
+        setTransitionDirection(null)
+        setExitingPageIndex(null)
+      }, 800)
+    }
+    // Swipe w prawo (poprzednia strona)
+    else if (distance < -minSwipeDistance && currentPageIndex > 0) {
+      setExitingPageIndex(currentPageIndex)
+      setCurrentPageIndex(currentPageIndex - 1)
+      setTransitionDirection('down')
+      setIsTransitioning(true)
+      setTimeout(() => {
+        setIsTransitioning(false)
+        setTransitionDirection(null)
+        setExitingPageIndex(null)
+      }, 800)
+    }
+
+    setTouchStartX(null)
+    setTouchStartY(null)
+    setIsHorizontalSwipe(null)
+  }
 
   // Wczytaj tekst z pliku dla strony z overlay lub quote-text
   useEffect(() => {
@@ -861,7 +925,13 @@ useEffect(() => {
                   flexShrink: 0
                 }}
               >
-                <div className={`relative ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'} ${isMobile ? 'rounded-none' : 'rounded-xl'} scroll-transition-wrapper`} style={{ background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff', WebkitOverflowScrolling: isMobile ? 'touch' : undefined }}>
+                <div 
+                  className={`relative ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'} ${isMobile ? 'rounded-none' : 'rounded-xl'} scroll-transition-wrapper`} 
+                  style={{ background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff', WebkitOverflowScrolling: isMobile ? 'touch' : undefined }}
+                  onTouchStart={isMobile ? handleTouchStart : undefined}
+                  onTouchMove={isMobile ? handleTouchMove : undefined}
+                  onTouchEnd={isMobile ? handleTouchEnd : undefined}
+                >
                   {/* Exiting page overlay during transition */}
                   {isTransitioning && exitingPageIndex !== null && (
                     <div 
