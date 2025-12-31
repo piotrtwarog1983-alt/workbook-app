@@ -22,13 +22,15 @@ body {
   font-style: normal;
 }
 
-/* Mobile only: prevent horizontal scroll */
+/* Mobile only: prevent horizontal scroll and pull-to-refresh */
 @media (max-width: 1023px) {
   html, body {
     overflow-x: hidden !important;
     overflow-y: auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    overscroll-behavior: none !important; /* Blokuje pull-to-refresh */
+    overscroll-behavior-y: none !important;
   }
   
   .mobile-container {

@@ -339,7 +339,7 @@ useEffect(() => {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [currentPageIndex, course, isTransitioning])
 
-  // Horizontal swipe handlers - swipe lewo/prawo zmienia strony
+  // Vertical swipe handlers - swipe góra/dół zmienia strony
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX)
     setTouchStartY(e.touches[0].clientY)
@@ -354,25 +354,27 @@ useEffect(() => {
     const diffX = Math.abs(currentX - touchStartX)
     const diffY = Math.abs(currentY - touchStartY)
     
-    // Określ czy to swipe poziomy czy pionowy (tylko raz)
+    // Określ czy to swipe pionowy czy poziomy (tylko raz)
     if (isHorizontalSwipe === null && (diffX > 10 || diffY > 10)) {
-      setIsHorizontalSwipe(diffX > diffY)
+      const isVertical = diffY > diffX
+      setIsHorizontalSwipe(!isVertical) // false = pionowy swipe
     }
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX === null || !isHorizontalSwipe || isTransitioning || !course) {
+    // isHorizontalSwipe === false oznacza swipe pionowy
+    if (touchStartY === null || isHorizontalSwipe !== false || isTransitioning || !course) {
       setTouchStartX(null)
       setTouchStartY(null)
       setIsHorizontalSwipe(null)
       return
     }
 
-    const touchEndX = e.changedTouches[0].clientX
-    const distance = touchStartX - touchEndX
+    const touchEndY = e.changedTouches[0].clientY
+    const distance = touchStartY - touchEndY
     const pages = course.pages || []
 
-    // Swipe w lewo (następna strona)
+    // Swipe w górę (następna strona)
     if (distance > minSwipeDistance && currentPageIndex < pages.length - 1) {
       setExitingPageIndex(currentPageIndex)
       setCurrentPageIndex(currentPageIndex + 1)
@@ -384,7 +386,7 @@ useEffect(() => {
         setExitingPageIndex(null)
       }, 800)
     }
-    // Swipe w prawo (poprzednia strona)
+    // Swipe w dół (poprzednia strona)
     else if (distance < -minSwipeDistance && currentPageIndex > 0) {
       setExitingPageIndex(currentPageIndex)
       setCurrentPageIndex(currentPageIndex - 1)
@@ -927,7 +929,11 @@ useEffect(() => {
               >
                 <div 
                   className={`relative ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'} ${isMobile ? 'rounded-none' : 'rounded-xl'} scroll-transition-wrapper`} 
-                  style={{ background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff', WebkitOverflowScrolling: isMobile ? 'touch' : undefined }}
+                  style={{ 
+                    background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage.pageNumber) ? '#1a1a1a' : '#000000') : (currentPage.pageNumber === 1 || currentPage.pageNumber === 14 || currentPage.pageNumber === 19 || isProgressEvaluation) ? '#000000' : '#ffffff', 
+                    WebkitOverflowScrolling: isMobile ? 'touch' : undefined,
+                    overscrollBehavior: isMobile ? 'none' : undefined // Blokuje pull-to-refresh
+                  }}
                   onTouchStart={isMobile ? handleTouchStart : undefined}
                   onTouchMove={isMobile ? handleTouchMove : undefined}
                   onTouchEnd={isMobile ? handleTouchEnd : undefined}
