@@ -1,1 +1,1 @@
-- 45 stopni
+ <45 stopni

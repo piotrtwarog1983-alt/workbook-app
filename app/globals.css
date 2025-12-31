@@ -11,6 +11,15 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: #1a1d24;
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+}
+
+/* Inter font class */
+.inter {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 
 /* Mobile only: prevent horizontal scroll */
@@ -48,21 +57,23 @@ body {
   .course-container {
     width: 100% !important;
     max-width: 100% !important;
-    /* Wysokość = viewport - navigation bar (80px) - padding (16px) */
-    height: calc(100vh - 100px) !important;
-    max-height: calc(100vh - 100px) !important;
+    /* Wysokość = viewport - pasek nawigacji (80px) */
+    height: calc(100vh - 80px) !important;
+    max-height: calc(100vh - 80px) !important;
     aspect-ratio: unset !important;
     min-height: 0 !important;
     -webkit-overflow-scrolling: touch;
     overflow: hidden !important;
   }
   
+  
   /* Force all containers to respect viewport */
   .glow-wrapper,
   .scroll-transition-wrapper {
     width: 100% !important;
     max-width: 100% !important;
-    height: 100% !important;
+    height: calc(100vh - 80px) !important;
+    max-height: calc(100vh - 80px) !important;
     overflow: hidden !important;
   }
   
@@ -162,35 +173,7 @@ body {
 /* Tip cloud with dark theme */
 .tip-cloud {
   position: relative;
-  background: rgba(35, 40, 50, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1rem;
-  backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.tip-cloud::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
-  border-radius: inherit;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.tip-cloud::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  box-shadow: 
-    0 0 40px 10px rgba(255, 255, 255, 0.06),
-    0 0 70px 20px rgba(255, 255, 255, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-radius: inherit;
-  z-index: -1;
-  pointer-events: none;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* Elegant navigation arrows */

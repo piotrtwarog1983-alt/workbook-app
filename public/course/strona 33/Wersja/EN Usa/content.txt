@@ -1,0 +1,6 @@
+Determine whether your dish looks 
+more beautiful from above or at angles between
+0 and 45 degrees.
+
+
+

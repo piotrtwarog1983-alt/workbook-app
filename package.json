@@ -1,10 +1,11 @@
 {
-  "name": "workbook-app",
+  "name": "workbook-desktop",
   "version": "1.0.0",
+  "description": "WorkBook - Wersja desktopowa",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma db push --accept-data-loss && next build && npx prisma db seed",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate || echo 'Prisma generate skipped'",

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
 
+const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
+
 // GET - Pobierz wszystkie konwersacje (dla admina)
 export async function GET(request: NextRequest) {
   try {
@@ -16,12 +18,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Nieprawidłowy token' }, { status: 401 })
     }
 
-    // Sprawdź czy użytkownik jest adminem (email kończy się na odpowiedniej domenie)
+    // Sprawdź czy użytkownik jest adminem
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId }
     })
 
-    if (!user || !user.email.includes('eulalia')) {
+    if (!user || user.email !== ADMIN_EMAIL) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
@@ -64,6 +66,33 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

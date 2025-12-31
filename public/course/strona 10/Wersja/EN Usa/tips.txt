@@ -1,0 +1,4 @@
+RAW mode is not available on all phones. In some models, you need to install this mode from the camera app by clicking on the more tab / Expert RAW.
+
+
+

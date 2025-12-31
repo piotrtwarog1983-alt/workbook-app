@@ -102,6 +102,29 @@ const emailContent = {
       footer: 'Mit freundlichen Grüßen,<br>Das WorkBook-Team',
     },
   },
+  EN: {
+    registration: {
+      subject: 'Access to WorkBook Course - Create Account',
+      greeting: 'Hello!',
+      thanks: 'Thank you for purchasing the <strong>WorkBook</strong> course.',
+      instruction: 'To access the platform, create an account by clicking the button below:',
+      buttonText: 'Create Account',
+      copyLink: 'Or copy this link to your browser:',
+      validity: 'The link is valid for 7 days.',
+      footer: 'Best regards,<br>The WorkBook Team',
+    },
+    reset: {
+      subject: 'WorkBook - Password Reset',
+      title: 'Password Reset',
+      intro: 'We received a request to reset the password for your <strong>WorkBook</strong> account.',
+      instruction: 'Click the button below to set a new password:',
+      buttonText: 'Reset Password',
+      copyLink: 'Or copy this link to your browser:',
+      warning: '⚠️ Important:',
+      warningText: 'This link expires in 1 hour. If you did not request a password reset, please ignore this message.',
+      footer: 'Best regards,<br>The WorkBook Team',
+    },
+  },
 }
 
 /**

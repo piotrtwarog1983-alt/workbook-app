@@ -1,2 +1,2 @@
-PROSTY
-HORYZONT
+Horyzont
+

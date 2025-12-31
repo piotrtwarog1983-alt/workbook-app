@@ -11,6 +11,15 @@ const nextConfig = {
     optimizePackageImports: ['pusher-js', 'zod'],
   },
   
+  // Optymalizacja kompilacji
+  swcMinify: true,
+  
+  // Zmniejsz timeout kompilacji dla development
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
+  },
+  
   images: {
     remotePatterns: [
       {

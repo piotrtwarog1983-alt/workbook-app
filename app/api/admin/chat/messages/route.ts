@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
 import { triggerPusherEvent } from '@/lib/pusher'
 
+const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
+
 // GET - Pobierz wiadomości konwersacji (dla admina)
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
       where: { id: decoded.userId }
     })
 
-    if (!user || !user.email.includes('eulalia')) {
+    if (!user || user.email !== ADMIN_EMAIL) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
@@ -74,7 +76,7 @@ export async function POST(request: NextRequest) {
       where: { id: decoded.userId }
     })
 
-    if (!user || !user.email.includes('eulalia')) {
+    if (!user || user.email !== ADMIN_EMAIL) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
@@ -116,6 +118,33 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

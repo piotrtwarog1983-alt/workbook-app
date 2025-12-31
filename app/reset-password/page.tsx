@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/LanguageContext'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 
 function ResetPasswordContent() {
   const router = useRouter()
@@ -265,6 +265,33 @@ export default function ResetPasswordPage() {
     </Suspense>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -8,7 +8,7 @@ import { MOCK_COURSE } from '@/lib/mock-data'
 interface UseCourseContentProps {
   courseSlug: string
   currentPageIndex: number
-  currentLang: 'PL' | 'DE'
+  currentLang: 'PL' | 'DE' | 'EN'
 }
 
 interface CourseContentState {
@@ -32,6 +32,14 @@ export function useCourseContent({
   currentPageIndex,
   currentLang
 }: UseCourseContentProps): CourseContentState {
+  // Mapowanie języka na folder (EN -> "EN Usa")
+  const langFolderMap: { [key: string]: string } = {
+    'EN': 'EN Usa',
+    'PL': 'PL',
+    'DE': 'DE',
+  }
+  const langFolder = langFolderMap[currentLang] || currentLang
+
   const [course, setCourse] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -218,7 +226,7 @@ export function useCourseContent({
 
     if (pageContent && textTypes.includes(pageContent.type) && pageContent.textFile) {
       setLoadingText(true)
-      const textFileUrl = pageContent.textFile.replace(/\/(PL|DE)$/, `/${currentLang}`)
+      const textFileUrl = pageContent.textFile.replace(/\/(PL|DE|EN)$/, `/${langFolder}`)
       fetch(textFileUrl)
         .then((res) => res.json())
         .then((data) => {
@@ -246,9 +254,9 @@ export function useCourseContent({
     const loadPageTexts = async (pageNum: number, setter: Function) => {
       try {
         const [res1, res2, res3] = await Promise.all([
-          fetch(`/course/strona ${pageNum}/Wersja/${currentLang}/text1.txt`),
-          fetch(`/course/strona ${pageNum}/Wersja/${currentLang}/text2.txt`),
-          fetch(`/course/strona ${pageNum}/Wersja/${currentLang}/text3.txt`)
+          fetch(`/course/strona ${pageNum}/Wersja/${langFolder}/text1.txt`),
+          fetch(`/course/strona ${pageNum}/Wersja/${langFolder}/text2.txt`),
+          fetch(`/course/strona ${pageNum}/Wersja/${langFolder}/text3.txt`)
         ])
         
         const [text1, text2, text3] = await Promise.all([
@@ -266,7 +274,7 @@ export function useCourseContent({
     if (currentPage.pageNumber === 45) loadPageTexts(45, setPage45Texts)
     if (currentPage.pageNumber === 46) loadPageTexts(46, setPage46Texts)
     if (currentPage.pageNumber === 47) loadPageTexts(47, setPage47Texts)
-  }, [currentPageIndex, course, currentLang])
+  }, [currentPageIndex, course, langFolder])
 
   // Fetch page 32 labels
   useEffect(() => {

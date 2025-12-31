@@ -13,7 +13,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 // Wykryj język przeglądarki
 function detectBrowserLanguage(): Language {
-  if (typeof window === 'undefined') return 'PL'
+  if (typeof window === 'undefined') return 'EN'
   
   const browserLang = navigator.language || (navigator as any).userLanguage || ''
   const langCode = browserLang.toLowerCase().split('-')[0]
@@ -21,16 +21,17 @@ function detectBrowserLanguage(): Language {
   // Mapowanie kodów języków
   if (langCode === 'de') return 'DE'
   if (langCode === 'pl') return 'PL'
+  if (langCode === 'en') return 'EN'
   
-  // Domyślnie polski
-  return 'PL'
+  // Domyślnie angielski dla innych języków
+  return 'EN'
 }
 
 // Pobierz zapisany język z localStorage
 function getSavedLanguage(): Language | null {
   if (typeof window === 'undefined') return null
   const saved = localStorage.getItem('app-language')
-  if (saved === 'PL' || saved === 'DE') return saved
+  if (saved === 'PL' || saved === 'DE' || saved === 'EN') return saved
   return null
 }
 
@@ -42,7 +43,7 @@ function saveLanguage(lang: Language): void {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('PL')
+  const [language, setLanguageState] = useState<Language>('EN')
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
@@ -89,6 +90,33 @@ export function useTranslation() {
   const { t, language } = useLanguage()
   return { t, language }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

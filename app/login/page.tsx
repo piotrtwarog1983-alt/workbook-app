@@ -4,20 +4,21 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 
 // Wykryj język przeglądarki bezpośrednio
-function detectBrowserLanguage(): 'PL' | 'DE' {
-  if (typeof window === 'undefined') return 'PL'
+function detectBrowserLanguage(): 'PL' | 'DE' | 'EN' {
+  if (typeof window === 'undefined') return 'EN'
   
   const browserLang = navigator.language || (navigator as any).userLanguage || ''
   const langCode = browserLang.toLowerCase().split('-')[0]
   
   if (langCode === 'de') return 'DE'
   if (langCode === 'pl') return 'PL'
+  if (langCode === 'en') return 'EN'
   
-  // Dla innych języków - domyślnie niemiecki
-  return 'DE'
+  // Dla innych języków - domyślnie angielski
+  return 'EN'
 }
 
 export default function LoginPage() {

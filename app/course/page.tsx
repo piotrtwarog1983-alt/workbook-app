@@ -1,11 +1,11 @@
 'use client'
 
-import { CourseViewer } from '@/components/CourseViewer'
+import { CourseViewerWrapper } from '@/components/CourseViewerWrapper'
 
 export default function CoursePage() {
   return (
     <div>
-      <CourseViewer courseSlug="fotografia-kulinarna" />
+      <CourseViewerWrapper courseSlug="fotografia-kulinarna" />
     </div>
   )
 }

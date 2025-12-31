@@ -1,0 +1,6 @@
+Photos taken in artificial lighting, beautiful warm light, often come out yellow in photos. Cold light gives a blue hue. This slider will save the situation. When using the "temperature" slider, be careful not to let white start turning blue.
+---
+You'll find the "temperature" and "tint" sliders in the "white balance" function.
+
+
+

@@ -1,4 +1,4 @@
-export type Language = 'PL' | 'DE'
+export type Language = 'PL' | 'DE' | 'EN'
 
 export const translations = {
   PL: {
@@ -422,6 +422,218 @@ export const translations = {
       unauthorized: 'Sitzung abgelaufen. Bitte melden Sie sich erneut an.',
       notFound: 'Ressource nicht gefunden.',
       serverError: 'Serverfehler. Bitte versuchen Sie es später erneut.',
+    },
+  },
+
+  EN: {
+    // Navigation and General
+    common: {
+      logout: 'Logout',
+      login: 'Login',
+      register: 'Register',
+      submit: 'Submit',
+      cancel: 'Cancel',
+      save: 'Save',
+      close: 'Close',
+      loading: 'Loading...',
+      error: 'Error',
+      success: 'Success',
+      back: 'Back',
+      next: 'Next',
+      previous: 'Previous',
+      page: 'Page',
+      of: 'of',
+    },
+
+    // Login page
+    login: {
+      title: 'Login',
+      subtitle: 'Sign in to your account',
+      email: 'Email address',
+      emailPlaceholder: 'Enter your email',
+      password: 'Password',
+      passwordPlaceholder: 'Enter your password',
+      forgotPassword: 'Forgot password?',
+      noAccount: "Don't have an account?",
+      registerHere: 'Register here',
+      loginButton: 'Sign in',
+      loggingIn: 'Signing in...',
+      invalidCredentials: 'Invalid email or password',
+      tooManyAttempts: 'Too many login attempts. Please try again in a few minutes.',
+      loginError: 'An error occurred during login',
+    },
+
+    // Registration page
+    signup: {
+      title: 'Registration',
+      subtitle: 'Create a new account',
+      name: 'Full name',
+      namePlaceholder: 'Enter your name',
+      email: 'Email address',
+      emailPlaceholder: 'Enter your email',
+      password: 'Password',
+      passwordPlaceholder: 'Create password (min. 8 characters)',
+      confirmPassword: 'Confirm password',
+      confirmPasswordPlaceholder: 'Re-enter password',
+      registrationToken: 'Registration token',
+      registrationTokenPlaceholder: 'Enter the token from your email',
+      termsAccept: 'I accept the',
+      termsOfService: 'Terms of Service',
+      and: 'and',
+      privacyPolicy: 'Privacy Policy',
+      registerButton: 'Register',
+      registering: 'Registering...',
+      haveAccount: 'Already have an account?',
+      loginHere: 'Sign in here',
+      passwordMismatch: 'Passwords do not match',
+      passwordTooShort: 'Password must be at least 8 characters',
+      tokenRequired: 'Registration token is required',
+      termsRequired: 'You must accept the terms and privacy policy',
+      registrationError: 'An error occurred during registration',
+      invalidToken: 'Invalid or expired registration token',
+      emailExists: 'An account with this email already exists',
+    },
+
+    // Password reset
+    forgotPassword: {
+      title: 'Reset Password',
+      subtitle: 'Enter your email and we will send you a password reset link',
+      email: 'Email address',
+      emailPlaceholder: 'Enter your email',
+      sendButton: 'Send reset link',
+      sending: 'Sending...',
+      successMessage: 'A password reset link has been sent to your email',
+      backToLogin: 'Back to login',
+      emailNotFound: 'No account found with this email address',
+    },
+
+    resetPassword: {
+      title: 'New Password',
+      subtitle: 'Enter a new password for your account',
+      password: 'New password',
+      passwordPlaceholder: 'Enter new password',
+      confirmPassword: 'Confirm password',
+      confirmPasswordPlaceholder: 'Re-enter password',
+      resetButton: 'Set new password',
+      resetting: 'Setting...',
+      successMessage: 'Password has been changed. You can now sign in.',
+      invalidToken: 'Invalid or expired password reset link',
+      tokenExpired: 'Password reset link has expired',
+    },
+
+    // Course - main view
+    course: {
+      loadingCourse: 'Loading course...',
+      yourProgress: 'YOUR PROGRESS',
+      dictionary: 'Glossary',
+      lastPage: 'Last page',
+      chat: 'Messages',
+      tips: 'Tips',
+      noTips: 'No tips for this page',
+      uploadPhoto: 'Upload photo',
+      unlockNextStep: 'To unlock the next step, add a photo',
+      scanQR: 'Scan QR code with your phone',
+      orUploadHere: 'or upload photo here',
+      dragAndDrop: 'Drag and drop photo',
+      selectFile: 'Select file',
+      uploading: 'Uploading...',
+      uploadSuccess: 'Photo has been uploaded',
+      uploadError: 'Error uploading photo',
+      pageNavigation: 'Page navigation',
+      goToPage: 'Go to page',
+      loadingQR: 'Loading QR code...',
+      refreshPage: 'Refresh page',
+      openCamera: 'Open camera',
+      // Upload
+      submitPhoto: 'Upload your photo',
+      dragOrClick: 'Drag photo here or click to select',
+      supportedFormats: 'Supported formats: JPG, PNG, WEBP',
+      photoUploaded: 'Photo uploaded successfully!',
+      uploadOther: 'Upload another photo',
+      uploadFromPhone: 'Or upload from phone:',
+      waitingForUpload: 'Waiting for photo upload from phone...',
+      scanQRToUpload: 'Scan the QR code with your phone to open the page for uploading photos directly from your mobile device',
+      mustBeLoggedIn: 'You must be logged in to upload a photo',
+      failedToGetUploadId: 'Failed to get upload ID',
+      failedToLoadUserData: 'Failed to load user data',
+      pleaseSelectImage: 'Please select an image file',
+      noUploadId: 'No upload ID. Refresh the page.',
+      uploadFailed: 'Failed to upload photo. Please try again.',
+    },
+
+    // Progress bar
+    progress: {
+      light: 'light',
+      horizon: 'horizon',
+      composition: 'composition',
+      perspective: 'perspective',
+      proportions: 'proportions',
+      retouching: 'retouching',
+      final: 'final',
+      goTo: 'Go to:',
+    },
+
+    // Chat
+    chat: {
+      title: 'Messages',
+      placeholder: 'Write a message...',
+      send: 'Send',
+      noMessages: 'No messages. Write to us!',
+      you: 'You',
+      admin: 'Team',
+      loadMore: 'Load older',
+    },
+
+    // Dictionary
+    dictionary: {
+      title: 'Glossary',
+      searchPlaceholder: 'Search term...',
+      noResults: 'No terms found',
+    },
+
+    // Progress gallery
+    gallery: {
+      title: 'Your Photos',
+      noPhotos: 'No uploaded photos',
+      viewFull: 'View full size',
+      delete: 'Delete',
+      confirmDelete: 'Are you sure you want to delete this photo?',
+    },
+
+    // Emails
+    emails: {
+      registrationSubject: 'Welcome to the Food Photography Course!',
+      registrationBody: 'Thank you for registering. Your account has been activated.',
+      resetSubject: 'Password Reset',
+      resetBody: 'Click the following link to reset your password:',
+      resetExpiry: 'The link will expire in 1 hour.',
+      resetIgnore: 'If you did not request a password reset, please ignore this message.',
+    },
+
+    // Upload page
+    upload: {
+      title: 'Upload Photo',
+      success: 'Photo uploaded successfully!',
+      closeWindow: 'You can close this window.',
+      selectFromGallery: 'Select photo from gallery',
+      selectOther: 'Select another photo',
+      submitPhoto: 'Upload photo',
+      uploading: 'Uploading...',
+      invalidLink: 'Error: Invalid link',
+      invalidLinkDesc: 'The upload link is invalid. Please check the QR code again.',
+      missingParams: 'Missing required parameters in link',
+      missingData: 'Missing required data',
+      uploadFailed: 'Failed to upload photo. Please try again.',
+      pleaseSelectImage: 'Please select an image file',
+    },
+
+    // API errors
+    errors: {
+      generic: 'An error occurred. Please try again.',
+      network: 'Connection error. Please check your internet.',
+      unauthorized: 'Session expired. Please sign in again.',
+      notFound: 'Resource not found.',
+      serverError: 'Server error. Please try again later.',
     },
   },
 } as const

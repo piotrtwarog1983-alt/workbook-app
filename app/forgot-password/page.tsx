@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslation, useLanguage } from '@/lib/LanguageContext'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 
 export default function ForgotPasswordPage() {
   const { t, language } = useTranslation()
@@ -122,6 +122,33 @@ export default function ForgotPasswordPage() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
