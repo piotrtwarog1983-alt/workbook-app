@@ -42,7 +42,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat' | 'video'>('gallery')
-  const [menuActivePanel, setMenuActivePanel] = useState<'gallery' | 'dictionary' | 'chat' | 'video'>('gallery')
+  const [menuActivePanel, setMenuActivePanel] = useState<'gallery' | 'dictionary' | 'chat'>('gallery')
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
@@ -3361,13 +3361,8 @@ useEffect(() => {
             style={{ background: '#1a1a1a' }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex justify-between items-center mb-auto pt-4">
-              <h3 className="text-white font-medium">Menu</h3>
-        </div>
-
             {/* Zawartość menu - zawsze widoczne */}
-            <div className="flex-1 overflow-auto mt-4" style={{ paddingBottom: '100px' }}>
+            <div className="flex-1 overflow-auto pt-4" style={{ paddingBottom: '120px' }}>
               {menuActivePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
@@ -3382,227 +3377,128 @@ useEffect(() => {
                   <ChatBox />
                 </div>
               )}
-              {menuActivePanel === 'video' && currentPage && (
-                <VideoPlayer pageNumber={currentPage.pageNumber} />
-              )}
       </div>
 
             {/* Pasek dolny z przyciskami - fixed na dole */}
-            <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center gap-2 p-4" style={{ background: '#1a1a1a', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+            <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center gap-3 py-6 px-4" style={{ background: '#1a1a1a', paddingBottom: 'calc(24px + env(safe-area-inset-bottom))', minHeight: '100px' }}>
               {/* Star - Twoje postępy */}
               <button
                 onClick={() => setMenuActivePanel('gallery')}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
                 style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+                  width: '50px',
+                  height: '50px',
+                  aspectRatio: '1/1',
                   padding: 0,
                   border: 'none',
+                  borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/Star.png)',
-                  backgroundSize: '100% 100%',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: 'transparent'
                 }}
               />
               
               {/* Chat */}
               <button
                 onClick={() => setMenuActivePanel('chat')}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
                 style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+                  width: '50px',
+                  height: '50px',
+                  aspectRatio: '1/1',
                   padding: 0,
                   border: 'none',
+                  borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/Chat.png)',
-                  backgroundSize: '100% 100%',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-              />
-              
-              {/* Video */}
-              <button
-                onClick={() => setMenuActivePanel('video')}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
-                style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
-                  padding: 0,
-                  border: 'none',
-                  backgroundImage: 'url(/course/ikony/Video.png)',
-                  backgroundSize: '100% 100%',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: 'transparent'
                 }}
               />
               
               {/* Info - Słownik fotografa */}
               <button
                 onClick={() => setMenuActivePanel('dictionary')}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
                 style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+                  width: '50px',
+                  height: '50px',
+                  aspectRatio: '1/1',
                   padding: 0,
                   border: 'none',
+                  borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/Info.png)',
-                  backgroundSize: '100% 100%',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: 'transparent'
                 }}
               />
               
               {/* cofnij - zamyka menu */}
               <button
                 onClick={() => setShowMobileMenu(false)}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
                 style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+                  width: '50px',
+                  height: '50px',
+                  aspectRatio: '1/1',
                   padding: 0,
                   border: 'none',
+                  borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/cofnij.png)',
-                  backgroundSize: '100% 100%',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: 'transparent'
                 }}
               />
               
               {/* ustawienia - zmiana języka */}
               <button
                 onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
                 style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+                  width: '50px',
+                  height: '50px',
+                  aspectRatio: '1/1',
                   padding: 0,
                   border: 'none',
+                  borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/ustawienia.png)',
-                  backgroundSize: '100% 100%',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: 'transparent'
                 }}
               />
               
               {/* Logout - wylogowanie konta */}
               <button
                 onClick={handleLogout}
-                className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
                 style={{ 
-                  boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+                  width: '50px',
+                  height: '50px',
+                  aspectRatio: '1/1',
                   padding: 0,
                   border: 'none',
+                  borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/Logout.png)',
-                  backgroundSize: '100% 100%',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: 'transparent'
                 }}
               />
             </div>
             
             {/* Menu wyboru języka */}
             {showLanguageMenu && (
-              <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 py-2 w-36 bg-gray-800 rounded-lg shadow-2xl z-50">
+              <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 py-2 w-36 bg-gray-800 rounded-lg shadow-2xl z-50">
                 <button
                   onClick={() => {
                     setLanguage('PL')
@@ -3669,6 +3565,7 @@ useEffect(() => {
     </div>
   )
 }
+
 
 
 
