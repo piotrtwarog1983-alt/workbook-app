@@ -55,7 +55,6 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [userUploadId, setUserUploadId] = useState<string | null>(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [isPWA, setIsPWA] = useState(false)
   const [isDraggingPage, setIsDraggingPage] = useState(false)
   const pageIndicatorRef = useRef<HTMLDivElement>(null)
   const [showTips, setShowTips] = useState(false)
@@ -133,36 +132,14 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Sprawdź czy aplikacja działa jako PWA (standalone mode)
-  useEffect(() => {
-    const checkPWA = 
-      window.matchMedia('(display-mode: standalone)').matches || 
-      (window.navigator as any).standalone === true ||
-      document.referrer.includes('android-app://') ||
-      window.matchMedia('(display-mode: fullscreen)').matches
-    
-    setIsPWA(checkPWA)
-    
-    // Debug - możesz usunąć po testach
-    console.log('PWA mode detected:', checkPWA)
-  }, [])
-
-  // Funkcja wylogowania/zamknięcia aplikacji
+  // Funkcja wylogowania - działa tak samo w PWA i przeglądarce
   const handleLogout = () => {
     // Zapisz ostatnią stronę
     localStorage.setItem('lastCoursePage', currentPageIndex.toString())
-    
-    if (isPWA) {
-      // W PWA (zainstalowana aplikacja) - usuń token i spróbuj zamknąć
-      localStorage.removeItem('token')
-      // Spróbuj zamknąć okno (może nie zadziałać - wtedy użytkownik zamknie ręcznie)
-      window.close()
-      // Nie pokazujemy komunikatu - w PWA użytkownik zamknie aplikację ręcznie
-    } else {
-      // W przeglądarce - standardowe wylogowanie
-      localStorage.removeItem('token')
-      router.replace('/login')
-    }
+    // Usuń token (wylogowanie)
+    localStorage.removeItem('token')
+    // Przekieruj do strony logowania
+    router.replace('/login')
   }
 
   // Pobierz uploadId użytkownika i nasłuchuj na nowe uploady
