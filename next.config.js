@@ -2,6 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   
+  // Automatyczny timestamp buildu dla wykrywania aktualizacji PWA
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: Date.now().toString()
+  },
+  
   // Optymalizacje wydajności
   poweredByHeader: false,
   compress: true,
