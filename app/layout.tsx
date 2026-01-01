@@ -2,7 +2,7 @@ import './globals.css'
 import { Providers } from '@/components/Providers'
 
 export const metadata = {
-  title: 'TheOne',
+  title: '​',
   description: 'Naucz się robić profesjonalne zdjęcia potraw smartfonem',
   viewport: {
     width: 'device-width',
@@ -25,7 +25,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#1a1a1a" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="TheOne" />
+        <meta name="apple-mobile-web-app-title" content="​" />
         <link rel="apple-touch-icon" href="/course/ikony/theon1.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
