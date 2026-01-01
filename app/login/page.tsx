@@ -24,6 +24,18 @@ function detectBrowserLanguage(): 'PL' | 'DE' | 'EN' {
 export default function LoginPage() {
   const router = useRouter()
   const { t, language, setLanguage } = useLanguage()
+  const [isPWA, setIsPWA] = useState(false)
+  
+  // Sprawdź czy aplikacja działa jako PWA
+  useEffect(() => {
+    const checkPWA = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true ||
+      document.referrer.includes('android-app://') ||
+      window.matchMedia('(display-mode: fullscreen)').matches
+    
+    setIsPWA(checkPWA)
+  }, [])
   
   // Wykryj język przeglądarki przy pierwszym otwarciu strony logowania
   useEffect(() => {
@@ -37,6 +49,20 @@ export default function LoginPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  
+  // Funkcja zamykania aplikacji (tylko w PWA)
+  const handleClose = () => {
+    // Spróbuj zamknąć okno
+    window.close()
+    // Jeśli window.close() nie zadziała, przekieruj do pustej strony
+    // (niektóre przeglądarki blokują window.close())
+    setTimeout(() => {
+      if (document.visibilityState === 'visible') {
+        // Okno nie zostało zamknięte - przekieruj do pustej strony
+        window.location.href = 'about:blank'
+      }
+    }, 100)
+  }
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -105,6 +131,29 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      {/* Przycisk zamykania - tylko w PWA */}
+      {isPWA && (
+        <button
+          onClick={handleClose}
+          className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 transition-all active:scale-95"
+          aria-label="Zamknij aplikację"
+        >
+          <svg 
+            className="w-6 h-6 text-white" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M6 18L18 6M6 6l12 12" 
+            />
+          </svg>
+        </button>
+      )}
+      
       {/* Language switcher w górnym prawym rogu */}
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
