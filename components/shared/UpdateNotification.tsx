@@ -1,11 +1,15 @@
 'use client'
 
+import { useLanguage } from '@/lib/LanguageContext'
+
 interface UpdateNotificationProps {
   onUpdate: () => void
   onDismiss?: () => void
 }
 
 export function UpdateNotification({ onUpdate, onDismiss }: UpdateNotificationProps) {
+  const { t } = useLanguage()
+  
   return (
     <div 
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
@@ -59,12 +63,12 @@ export function UpdateNotification({ onUpdate, onDismiss }: UpdateNotificationPr
           
           {/* Title */}
           <h2 className="text-xl font-semibold text-white mb-2">
-            Nowa wersja dostępna
+            {t.common.updateAvailable}
           </h2>
           
           {/* Description */}
           <p className="text-sm text-white/60 mb-6">
-            Zaktualizuj aplikację, aby korzystać z najnowszych funkcji i poprawek.
+            {t.common.updateDescription}
           </p>
           
           {/* Buttons */}
@@ -78,7 +82,7 @@ export function UpdateNotification({ onUpdate, onDismiss }: UpdateNotificationPr
                 boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
               }}
             >
-              Aktualizuj teraz
+              {t.common.updateNow}
             </button>
             
             {onDismiss && (
@@ -90,7 +94,7 @@ export function UpdateNotification({ onUpdate, onDismiss }: UpdateNotificationPr
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}
               >
-                Później
+                {t.common.later}
               </button>
             )}
           </div>

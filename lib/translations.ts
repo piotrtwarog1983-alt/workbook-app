@@ -19,6 +19,10 @@ export const translations = {
       previous: 'Poprzedni',
       page: 'Strona',
       of: 'z',
+      updateAvailable: 'Nowa wersja dostępna',
+      updateDescription: 'Zaktualizuj aplikację, aby korzystać z najnowszych funkcji i poprawek.',
+      updateNow: 'Aktualizuj teraz',
+      later: 'Później',
     },
 
     // Strona logowania
@@ -231,6 +235,10 @@ export const translations = {
       previous: 'Zurück',
       page: 'Seite',
       of: 'von',
+      updateAvailable: 'Neue Version verfügbar',
+      updateDescription: 'Aktualisieren Sie die App, um die neuesten Funktionen und Verbesserungen zu nutzen.',
+      updateNow: 'Jetzt aktualisieren',
+      later: 'Später',
     },
 
     // Anmeldeseite
@@ -443,6 +451,10 @@ export const translations = {
       previous: 'Previous',
       page: 'Page',
       of: 'of',
+      updateAvailable: 'New version available',
+      updateDescription: 'Update the app to use the latest features and improvements.',
+      updateNow: 'Update now',
+      later: 'Later',
     },
 
     // Login page
