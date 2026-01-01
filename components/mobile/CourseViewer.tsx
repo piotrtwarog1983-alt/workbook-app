@@ -55,6 +55,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [userUploadId, setUserUploadId] = useState<string | null>(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isPWA, setIsPWA] = useState(false)
   const [isDraggingPage, setIsDraggingPage] = useState(false)
   const pageIndicatorRef = useRef<HTMLDivElement>(null)
   const [showTips, setShowTips] = useState(false)
@@ -133,9 +134,18 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   }, [])
 
   // Sprawdź czy aplikacja działa jako PWA (standalone mode)
-  const isPWA = typeof window !== 'undefined' && 
-    (window.matchMedia('(display-mode: standalone)').matches || 
-     (window.navigator as any).standalone === true)
+  useEffect(() => {
+    const checkPWA = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true ||
+      document.referrer.includes('android-app://') ||
+      window.matchMedia('(display-mode: fullscreen)').matches
+    
+    setIsPWA(checkPWA)
+    
+    // Debug - możesz usunąć po testach
+    console.log('PWA mode detected:', checkPWA)
+  }, [])
 
   // Funkcja wylogowania/zamknięcia aplikacji
   const handleLogout = () => {
