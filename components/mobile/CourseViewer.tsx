@@ -153,21 +153,11 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     localStorage.setItem('lastCoursePage', currentPageIndex.toString())
     
     if (isPWA) {
-      // W PWA (zainstalowana aplikacja) - zamknij aplikację
-      // Usuwamy token żeby przy następnym uruchomieniu wymagane było logowanie
+      // W PWA (zainstalowana aplikacja) - usuń token i spróbuj zamknąć
       localStorage.removeItem('token')
-      // Zamknij okno/aplikację
+      // Spróbuj zamknąć okno (może nie zadziałać - wtedy użytkownik zamknie ręcznie)
       window.close()
-      // Fallback jeśli window.close() nie zadziała (niektóre przeglądarki blokują)
-      // Przekieruj do pustej strony która poinformuje o zamknięciu
-      setTimeout(() => {
-        document.body.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-            <p style="font-size: 18px; margin-bottom: 10px;">Aplikacja została zamknięta</p>
-            <p style="font-size: 14px; opacity: 0.7;">Możesz teraz zamknąć to okno</p>
-          </div>
-        `
-      }, 100)
+      // Nie pokazujemy komunikatu - w PWA użytkownik zamknie aplikację ręcznie
     } else {
       // W przeglądarce - standardowe wylogowanie
       localStorage.removeItem('token')
