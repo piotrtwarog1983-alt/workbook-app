@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "TheOne",
+  "short_name": "TheOne",
   "description": "Naucz się robić profesjonalne zdjęcia potraw smartfonem",
   "start_url": "/",
   "display": "standalone",
