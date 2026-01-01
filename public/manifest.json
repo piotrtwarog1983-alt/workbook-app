@@ -1,0 +1,25 @@
+{
+  "name": "WorkBook - Kurs Fotografii Kulinarnej",
+  "short_name": "WorkBook",
+  "description": "Naucz się robić profesjonalne zdjęcia potraw smartfonem",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/course/ikony/theone2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/course/ikony/theon1.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
