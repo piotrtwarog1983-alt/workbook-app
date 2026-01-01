@@ -132,12 +132,37 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Funkcja wylogowania - zapisz ostatnią stronę przed wylogowaniem
+  // Sprawdź czy aplikacja działa jako PWA (standalone mode)
+  const isPWA = typeof window !== 'undefined' && 
+    (window.matchMedia('(display-mode: standalone)').matches || 
+     (window.navigator as any).standalone === true)
+
+  // Funkcja wylogowania/zamknięcia aplikacji
   const handleLogout = () => {
-    // Zapisz ostatnią stronę przed wylogowaniem
+    // Zapisz ostatnią stronę
     localStorage.setItem('lastCoursePage', currentPageIndex.toString())
-    localStorage.removeItem('token')
-    router.replace('/login')
+    
+    if (isPWA) {
+      // W PWA (zainstalowana aplikacja) - zamknij aplikację
+      // Usuwamy token żeby przy następnym uruchomieniu wymagane było logowanie
+      localStorage.removeItem('token')
+      // Zamknij okno/aplikację
+      window.close()
+      // Fallback jeśli window.close() nie zadziała (niektóre przeglądarki blokują)
+      // Przekieruj do pustej strony która poinformuje o zamknięciu
+      setTimeout(() => {
+        document.body.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+            <p style="font-size: 18px; margin-bottom: 10px;">Aplikacja została zamknięta</p>
+            <p style="font-size: 14px; opacity: 0.7;">Możesz teraz zamknąć to okno</p>
+          </div>
+        `
+      }, 100)
+    } else {
+      // W przeglądarce - standardowe wylogowanie
+      localStorage.removeItem('token')
+      router.replace('/login')
+    }
   }
 
   // Pobierz uploadId użytkownika i nasłuchuj na nowe uploady
