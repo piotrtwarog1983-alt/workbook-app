@@ -41,7 +41,7 @@ export function CourseViewerMobile(props: CourseViewerMobileProps) {
       className="relative overflow-y-auto"
       style={{ 
         background: '#ffffff',
-        height: 'calc(100vh - 120px)',
+        height: 'var(--vh-content, calc(100vh - 80px))',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain'
       }}

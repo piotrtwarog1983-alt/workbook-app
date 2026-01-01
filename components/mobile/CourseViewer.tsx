@@ -596,7 +596,7 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center" style={{ minHeight: 'var(--vh, 100vh)' }}>
         <div className="text-lg text-white">{t.course.loadingCourse}</div>
       </div>
     )
@@ -604,7 +604,7 @@ useEffect(() => {
 
   if (error || !course) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center" style={{ minHeight: 'var(--vh, 100vh)' }}>
         <div className="text-red-600">{error || 'Kurs nie został znaleziony'}</div>
       </div>
     )
@@ -739,13 +739,15 @@ useEffect(() => {
 
   return (
     <div 
-      className="min-h-screen" 
+      className="mobile-container"
       style={{ 
+        minHeight: isMobile ? 'var(--vh, 100vh)' : '100vh',
+        height: isMobile ? 'var(--vh, 100vh)' : 'auto',
         background: isMobile ? ([7, 14, 15, 16, 19, 20, 25, 28, 29, 34, 35, 39, 40].includes(currentPage?.pageNumber || 0) ? '#1a1a1a' : '#000000') : '#1a1d24',
         width: isMobile ? '100%' : 'auto',
         maxWidth: isMobile ? '100vw' : 'none',
         overflowX: isMobile ? 'hidden' : 'visible',
-        overflowY: 'auto',
+        overflowY: isMobile ? 'hidden' : 'auto',
         paddingBottom: isMobile ? '0' : '0' // Pasek jest fixed, więc nie potrzeba paddingu
       }}
     >

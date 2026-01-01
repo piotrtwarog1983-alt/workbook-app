@@ -195,13 +195,13 @@ export function MobilePageRenderer({
     <div
       className="bg-white relative"
       style={{
-        minHeight: hasImage && !hasText ? 'calc(100vh - 120px)' : 'auto',
+        minHeight: hasImage && !hasText ? 'var(--vh-content, calc(100vh - 80px))' : 'auto',
         width: '100%'
       }}
     >
       {isPageQRUpload ? (
         // Strona QR upload - pokaż przyciski kamery i galerii
-        <div className="w-full flex flex-col items-center justify-center px-4 py-6 bg-white" style={{ minHeight: 'calc(100vh - 120px)' }}>
+        <div className="w-full flex flex-col items-center justify-center px-4 py-6 bg-white" style={{ minHeight: 'var(--vh-content, calc(100vh - 80px))' }}>
           {/* Nagłówek */}
           {mobileQRTexts[page.pageNumber] && (
             <h2 className="text-xl font-serif text-gray-900 text-center mb-6">
@@ -268,12 +268,12 @@ export function MobilePageRenderer({
           )}
         </div>
       ) : (
-        <div className="w-full flex flex-col" style={{ minHeight: hasImage && !hasText ? 'calc(100vh - 120px)' : 'auto' }}>
+        <div className="w-full flex flex-col" style={{ minHeight: hasImage && !hasText ? 'var(--vh-content, calc(100vh - 80px))' : 'auto' }}>
           {/* Obraz */}
           {hasImage && (
             <div className="relative w-full" style={{ 
-              minHeight: hasText ? '40vh' : 'calc(100vh - 120px)',
-              height: hasText ? '40vh' : 'calc(100vh - 120px)'
+              minHeight: hasText ? '40vh' : 'var(--vh-content, calc(100vh - 80px))',
+              height: hasText ? '40vh' : 'var(--vh-content, calc(100vh - 80px))'
             }}>
               <Image
                 src={imageUrl!.startsWith('/') ? imageUrl! : `/course/strona ${page.pageNumber}/Foto/${imageUrl}`}
@@ -297,7 +297,7 @@ export function MobilePageRenderer({
           )}
           {/* Placeholder jeśli brak treści */}
           {!hasImage && !hasText && (
-            <div className="w-full flex items-center justify-center px-4 py-6 bg-white" style={{ minHeight: 'calc(100vh - 120px)' }}>
+            <div className="w-full flex items-center justify-center px-4 py-6 bg-white" style={{ minHeight: 'var(--vh-content, calc(100vh - 80px))' }}>
               <div className="text-center text-gray-900">
                 {page.title && <h2 className="text-2xl mb-4">{page.title}</h2>}
                 <p className="text-lg">Strona {page.pageNumber}</p>

@@ -6,6 +6,13 @@
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 26, 29, 36;
   --background-end-rgb: 26, 29, 36;
+  
+  /* Dynamic viewport height - ustawiane przez useViewportHeight hook */
+  --vh: 100vh; /* fallback */
+  --vh-unit: 1vh; /* fallback */
+  --vh-content: calc(100vh - 80px); /* fallback - viewport minus bottom bar */
+  --safe-area-top: 0px;
+  --safe-area-bottom: 0px;
 }
 
 body {
@@ -29,6 +36,8 @@ body {
     overflow-y: auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    height: var(--vh, 100vh) !important;
+    min-height: var(--vh, 100vh) !important;
     overscroll-behavior: none !important; /* Blokuje pull-to-refresh */
     overscroll-behavior-y: none !important;
   }
@@ -36,6 +45,8 @@ body {
   .mobile-container {
     width: 100% !important;
     max-width: 100% !important;
+    height: var(--vh, 100vh) !important;
+    min-height: var(--vh, 100vh) !important;
     overflow-x: hidden !important;
   }
   
@@ -59,9 +70,9 @@ body {
   .course-container {
     width: 100% !important;
     max-width: 100% !important;
-    /* Wysokość = viewport - pasek nawigacji (80px) */
-    height: calc(100vh - 80px) !important;
-    max-height: calc(100vh - 80px) !important;
+    /* Wysokość = viewport - pasek nawigacji (80px) - safe area bottom */
+    height: var(--vh-content, calc(100vh - 80px)) !important;
+    max-height: var(--vh-content, calc(100vh - 80px)) !important;
     aspect-ratio: unset !important;
     min-height: 0 !important;
     -webkit-overflow-scrolling: touch;
@@ -74,8 +85,8 @@ body {
   .scroll-transition-wrapper {
     width: 100% !important;
     max-width: 100% !important;
-    height: calc(100vh - 80px) !important;
-    max-height: calc(100vh - 80px) !important;
+    height: var(--vh-content, calc(100vh - 80px)) !important;
+    max-height: var(--vh-content, calc(100vh - 80px)) !important;
     overflow: hidden !important;
   }
   

@@ -1,3 +1,4 @@
 export { useCourseNavigation } from './useCourseNavigation'
 export { useCourseContent } from './useCourseContent'
 export { useMobile } from './useMobile'
+export { useViewportHeight } from './useViewportHeight'
