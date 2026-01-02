@@ -54,6 +54,57 @@ export async function GET(request: NextRequest) {
     })
 
     if (progressPhoto) {
+      // AUTOMATYCZNE CZYSZCZENIE: Sprawdź czy plik rzeczywiście istnieje
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 sekund timeout
+        
+        const response = await fetch(progressPhoto.imageUrl, { 
+          method: 'HEAD',
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (!response.ok || response.status === 404) {
+          // Plik nie istnieje - usuń osierocony rekord z bazy
+          console.log(`Usuwanie osieroconego rekordu: ${progressPhoto.imageUrl}`)
+          await prisma.progressPhoto.delete({
+            where: {
+              uploadId_pageNumber: {
+                uploadId: uploadId,
+                pageNumber: parseInt(pageNumber),
+              },
+            },
+          })
+          return NextResponse.json({ uploaded: false })
+        }
+      } catch (error: any) {
+        // Błąd podczas sprawdzania (np. timeout, sieć, 404) - zakładamy że plik nie istnieje
+        if (error.name === 'AbortError') {
+          console.log(`Timeout podczas sprawdzania pliku ${progressPhoto.imageUrl}`)
+        } else {
+          console.log(`Błąd podczas sprawdzania pliku ${progressPhoto.imageUrl}:`, error.message)
+        }
+        
+        try {
+          await prisma.progressPhoto.delete({
+            where: {
+              uploadId_pageNumber: {
+                uploadId: uploadId,
+                pageNumber: parseInt(pageNumber),
+              },
+            },
+          })
+          console.log(`Usunięto osierocony rekord dla strony ${pageNumber}`)
+        } catch (deleteError) {
+          // Ignoruj błąd usuwania - może już zostać usunięty
+          console.log('Błąd podczas usuwania rekordu (może już nie istnieje):', deleteError)
+        }
+        return NextResponse.json({ uploaded: false })
+      }
+      
+      // Plik istnieje - zwróć URL
       return NextResponse.json({
         uploaded: true,
         imageUrl: progressPhoto.imageUrl,

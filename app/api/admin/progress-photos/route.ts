@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
+const ADMIN_EMAIL = 'peter.twarog@cirrenz.com'
+
 // GET - pobierz wszystkie zdjęcia postępów (lista dla admina)
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +14,7 @@ export async function GET(request: NextRequest) {
       request.headers.get('authorization')?.replace('Bearer ', '') || null
     const user = await getUserFromToken(token)
 
-    if (!user || user.email !== 'piotr.twarog1983@gmail.com') {
+    if (!user || user.email !== ADMIN_EMAIL) {
       return NextResponse.json(
         { error: 'Brak dostępu' },
         { status: 403 }
@@ -53,7 +55,7 @@ export async function DELETE(request: NextRequest) {
       request.headers.get('authorization')?.replace('Bearer ', '') || null
     const user = await getUserFromToken(token)
 
-    if (!user || user.email !== 'piotr.twarog1983@gmail.com') {
+    if (!user || user.email !== ADMIN_EMAIL) {
       return NextResponse.json(
         { error: 'Brak dostępu' },
         { status: 403 }
