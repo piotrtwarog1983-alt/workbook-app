@@ -3041,7 +3041,7 @@ useEffect(() => {
               )}
               {activePanel === 'dictionary' && (
                 <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto rounded-2xl">
-                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.dictionary.title}</h3>
+                  <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.dictionary.title}</h3>
                   <DictionaryInline />
                 </div>
               )}
@@ -3372,7 +3372,7 @@ useEffect(() => {
               )}
               {menuActivePanel === 'dictionary' && (
                 <div className="w-full h-full p-4 bg-gray-800 rounded-xl overflow-auto">
-                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.dictionary.title}</h3>
+                  <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.dictionary.title}</h3>
                   <DictionaryInline />
                 </div>
               )}
