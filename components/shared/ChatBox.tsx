@@ -180,7 +180,7 @@ export function ChatBox() {
 
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+      <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">
         {t.chat.title}
       </h3>
 

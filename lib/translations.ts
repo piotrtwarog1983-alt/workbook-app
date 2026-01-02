@@ -104,7 +104,7 @@ export const translations = {
     // Kurs - główny widok
     course: {
       loadingCourse: 'Ładowanie kursu...',
-      yourProgress: 'TWOJE POSTĘPY',
+      yourProgress: 'Twoje postępy',
       dictionary: 'Słownik pojęć',
       lastPage: 'Ostatnia strona',
       chat: 'Wiadomości',
@@ -166,7 +166,7 @@ export const translations = {
 
     // Słownik
     dictionary: {
-      title: 'Słownik pojęć',
+      title: 'Słownik fotografa',
       searchPlaceholder: 'Szukaj terminu...',
       noResults: 'Nie znaleziono terminów',
     },
@@ -320,7 +320,7 @@ export const translations = {
     // Kurs - Hauptansicht
     course: {
       loadingCourse: 'Kurs wird geladen...',
-      yourProgress: 'IHR FORTSCHRITT',
+      yourProgress: 'Ihr Fortschritt',
       dictionary: 'Glossar',
       lastPage: 'Letzte Seite',
       chat: 'Nachrichten',
@@ -536,7 +536,7 @@ export const translations = {
     // Course - main view
     course: {
       loadingCourse: 'Loading course...',
-      yourProgress: 'YOUR PROGRESS',
+      yourProgress: 'Your Progress',
       dictionary: 'Glossary',
       lastPage: 'Last page',
       chat: 'Messages',

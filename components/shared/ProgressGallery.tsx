@@ -182,7 +182,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   if (loading) {
     return (
       <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
+        <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.course.yourProgress}</h3>
         <div className="text-center py-8 text-gray-500">{t.common.loading}</div>
       </div>
     )
@@ -191,7 +191,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   if (error) {
     return (
       <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
+        <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.course.yourProgress}</h3>
         <div className="text-center py-8">
           <p className="text-gray-500 text-sm">
             {error === 'notLoggedIn' && 'Zaloguj się, aby zobaczyć postępy'}
@@ -207,7 +207,7 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
   if (progressImages.length === 0) {
     return (
       <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
+        <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.course.yourProgress}</h3>
       </div>
     )
   }
