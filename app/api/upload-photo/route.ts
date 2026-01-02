@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { triggerPusherEvent } from '@/lib/pusher'
@@ -99,6 +99,106 @@ export async function POST(request: NextRequest) {
     console.error('Upload error:', error)
     return NextResponse.json(
       { error: 'Błąd podczas przesyłania pliku' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE - usuwa zdjęcie postępu z bazy danych i opcjonalnie z Blob Storage
+export async function DELETE(request: NextRequest) {
+  try {
+    const token =
+      request.headers.get('authorization')?.replace('Bearer ', '') || null
+    const user = await getUserFromToken(token)
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Brak autoryzacji' },
+        { status: 401 }
+      )
+    }
+
+    const searchParams = request.nextUrl.searchParams
+    const pageNumber = searchParams.get('pageNumber')
+    const deleteAll = searchParams.get('deleteAll') === 'true'
+
+    if (deleteAll) {
+      // Usuń wszystkie zdjęcia użytkownika z bazy danych
+      const photos = await prisma.progressPhoto.findMany({
+        where: { uploadId: user.uploadId },
+      })
+
+      // Próba usunięcia z Blob Storage (ignoruj błędy dla nieistniejących plików)
+      for (const photo of photos) {
+        try {
+          await del(photo.imageUrl)
+        } catch (e) {
+          // Ignoruj błędy - plik mógł już zostać usunięty
+          console.log(`Could not delete blob: ${photo.imageUrl}`)
+        }
+      }
+
+      // Usuń wszystkie rekordy z bazy danych
+      const result = await prisma.progressPhoto.deleteMany({
+        where: { uploadId: user.uploadId },
+      })
+
+      return NextResponse.json({
+        success: true,
+        deletedCount: result.count,
+        message: `Usunięto ${result.count} zdjęć z bazy danych`,
+      })
+    }
+
+    if (!pageNumber) {
+      return NextResponse.json(
+        { error: 'Brak numeru strony' },
+        { status: 400 }
+      )
+    }
+
+    // Znajdź zdjęcie w bazie danych
+    const photo = await prisma.progressPhoto.findUnique({
+      where: {
+        uploadId_pageNumber: {
+          uploadId: user.uploadId,
+          pageNumber: parseInt(pageNumber),
+        },
+      },
+    })
+
+    if (!photo) {
+      return NextResponse.json(
+        { error: 'Zdjęcie nie istnieje' },
+        { status: 404 }
+      )
+    }
+
+    // Próba usunięcia z Blob Storage
+    try {
+      await del(photo.imageUrl)
+    } catch (e) {
+      console.log(`Could not delete blob: ${photo.imageUrl}`)
+    }
+
+    // Usuń rekord z bazy danych
+    await prisma.progressPhoto.delete({
+      where: {
+        uploadId_pageNumber: {
+          uploadId: user.uploadId,
+          pageNumber: parseInt(pageNumber),
+        },
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: `Usunięto zdjęcie ze strony ${pageNumber}`,
+    })
+  } catch (error) {
+    console.error('Delete error:', error)
+    return NextResponse.json(
+      { error: 'Błąd podczas usuwania zdjęcia' },
       { status: 500 }
     )
   }
