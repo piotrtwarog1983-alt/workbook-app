@@ -21,9 +21,6 @@ export async function GET(request: NextRequest) {
 
     const photos = await prisma.progressPhoto.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        // Dołącz informacje o użytkowniku jeśli możliwe
-      },
     })
 
     // Grupuj zdjęcia według uploadId
