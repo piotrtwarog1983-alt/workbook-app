@@ -266,15 +266,22 @@ export function CameraView({
     if (gridType === 'none') return null
 
     if (gridType === 'thirds') {
-      // Siatka thirds (reguła trójpodziału)
+      // Siatka thirds (reguła trójpodziału) - proporcje 4:5
       return (
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Linie pionowe */}
-          <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/40" />
-          <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/40" />
-          {/* Linie poziome */}
-          <div className="absolute left-0 right-0 top-1/3 h-px bg-white/40" />
-          <div className="absolute left-0 right-0 top-2/3 h-px bg-white/40" />
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+          <div 
+            className="relative w-full h-full max-w-[80vw]"
+            style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
+          >
+            {/* Linie pionowe */}
+            <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/40" />
+            <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/40" />
+            {/* Linie poziome */}
+            <div className="absolute left-0 right-0 top-1/3 h-px bg-white/40" />
+            <div className="absolute left-0 right-0 top-2/3 h-px bg-white/40" />
+            {/* Ramka zewnętrzna */}
+            <div className="absolute inset-0 border border-white/30" />
+          </div>
         </div>
       )
     }
