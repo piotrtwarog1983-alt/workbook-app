@@ -471,17 +471,13 @@ export function CameraView({
             />
           )}
           
-          {/* Efekt sepii na zewnętrznych prostokątach (jeśli włączony) - bez górnego rzędu gdy bokeh aktywne */}
+          {/* Efekt sepii na zewnętrznych prostokątach (jeśli włączony) - działa razem z bokeh */}
           {sepiaEnabled && (
             <>
-              {/* Górny rząd - tylko gdy bokeh wyłączone (bokeh ma własne warstwy) */}
-              {!bokehEnabled && (
-                <>
-                  <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
-                  <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
-                  <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
-                </>
-              )}
+              {/* Górny rząd - sepia działa też gdy bokeh włączone (nakłada się na blur) */}
+              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               {/* Środkowy rząd - tylko boki */}
               <div className="absolute top-1/3 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               <div className="absolute top-1/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
