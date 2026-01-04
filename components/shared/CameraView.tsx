@@ -346,39 +346,49 @@ export function CameraView({
           className="relative w-full h-full max-w-[80vw]"
           style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
         >
-          {/* Efekt bokeh (rozmycie) z gradientem */}
+          {/* Efekt bokeh (rozmycie) z płynnym gradientem - 12 warstw */}
           {bokehEnabled && (
             <>
-              {/* Warstwa 1: Górna krawędź - maksymalny blur */}
-              <div className="absolute top-0 left-0 w-full h-[15%]" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+              {/* Góra kadru - wiele warstw z płynnym przejściem od 100% do 0% blur */}
+              {/* Warstwa 1: 0-4% - 100% blur */}
+              <div className="absolute top-0 left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+              {/* Warstwa 2: 4-8% - 95% blur */}
+              <div className="absolute top-[4%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.95}px)` }} />
+              {/* Warstwa 3: 8-12% - 88% blur */}
+              <div className="absolute top-[8%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.88}px)` }} />
+              {/* Warstwa 4: 12-16% - 78% blur */}
+              <div className="absolute top-[12%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.78}px)` }} />
+              {/* Warstwa 5: 16-20% - 66% blur */}
+              <div className="absolute top-[16%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.66}px)` }} />
+              {/* Warstwa 6: 20-24% - 52% blur */}
+              <div className="absolute top-[20%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.52}px)` }} />
+              {/* Warstwa 7: 24-28% - 38% blur */}
+              <div className="absolute top-[24%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.38}px)` }} />
+              {/* Warstwa 8: 28-32% - 24% blur */}
+              <div className="absolute top-[28%] left-0 w-full h-[4%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.24}px)` }} />
+              {/* Warstwa 9: 32-33.3% - 12% blur (do linii siatki) */}
+              <div className="absolute top-[32%] left-0 w-full h-[1.3%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.12}px)` }} />
               
-              {/* Warstwa 2: Górny rząd - 80% blur */}
-              <div className="absolute top-[15%] left-0 w-full h-[18%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.8)}px)` }} />
+              {/* Boki - gradient od krawędzi do środka */}
+              {/* Lewa strona */}
+              <div className="absolute top-0 left-0 w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.7}px)` }} />
+              <div className="absolute top-0 left-[5%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.5}px)` }} />
+              <div className="absolute top-0 left-[10%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.3}px)` }} />
+              <div className="absolute top-0 left-[15%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.15}px)` }} />
+              <div className="absolute top-0 left-[20%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.05}px)` }} />
               
-              {/* Warstwa 3: Przejście - 50% blur (rozszerza się gdy bokeh mocniejszy) */}
-              {bokehIntensity >= 6 && (
-                <div className="absolute top-[33%] left-0 w-full h-[10%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.5)}px)` }} />
-              )}
+              {/* Prawa strona */}
+              <div className="absolute top-0 right-0 w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.7}px)` }} />
+              <div className="absolute top-0 right-[5%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.5}px)` }} />
+              <div className="absolute top-0 right-[10%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.3}px)` }} />
+              <div className="absolute top-0 right-[15%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.15}px)` }} />
+              <div className="absolute top-0 right-[20%] w-[5%] h-full" style={{ backdropFilter: `blur(${bokehIntensity * 0.05}px)` }} />
               
-              {/* Warstwa 4: Dodatkowe przejście dla mocnego bokeh */}
-              {bokehIntensity >= 12 && (
-                <>
-                  <div className="absolute top-[43%] left-0 w-full h-[8%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.3)}px)` }} />
-                  {/* Boki środkowego rzędu - lekki blur */}
-                  <div className="absolute top-1/3 left-0 w-[15%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.4)}px)` }} />
-                  <div className="absolute top-1/3 right-0 w-[15%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.4)}px)` }} />
-                </>
-              )}
-              
-              {/* Warstwa 5: Maksymalny bokeh - gradient dociera blisko środka */}
-              {bokehIntensity >= 16 && (
-                <>
-                  <div className="absolute top-[51%] left-0 w-full h-[6%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.2)}px)` }} />
-                  {/* Szersze boki */}
-                  <div className="absolute top-1/3 left-[15%] w-[10%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.25)}px)` }} />
-                  <div className="absolute top-1/3 right-[15%] w-[10%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.25)}px)` }} />
-                </>
-              )}
+              {/* Dół - lekki gradient (mniejszy niż góra) */}
+              <div className="absolute bottom-0 left-0 w-full h-[3%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.5}px)` }} />
+              <div className="absolute bottom-[3%] left-0 w-full h-[3%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.35}px)` }} />
+              <div className="absolute bottom-[6%] left-0 w-full h-[3%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.2}px)` }} />
+              <div className="absolute bottom-[9%] left-0 w-full h-[3%]" style={{ backdropFilter: `blur(${bokehIntensity * 0.1}px)` }} />
             </>
           )}
           
