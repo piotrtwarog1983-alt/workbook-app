@@ -179,18 +179,9 @@ export function CameraView({
     }
   }, [onCapture])
 
-  // Przełączanie kamery (przód/tył)
-  const toggleCamera = useCallback(() => {
-    setFacingMode(prev => prev === 'environment' ? 'user' : 'environment')
-  }, [])
-
-  // Przełączanie grid overlay
+  // Przełączanie grid overlay (tylko 3x3 lub off)
   const toggleGrid = useCallback(() => {
-    setGridType(prev => {
-      if (prev === 'none') return 'thirds'
-      if (prev === 'thirds') return 'fibonacci'
-      return 'none'
-    })
+    setGridType(prev => prev === 'none' ? 'thirds' : 'none')
   }, [])
 
   // Inicjalizacja DeviceOrientation dla poziomicy
@@ -288,52 +279,13 @@ export function CameraView({
       )
     }
 
-    if (gridType === 'fibonacci') {
-      // Spirala Fibonacci (złota spirala) - obrócona pionowo
-      return (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <svg 
-            viewBox="0 0 100 162" 
-            className="w-full h-full"
-            style={{ maxWidth: '100%', maxHeight: '100%' }}
-            preserveAspectRatio="xMidYMid meet"
-          >
-            {/* Złota spirala przybliżona - pionowa orientacja */}
-            <g transform="translate(50, 81)">
-              <path
-                d="M 0 -38.2 
-                   A 38.2 38.2 0 0 1 38.2 0
-                   A 23.6 23.6 0 0 1 14.6 23.6
-                   A 14.6 14.6 0 0 1 0 9
-                   A 9 9 0 0 1 -9 0
-                   A 5.6 5.6 0 0 1 -3.4 -5.6
-                   A 3.4 3.4 0 0 1 0 -2.2"
-                fill="none"
-                stroke="rgba(255, 215, 0, 0.6)"
-                strokeWidth="0.8"
-              />
-            </g>
-            {/* Prostokąty złotego podziału - pionowa orientacja */}
-            <rect x="0" y="0" width="100" height="61.8" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
-            <rect x="0" y="61.8" width="61.8" height="38.2" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
-            <rect x="61.8" y="61.8" width="38.2" height="38.2" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
-            <rect x="0" y="100" width="38.2" height="23.6" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
-            <rect x="38.2" y="100" width="23.6" height="23.6" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
-          </svg>
-        </div>
-      )
-    }
-
     return null
   }
 
-  // Renderowanie poziomicy i kąta przechyłu
+  // Renderowanie kąta przechyłu (tylko na górze ekranu)
   const renderLevel = () => {
     if (!showLevel || !isLevelSupported) return null
 
-    // Określ czy telefon jest wypoziomowany (lewo-prawo)
-    const isLevelX = Math.abs(tiltX) < 3 // Zwiększony próg tolerancji
-    
     // Kąt przechyłu (pitch) - jak bardzo telefon jest przechylony
     // tiltY = 0 oznacza telefon trzymany pionowo -> wyświetlamy 0°
     // tiltY = -90 oznacza telefon trzymany poziomo -> wyświetlamy 90°
@@ -342,24 +294,6 @@ export function CameraView({
 
     return (
       <>
-        {/* Poziomnica - tylko oczko, przesunięta wyżej żeby nie kolidować z przyciskami */}
-        <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2">
-          <div className="relative w-40 h-10 bg-black/60 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
-            {/* Środkowe znaczniki (cel) */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-6 bg-green-500/60" />
-            <div className="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-0.5 h-3 bg-white/30" />
-            <div className="absolute top-1/2 left-3/4 transform -translate-y-1/2 w-0.5 h-3 bg-white/30" />
-            
-            {/* Bańka poziomu (oczko) - zmniejszona czułość (mnożnik 1.5 zamiast 3) */}
-            <div 
-              className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full transition-all duration-100 shadow-lg ${isLevelX ? 'bg-green-500 shadow-green-500/50' : 'bg-white shadow-white/30'}`}
-              style={{ 
-                left: `calc(50% + ${Math.max(-60, Math.min(60, tiltX * 1.5))}px - 10px)` 
-              }}
-            />
-          </div>
-        </div>
-
         {/* Kąt przechyłu przód-tył - w górnej części ekranu, pod nagłówkiem */}
         <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
           <div className="px-4 py-2 bg-black/60 rounded-xl backdrop-blur-sm border border-white/20 flex items-center gap-2">
@@ -368,6 +302,32 @@ export function CameraView({
           </div>
         </div>
       </>
+    )
+  }
+  
+  // Renderowanie poziomicy (w dolnym panelu)
+  const renderLevelIndicator = () => {
+    if (!isLevelSupported) return null
+    
+    const isLevelX = Math.abs(tiltX) < 3
+    
+    return (
+      <div className="flex justify-center mb-4">
+        <div className="relative w-40 h-8 bg-black/40 rounded-full overflow-hidden border border-white/20">
+          {/* Środkowe znaczniki (cel) */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-5 bg-green-500/60" />
+          <div className="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-0.5 h-2 bg-white/30" />
+          <div className="absolute top-1/2 left-3/4 transform -translate-y-1/2 w-0.5 h-2 bg-white/30" />
+          
+          {/* Bańka poziomu (oczko) */}
+          <div 
+            className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-100 shadow-lg ${isLevelX ? 'bg-green-500 shadow-green-500/50' : 'bg-white shadow-white/30'}`}
+            style={{ 
+              left: `calc(50% + ${Math.max(-60, Math.min(60, tiltX * 1.5))}px - 8px)` 
+            }}
+          />
+        </div>
+      </div>
     )
   }
 
@@ -393,24 +353,8 @@ export function CameraView({
           </span>
         )}
 
-        {/* Przycisk przełączania kamery */}
-        <button
-          onClick={toggleCamera}
-          className="w-10 h-10 flex items-center justify-center"
-        >
-          <Image
-            src="/course/ikony/rotate-camera.png"
-            alt="Przełącz kamerę"
-            width={28}
-            height={28}
-            className="invert"
-            onError={(e) => {
-              // Fallback jeśli ikona nie istnieje
-              (e.target as HTMLImageElement).style.display = 'none'
-            }}
-          />
-          <span className="text-white text-xl">🔄</span>
-        </button>
+        {/* Pusty element dla wyrównania */}
+        <div className="w-10 h-10" />
       </div>
 
       {/* Podgląd kamery */}
@@ -486,25 +430,35 @@ export function CameraView({
 
       {/* Dolny panel z kontrolkami */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-8">
-        {/* Zoom slider (jeśli dostępny) - skala 1-3x */}
+        {/* Zoom slider z aktualnym przybliżeniem */}
         {maxZoom > minZoom && (
-          <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex items-center justify-center gap-4 mb-4">
             <span className="text-white text-sm">1x</span>
-            <input
-              type="range"
-              min={minZoom}
-              max={maxZoom}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
-              className="w-48 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #fff ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%, rgba(255,255,255,0.3) ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%)`
-              }}
-            />
+            <div className="relative">
+              <input
+                type="range"
+                min={minZoom}
+                max={maxZoom}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
+                className="w-48 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #fff ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%, rgba(255,255,255,0.3) ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%)`
+                }}
+              />
+            </div>
             <span className="text-white text-sm">3x</span>
           </div>
         )}
+        
+        {/* Aktualne przybliżenie */}
+        <div className="flex justify-center mb-4">
+          <span className="text-yellow-400 text-lg font-bold">{zoom.toFixed(1)}x</span>
+        </div>
+        
+        {/* Poziomnica - między suwakiem a przyciskami */}
+        {renderLevelIndicator()}
 
         {/* Główne przyciski */}
         <div className="flex items-center justify-center gap-8">
@@ -561,7 +515,7 @@ export function CameraView({
         {/* Etykiety */}
         <div className="flex items-center justify-center gap-8 mt-2">
           <span className="text-white/60 text-xs w-12 text-center">
-            {gridType === 'none' ? 'off' : gridType === 'thirds' ? '3x3' : 'Fibonacci'}
+            {gridType === 'none' ? 'off' : '3x3'}
           </span>
           <span className="text-white/60 text-xs w-20 text-center">Zdjęcie</span>
           <span className="text-white/60 text-xs w-12 text-center">Poziom</span>
