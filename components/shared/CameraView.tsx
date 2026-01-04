@@ -51,6 +51,22 @@ export function CameraView({
   // Edytor zdjęć
   const [showEditor, setShowEditor] = useState(false)
   
+  // Bokeh na żywo (rozmycie górnej części kadru)
+  const [bokehEnabled, setBokehEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cameraBokehEnabled')
+      return saved === 'true'
+    }
+    return false
+  })
+  const [bokehIntensity, setBokehIntensity] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cameraBokehIntensity')
+      return saved ? parseInt(saved) : 8
+    }
+    return 8
+  })
+  
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -330,13 +346,23 @@ export function CameraView({
           className="relative w-full h-full max-w-[80vw]"
           style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
         >
+          {/* Efekt bokeh (rozmycie) na górnych prostokątach */}
+          {bokehEnabled && (
+            <>
+              {/* Górny rząd - rozmyty */}
+              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+            </>
+          )}
+          
           {/* Efekt sepii na zewnętrznych prostokątach (jeśli włączony) */}
           {sepiaEnabled && (
             <>
               {/* Górny rząd */}
-              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
-              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
-              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: bokehEnabled ? `blur(${bokehIntensity}px) sepia(0.8) brightness(0.9)` : 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: bokehEnabled ? `blur(${bokehIntensity}px) sepia(0.8) brightness(0.9)` : 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: bokehEnabled ? `blur(${bokehIntensity}px) sepia(0.8) brightness(0.9)` : 'sepia(0.8) brightness(0.9)' }} />
               {/* Środkowy rząd - tylko boki */}
               <div className="absolute top-1/3 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               <div className="absolute top-1/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
@@ -557,21 +583,54 @@ export function CameraView({
           </div>
         )}
         
+        {/* Suwak Bokeh (gdy włączony) */}
+        {bokehEnabled && (
+          <div className="mb-2">
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-white/60 text-xs">Bokeh:</span>
+              <input
+                type="range"
+                min={2}
+                max={20}
+                value={bokehIntensity}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value)
+                  setBokehIntensity(value)
+                  localStorage.setItem('cameraBokehIntensity', String(value))
+                }}
+                className="w-32 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
+              />
+              <span className="text-purple-400 text-sm font-bold w-8">{bokehIntensity}px</span>
+            </div>
+          </div>
+        )}
+        
         {/* Poziomnica - między zoomem a przyciskami */}
         {renderLevelIndicator()}
 
         {/* Główne przyciski */}
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-6">
           {/* Przycisk sepii - podświetla środek siatki */}
           <button
             onClick={toggleSepia}
-            className={`w-12 h-12 flex items-center justify-center rounded-full ${sepiaEnabled ? 'bg-amber-600/60' : 'bg-white/10'}`}
+            className={`w-11 h-11 flex items-center justify-center rounded-full ${sepiaEnabled ? 'bg-amber-600/60' : 'bg-white/10'}`}
           >
-            <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              {/* Ikona oka/fokusa */}
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" fill={sepiaEnabled ? "currentColor" : "none"} />
               <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
             </svg>
+          </button>
+
+          {/* Przycisk bokeh - rozmycie tła */}
+          <button
+            onClick={() => {
+              const newValue = !bokehEnabled
+              setBokehEnabled(newValue)
+              localStorage.setItem('cameraBokehEnabled', String(newValue))
+            }}
+            className={`w-11 h-11 flex items-center justify-center rounded-full ${bokehEnabled ? 'bg-purple-600/60' : 'bg-white/10'}`}
+          >
+            <span className="text-lg">🔮</span>
           </button>
 
           {/* Przycisk zdjęcia */}
@@ -586,10 +645,9 @@ export function CameraView({
           {/* Przycisk edycji zdjęć */}
           <button
             onClick={() => setShowEditor(true)}
-            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10"
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10"
           >
-            <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              {/* Ikona edycji/suwaki */}
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="4" y1="6" x2="20" y2="6" />
               <circle cx="8" cy="6" r="2" fill="currentColor" />
               <line x1="4" y1="12" x2="20" y2="12" />
@@ -601,12 +659,15 @@ export function CameraView({
         </div>
 
         {/* Etykiety */}
-        <div className="flex items-center justify-center gap-8 mt-2">
-          <span className={`text-xs w-12 text-center ${sepiaEnabled ? 'text-amber-400' : 'text-white/60'}`}>
+        <div className="flex items-center justify-center gap-6 mt-2">
+          <span className={`text-xs w-11 text-center ${sepiaEnabled ? 'text-amber-400' : 'text-white/60'}`}>
             Fokus
           </span>
+          <span className={`text-xs w-11 text-center ${bokehEnabled ? 'text-purple-400' : 'text-white/60'}`}>
+            Bokeh
+          </span>
           <span className="text-white/60 text-xs w-20 text-center">Zdjęcie</span>
-          <span className="text-white/60 text-xs w-12 text-center">Edycja</span>
+          <span className="text-white/60 text-xs w-11 text-center">Edycja</span>
         </div>
       </div>
 
