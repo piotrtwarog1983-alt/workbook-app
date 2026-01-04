@@ -263,8 +263,15 @@ export function CameraView({
     setInitialPinchDistance(null)
   }
 
-  // Renderowanie grid overlay - siatka 3x3 zawsze widoczna, sepia opcjonalna
+  // Renderowanie grid overlay - siatka 3x3 zawsze widoczna
+  // Środkowy prostokąt = sygnalizator pozycji (czerwona sepia gdy nieprawidłowa)
   const renderGridOverlay = () => {
+    // Sprawdzenie prawidłowości pozycji
+    const pitchAngle = Math.min(90, Math.max(0, Math.abs(Math.round(tiltY))))
+    const isPitchOk = (pitchAngle >= 0 && pitchAngle <= 40) || (pitchAngle >= 87 && pitchAngle <= 93)
+    const isLevelOk = Math.abs(tiltX) <= 5
+    const isPositionOk = !isLevelSupported || (isPitchOk && isLevelOk)
+    
     return (
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <div 
@@ -278,7 +285,7 @@ export function CameraView({
               <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
-              {/* Środkowy rząd - tylko boki, ŚRODEK BEZ FILTRA */}
+              {/* Środkowy rząd - tylko boki */}
               <div className="absolute top-1/3 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               <div className="absolute top-1/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               {/* Dolny rząd */}
@@ -287,58 +294,43 @@ export function CameraView({
               <div className="absolute top-2/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
             </>
           )}
+          
+          {/* ŚRODKOWY PROSTOKĄT = SYGNALIZATOR POZYCJI */}
+          {/* Czerwona sepia gdy pozycja nieprawidłowa */}
+          {!isPositionOk && isLevelSupported && (
+            <div 
+              className="absolute top-1/3 left-1/3 w-1/3 h-1/3 transition-opacity duration-300" 
+              style={{ backdropFilter: 'sepia(1) saturate(3) hue-rotate(-50deg) brightness(0.9)' }} 
+            />
+          )}
 
           {/* Linie siatki 3x3 - zawsze widoczne */}
-          <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/40" />
-          <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/40" />
-          <div className="absolute left-0 right-0 top-1/3 h-px bg-white/40" />
-          <div className="absolute left-0 right-0 top-2/3 h-px bg-white/40" />
+          <div className={`absolute top-0 bottom-0 left-1/3 w-px transition-colors ${isPositionOk ? 'bg-white/40' : 'bg-red-500/60'}`} />
+          <div className={`absolute top-0 bottom-0 left-2/3 w-px transition-colors ${isPositionOk ? 'bg-white/40' : 'bg-red-500/60'}`} />
+          <div className={`absolute left-0 right-0 top-1/3 h-px transition-colors ${isPositionOk ? 'bg-white/40' : 'bg-red-500/60'}`} />
+          <div className={`absolute left-0 right-0 top-2/3 h-px transition-colors ${isPositionOk ? 'bg-white/40' : 'bg-red-500/60'}`} />
           {/* Ramka zewnętrzna */}
-          <div className="absolute inset-0 border border-white/30" />
+          <div className={`absolute inset-0 border transition-colors ${isPositionOk ? 'border-white/30' : 'border-red-500/60'}`} />
         </div>
       </div>
     )
   }
 
-  // Renderowanie kąta przechyłu (tylko na górze ekranu)
+  // Renderowanie kąta przechyłu (tylko na górze ekranu) - uproszczony wskaźnik
   const renderLevel = () => {
     if (!showLevel || !isLevelSupported) return null
 
-    // Kąt przechyłu (pitch) - jak bardzo telefon jest przechylony
-    // tiltY = 0 oznacza telefon trzymany pionowo -> wyświetlamy 0°
-    // tiltY = -90 oznacza telefon trzymany poziomo -> wyświetlamy 90°
-    // Skala: pion = 0°, poziom = 90°
+    // Kąt przechyłu (pitch)
     const pitchAngle = Math.min(90, Math.max(0, Math.abs(Math.round(tiltY))))
-    
-    // Określenie czy kąt jest prawidłowy:
-    // 0-40° = OK (zielono) - aparat trzymany pionowo lub lekko pochylony
-    // 40-87° = ŹLE (czerwono) - złe kąty
-    // 87-93° = OK (zielono) - aparat trzymany poziomo (flat lay)
-    const isPitchOk = (pitchAngle >= 0 && pitchAngle <= 40) || (pitchAngle >= 87 && pitchAngle <= 93)
-    
-    // Określenie czy poziomnica jest prawidłowa:
-    // -5 do 5° = OK, poza tym = ŹLE
-    const isLevelOk = Math.abs(tiltX) <= 5
-    
-    // Ogólny status - oba muszą być OK
-    const isAllOk = isPitchOk && isLevelOk
 
     return (
       <>
-        {/* Kąt przechyłu przód-tył - w górnej części ekranu, pod nagłówkiem */}
+        {/* Kąt przechyłu - minimalistyczny wskaźnik */}
         <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
-          <div className={`px-4 py-2 rounded-xl backdrop-blur-sm border flex items-center gap-2 transition-colors ${
-            isAllOk 
-              ? 'bg-green-900/60 border-green-500/40' 
-              : 'bg-red-900/60 border-red-500/40'
-          }`}>
-            <span className="text-white/80 text-sm">Kąt:</span>
-            <span className={`text-lg font-bold min-w-[3ch] text-center ${isPitchOk ? 'text-green-400' : 'text-red-400'}`}>
+          <div className="px-4 py-2 bg-black/60 rounded-xl backdrop-blur-sm border border-white/20 flex items-center gap-2">
+            <span className="text-white/60 text-sm">Kąt:</span>
+            <span className="text-white text-lg font-bold min-w-[3ch] text-center">
               {pitchAngle}°
-            </span>
-            {/* Ikona statusu */}
-            <span className="text-lg">
-              {isAllOk ? '✓' : '✗'}
             </span>
           </div>
         </div>
@@ -350,22 +342,18 @@ export function CameraView({
   const renderLevelIndicator = () => {
     if (!isLevelSupported) return null
     
-    // Odchylenie poziomicy: -5 do 5° = OK, poza tym = ŹLE (czerwono)
+    // Odchylenie poziomicy: -5 do 5° = OK, poza tym = ŹLE
     const isLevelOk = Math.abs(tiltX) <= 5
     
     return (
       <div className="flex justify-center mb-4">
-        <div className={`relative w-40 h-8 rounded-full overflow-hidden border transition-colors ${
-          isLevelOk 
-            ? 'bg-black/40 border-green-500/40' 
-            : 'bg-red-900/30 border-red-500/40'
-        }`}>
+        <div className="relative w-40 h-8 bg-black/40 rounded-full overflow-hidden border border-white/20">
           {/* Środkowe znaczniki (cel) */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-5 bg-green-500/60" />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-5 bg-white/40" />
           <div className="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-0.5 h-2 bg-white/30" />
           <div className="absolute top-1/2 left-3/4 transform -translate-y-1/2 w-0.5 h-2 bg-white/30" />
           
-          {/* Bańka poziomu (oczko) */}
+          {/* Bańka poziomu (oczko) - zmienia kolor na czerwony gdy odchylenie > 5° */}
           <div 
             className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-100 shadow-lg ${
               isLevelOk 
