@@ -92,14 +92,16 @@ export function CameraView({
         await videoRef.current.play()
         setIsActive(true)
 
-        // Sprawdź możliwości zoom
+        // Sprawdź możliwości zoom - ograniczamy do max 3x
         const track = stream.getVideoTracks()[0]
         const capabilities = track.getCapabilities() as any
         
         if (capabilities.zoom) {
-          setMinZoom(capabilities.zoom.min || 1)
-          setMaxZoom(capabilities.zoom.max || 1)
-          setZoom(capabilities.zoom.min || 1)
+          const deviceMinZoom = capabilities.zoom.min || 1
+          const deviceMaxZoom = capabilities.zoom.max || 1
+          setMinZoom(deviceMinZoom)
+          setMaxZoom(Math.min(deviceMaxZoom, 3)) // Maksymalnie 3x zoom
+          setZoom(deviceMinZoom)
         }
       }
     } catch (err: any) {
@@ -471,7 +473,7 @@ export function CameraView({
 
       {/* Dolny panel z kontrolkami */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-8">
-        {/* Zoom slider (jeśli dostępny) */}
+        {/* Zoom slider (jeśli dostępny) - skala 1-3x */}
         {maxZoom > minZoom && (
           <div className="flex items-center justify-center gap-4 mb-6">
             <span className="text-white text-sm">1x</span>
@@ -487,7 +489,7 @@ export function CameraView({
                 background: `linear-gradient(to right, #fff ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%, rgba(255,255,255,0.3) ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%)`
               }}
             />
-            <span className="text-white text-sm">{maxZoom.toFixed(1)}x</span>
+            <span className="text-white text-sm">3x</span>
           </div>
         )}
 
