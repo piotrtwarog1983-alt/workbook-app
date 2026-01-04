@@ -156,8 +156,8 @@ export function CameraView({
     }
   }, [minZoom, maxZoom])
 
-  // Robienie zdjęcia
-  const capturePhoto = useCallback(() => {
+  // Robienie zdjęcia i zapisywanie na telefonie
+  const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return
 
     const video = videoRef.current
@@ -176,10 +176,49 @@ export function CameraView({
     // Pobierz dane obrazu jako base64
     const imageData = canvas.toDataURL('image/jpeg', 0.9)
     
-    if (onCapture) {
-      onCapture(imageData)
+    // Nazwa pliku z datą i numerem strony
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const fileName = pageNumber 
+      ? `TheOne-strona${pageNumber}-${timestamp}.jpg`
+      : `TheOne-${timestamp}.jpg`
+
+    // Konwertuj base64 na blob
+    const base64Response = await fetch(imageData)
+    const blob = await base64Response.blob()
+    const file = new File([blob], fileName, { type: 'image/jpeg' })
+
+    // Próbuj użyć Web Share API (działa na iOS i niektórych Android)
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Zdjęcie z TheOne',
+        })
+        // Po udostępnieniu zamknij aparat
+        onClose?.()
+        return
+      } catch (err) {
+        // Użytkownik anulował lub błąd - kontynuuj z fallback
+        console.log('Share cancelled or failed, using download fallback')
+      }
     }
-  }, [onCapture])
+
+    // Fallback: Pobierz plik (działa na wszystkich przeglądarkach)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    // Pokaż komunikat o zapisaniu
+    alert(`Zdjęcie "${fileName}" zostało zapisane!`)
+    
+    // Zamknij aparat po zapisaniu
+    onClose?.()
+  }, [pageNumber, onClose])
 
   // Przełączanie efektu sepii
   const toggleSepia = useCallback(() => {
