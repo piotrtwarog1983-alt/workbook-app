@@ -310,8 +310,13 @@ export function CameraView({
   // Środkowy prostokąt = sygnalizator pozycji (czerwona sepia gdy nieprawidłowa)
   const renderGridOverlay = () => {
     // Sprawdzenie prawidłowości pozycji
-    const pitchAngle = Math.min(90, Math.max(0, Math.abs(Math.round(tiltY))))
-    const isPitchOk = (pitchAngle >= 0 && pitchAngle <= 40) || (pitchAngle >= 87 && pitchAngle <= 93)
+    // pitchAngle: 0° = pionowo, 90° = poziomo, >90° = przechylony za bardzo
+    const rawPitchAngle = Math.abs(Math.round(tiltY))
+    const pitchAngle = Math.min(90, rawPitchAngle) // Dla wyświetlania (max 90)
+    
+    // Prawidłowe kąty: 0-40° (lekko pochylony) lub 87-93° (flat lay)
+    // Nieprawidłowe: 40-87° oraz >93°
+    const isPitchOk = (rawPitchAngle >= 0 && rawPitchAngle <= 40) || (rawPitchAngle >= 87 && rawPitchAngle <= 93)
     const isLevelOk = Math.abs(tiltX) <= 5
     const isPositionOk = !isLevelSupported || (isPitchOk && isLevelOk)
     
