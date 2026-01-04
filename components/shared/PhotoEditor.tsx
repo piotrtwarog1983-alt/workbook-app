@@ -30,6 +30,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [initialCropBox, setInitialCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 })
   const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null)
+  const [initialPinchX, setInitialPinchX] = useState<number | null>(null)
+  const [initialPinchY, setInitialPinchY] = useState<number | null>(null)
   const [pinchCenter, setPinchCenter] = useState({ x: 0, y: 0 })
   
   // Refs
@@ -279,7 +281,13 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         touch2.clientY - touch1.clientY
       )
       
+      // Zapamiętaj początkowe odległości X i Y osobno
+      const distanceX = Math.abs(touch2.clientX - touch1.clientX)
+      const distanceY = Math.abs(touch2.clientY - touch1.clientY)
+      
       setInitialPinchDistance(distance)
+      setInitialPinchX(distanceX)
+      setInitialPinchY(distanceY)
       setInitialCropBox({ ...cropBox })
       
       // Środek pomiędzy palcami
@@ -316,21 +324,23 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         x: newX,
         y: newY
       }))
-    } else if (e.touches.length === 2 && isResizing && initialPinchDistance !== null) {
-      // Skalowanie ramki
+    } else if (e.touches.length === 2 && isResizing && initialPinchX !== null && initialPinchY !== null) {
+      // Skalowanie ramki - niezależne dla X i Y
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
       
-      const distance = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      )
+      // Aktualne odległości X i Y
+      const currentDistanceX = Math.abs(touch2.clientX - touch1.clientX)
+      const currentDistanceY = Math.abs(touch2.clientY - touch1.clientY)
       
-      const scale = distance / initialPinchDistance
+      // Oblicz skalę osobno dla X i Y
+      // Używamy minimalnej wartości początkowej żeby uniknąć dzielenia przez 0
+      const scaleX = initialPinchX > 10 ? currentDistanceX / initialPinchX : 1
+      const scaleY = initialPinchY > 10 ? currentDistanceY / initialPinchY : 1
       
-      // Nowe wymiary
-      let newWidth = initialCropBox.width * scale
-      let newHeight = initialCropBox.height * scale
+      // Nowe wymiary - skalowane niezależnie
+      let newWidth = initialCropBox.width * scaleX
+      let newHeight = initialCropBox.height * scaleY
       
       // Minimalne wymiary
       const minSize = 50
@@ -359,12 +369,14 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         height: newHeight
       })
     }
-  }, [isDragging, isResizing, dragStart, initialCropBox, initialPinchDistance, pinchCenter, cropBox.width, cropBox.height])
+  }, [isDragging, isResizing, dragStart, initialCropBox, initialPinchX, initialPinchY, pinchCenter, cropBox.width, cropBox.height])
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false)
     setIsResizing(false)
     setInitialPinchDistance(null)
+    setInitialPinchX(null)
+    setInitialPinchY(null)
   }, [])
 
   // Renderowanie zakładki kadrowania
