@@ -445,34 +445,17 @@ export function CameraView({
     const isLevelOk = Math.abs(tiltX) <= 5
     const isPositionOk = !isLevelSupported || (isPitchOk && isLevelOk)
     
-    // Oblicz pozycję siatki dla overlay
-    // Siatka: max-w-[80vw], aspect-ratio 4/5, max-height 70vh, wyśrodkowana
-    
     return (
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Ciemne tło - góra */}
-        <div className="absolute top-0 left-0 right-0 bg-black/90" style={{ height: 'calc((100% - min(70vh, 80vw * 1.25)) / 2)' }} />
-        {/* Ciemne tło - dół */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black/90" style={{ height: 'calc((100% - min(70vh, 80vw * 1.25)) / 2)' }} />
-        {/* Ciemne tło - lewa */}
-        <div className="absolute left-0 bg-black/90" style={{ 
-          top: 'calc((100% - min(70vh, 80vw * 1.25)) / 2)', 
-          bottom: 'calc((100% - min(70vh, 80vw * 1.25)) / 2)',
-          width: 'calc((100% - min(80vw, 70vh * 0.8)) / 2)'
-        }} />
-        {/* Ciemne tło - prawa */}
-        <div className="absolute right-0 bg-black/90" style={{ 
-          top: 'calc((100% - min(70vh, 80vw * 1.25)) / 2)', 
-          bottom: 'calc((100% - min(70vh, 80vw * 1.25)) / 2)',
-          width: 'calc((100% - min(80vw, 70vh * 0.8)) / 2)'
-        }} />
-        
-        {/* Kontener siatki - wyśrodkowany */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div 
-            className="relative w-full h-full max-w-[80vw]"
-            style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
-          >
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        {/* Siatka z ciemnym tłem wokół (box-shadow) */}
+        <div 
+          className="relative w-full h-full max-w-[80vw]"
+          style={{ 
+            aspectRatio: '4/5', 
+            maxHeight: '70vh',
+            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.9)'
+          }}
+        >
             {/* Efekt bokeh - tylko górna 1/3 kadru z płynnym gradientem (90% gradientu) */}
           {bokehEnabled && (
             <div 
@@ -525,7 +508,6 @@ export function CameraView({
           <div className={`absolute left-0 right-0 top-2/3 h-px transition-colors ${isPositionOk ? 'bg-white/40' : 'bg-red-500/60'}`} />
           {/* Ramka zewnętrzna */}
           <div className={`absolute inset-0 border transition-colors ${isPositionOk ? 'border-white/30' : 'border-red-500/60'}`} />
-          </div>
         </div>
       </div>
     )
