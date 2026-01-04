@@ -257,6 +257,21 @@ export function CameraView({
     ctx.putImageData(imageData, 0, 0)
   }, [])
 
+  // Funkcja pomocnicza do pobierania przez link (fallback)
+  const downloadViaLink = useCallback((blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    setTimeout(() => {
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 100)
+  }, [])
+
   // Robienie zdjęcia i zapisywanie na telefonie - przycięte do proporcji siatki 4:5
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return
@@ -322,20 +337,29 @@ export function CameraView({
     const base64Response = await fetch(imageDataUrl)
     const blob = await base64Response.blob()
 
-    // Pobierz plik bezpośrednio do folderu Downloads
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    
-    // Poczekaj chwilę przed usunięciem linku (dla pewności pobrania)
-    setTimeout(() => {
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-    }, 100)
+    // Zapisz zdjęcie - użyj Web Share API na iOS, fallback na download
+    try {
+      // Sprawdź czy Web Share API jest dostępne i obsługuje pliki
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], fileName, { type: 'image/jpeg' })
+        const shareData = { files: [file] }
+        
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData)
+        } else {
+          // Fallback - pobierz przez link
+          downloadViaLink(blob, fileName)
+        }
+      } else {
+        // Fallback dla przeglądarek bez Web Share API
+        downloadViaLink(blob, fileName)
+      }
+    } catch (err) {
+      // Użytkownik anulował share lub błąd - spróbuj pobrać
+      if ((err as Error).name !== 'AbortError') {
+        downloadViaLink(blob, fileName)
+      }
+    }
 
     // Krótka wizualna informacja o zapisaniu (flash ekranu)
     setPhotoFlash(true)
@@ -343,7 +367,7 @@ export function CameraView({
     
     // Zwiększ licznik zdjęć
     setPhotoCount(prev => prev + 1)
-  }, [pageNumber, bokehEnabled, bokehIntensity, fastBlurTopRegion])
+  }, [pageNumber, bokehEnabled, bokehIntensity, fastBlurTopRegion, downloadViaLink])
 
   // Przełączanie efektu sepii (zapisuje do localStorage)
   const toggleSepia = useCallback(() => {
@@ -758,7 +782,10 @@ export function CameraView({
 
           {/* Przycisk edycji zdjęć */}
           <button
-            onClick={() => setShowEditor(true)}
+            onClick={() => {
+              stopCamera() // Zatrzymaj kamerę żeby zwolnić zasoby
+              setShowEditor(true)
+            }}
             className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
@@ -791,7 +818,10 @@ export function CameraView({
       {/* Edytor zdjęć */}
       {showEditor && (
         <PhotoEditor 
-          onClose={() => setShowEditor(false)}
+          onClose={() => {
+            setShowEditor(false)
+            startCamera() // Wznów kamerę po zamknięciu edytora
+          }}
         />
       )}
     </div>

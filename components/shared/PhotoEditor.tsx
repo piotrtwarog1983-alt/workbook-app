@@ -280,6 +280,21 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     }
   }, [cropBox, rotation])
 
+  // Funkcja pomocnicza do pobierania przez link (fallback)
+  const downloadViaLink = useCallback((blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    setTimeout(() => {
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 100)
+  }, [])
+
   // Zapisz zdjęcie
   const savePhoto = useCallback(async () => {
     if (!canvasRef.current) return
@@ -296,18 +311,25 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
       const base64Response = await fetch(imageData)
       const blob = await base64Response.blob()
 
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = fileName
-      link.style.display = 'none'
-      document.body.appendChild(link)
-      link.click()
-      
-      setTimeout(() => {
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-      }, 100)
+      // Zapisz zdjęcie - użyj Web Share API na iOS, fallback na download
+      try {
+        if (navigator.share && navigator.canShare) {
+          const file = new File([blob], fileName, { type: 'image/jpeg' })
+          const shareData = { files: [file] }
+          
+          if (navigator.canShare(shareData)) {
+            await navigator.share(shareData)
+          } else {
+            downloadViaLink(blob, fileName)
+          }
+        } else {
+          downloadViaLink(blob, fileName)
+        }
+      } catch (shareErr) {
+        if ((shareErr as Error).name !== 'AbortError') {
+          downloadViaLink(blob, fileName)
+        }
+      }
 
       onSave?.(imageData)
     } catch (err) {
@@ -315,7 +337,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     } finally {
       setIsProcessing(false)
     }
-  }, [onSave, applyFilters])
+  }, [onSave, applyFilters, downloadViaLink])
 
   // Reset filtrów
   const resetFilters = useCallback(() => {
