@@ -289,32 +289,36 @@ export function CameraView({
     }
 
     if (gridType === 'fibonacci') {
-      // Spirala Fibonacci (złota spirala)
+      // Spirala Fibonacci (złota spirala) - obrócona pionowo
       return (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
           <svg 
-            viewBox="0 0 100 100" 
+            viewBox="0 0 100 162" 
             className="w-full h-full"
             style={{ maxWidth: '100%', maxHeight: '100%' }}
+            preserveAspectRatio="xMidYMid meet"
           >
-            {/* Złota spirala przybliżona */}
-            <path
-              d="M 61.8 38.2 
-                 A 23.6 23.6 0 0 1 38.2 61.8
-                 A 14.6 14.6 0 0 1 23.6 47.2
-                 A 9 9 0 0 1 32.6 38.2
-                 A 5.6 5.6 0 0 1 38.2 43.8
-                 A 3.4 3.4 0 0 1 34.8 47.2
-                 A 2.1 2.1 0 0 1 32.7 45.1"
-              fill="none"
-              stroke="rgba(255, 215, 0, 0.6)"
-              strokeWidth="0.5"
-            />
-            {/* Prostokąty złotego podziału */}
-            <rect x="38.2" y="0" width="61.8" height="61.8" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.3" />
-            <rect x="0" y="0" width="38.2" height="38.2" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.3" />
-            <rect x="0" y="38.2" width="23.6" height="23.6" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.3" />
-            <rect x="23.6" y="47.2" width="14.6" height="14.6" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.3" />
+            {/* Złota spirala przybliżona - pionowa orientacja */}
+            <g transform="translate(50, 81)">
+              <path
+                d="M 0 -38.2 
+                   A 38.2 38.2 0 0 1 38.2 0
+                   A 23.6 23.6 0 0 1 14.6 23.6
+                   A 14.6 14.6 0 0 1 0 9
+                   A 9 9 0 0 1 -9 0
+                   A 5.6 5.6 0 0 1 -3.4 -5.6
+                   A 3.4 3.4 0 0 1 0 -2.2"
+                fill="none"
+                stroke="rgba(255, 215, 0, 0.6)"
+                strokeWidth="0.8"
+              />
+            </g>
+            {/* Prostokąty złotego podziału - pionowa orientacja */}
+            <rect x="0" y="0" width="100" height="61.8" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
+            <rect x="0" y="61.8" width="61.8" height="38.2" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
+            <rect x="61.8" y="61.8" width="38.2" height="38.2" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
+            <rect x="0" y="100" width="38.2" height="23.6" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
+            <rect x="38.2" y="100" width="23.6" height="23.6" fill="none" stroke="rgba(255, 215, 0, 0.3)" strokeWidth="0.5" />
           </svg>
         </div>
       )
@@ -330,15 +334,16 @@ export function CameraView({
     // Określ czy telefon jest wypoziomowany (lewo-prawo)
     const isLevelX = Math.abs(tiltX) < 3 // Zwiększony próg tolerancji
     
-    // Kąt przechyłu (pitch) - jak bardzo telefon jest przechylony do przodu/tyłu
-    // tiltY = 0 oznacza telefon trzymany pionowo
-    // tiltY = -90 oznacza telefon trzymany poziomo (ekran do góry)
-    const pitchAngle = Math.round(tiltY + 90) // Normalizacja: 0° = poziomo, 90° = pionowo
+    // Kąt przechyłu (pitch) - jak bardzo telefon jest przechylony
+    // tiltY = 0 oznacza telefon trzymany pionowo -> wyświetlamy 0°
+    // tiltY = -90 oznacza telefon trzymany poziomo -> wyświetlamy 90°
+    // Skala: pion = 0°, poziom = 90°
+    const pitchAngle = Math.min(90, Math.max(0, Math.abs(Math.round(tiltY))))
 
     return (
       <>
-        {/* Poziomnica - tylko oczko, na dole ekranu */}
-        <div className="absolute bottom-28 left-1/2 transform -translate-x-1/2">
+        {/* Poziomnica - tylko oczko, przesunięta wyżej żeby nie kolidować z przyciskami */}
+        <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2">
           <div className="relative w-40 h-10 bg-black/60 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
             {/* Środkowe znaczniki (cel) */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-6 bg-green-500/60" />
@@ -556,7 +561,7 @@ export function CameraView({
         {/* Etykiety */}
         <div className="flex items-center justify-center gap-8 mt-2">
           <span className="text-white/60 text-xs w-12 text-center">
-            {gridType === 'none' ? 'Siatka' : gridType === 'thirds' ? '3x3' : 'Fibonacci'}
+            {gridType === 'none' ? 'off' : gridType === 'thirds' ? '3x3' : 'Fibonacci'}
           </span>
           <span className="text-white/60 text-xs w-20 text-center">Zdjęcie</span>
           <span className="text-white/60 text-xs w-12 text-center">Poziom</span>
