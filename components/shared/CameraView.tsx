@@ -309,14 +309,37 @@ export function CameraView({
     // tiltY = -90 oznacza telefon trzymany poziomo -> wyświetlamy 90°
     // Skala: pion = 0°, poziom = 90°
     const pitchAngle = Math.min(90, Math.max(0, Math.abs(Math.round(tiltY))))
+    
+    // Określenie czy kąt jest prawidłowy:
+    // 0-40° = OK (zielono) - aparat trzymany pionowo lub lekko pochylony
+    // 40-87° = ŹLE (czerwono) - złe kąty
+    // 87-93° = OK (zielono) - aparat trzymany poziomo (flat lay)
+    const isPitchOk = (pitchAngle >= 0 && pitchAngle <= 40) || (pitchAngle >= 87 && pitchAngle <= 93)
+    
+    // Określenie czy poziomnica jest prawidłowa:
+    // -5 do 5° = OK, poza tym = ŹLE
+    const isLevelOk = Math.abs(tiltX) <= 5
+    
+    // Ogólny status - oba muszą być OK
+    const isAllOk = isPitchOk && isLevelOk
 
     return (
       <>
         {/* Kąt przechyłu przód-tył - w górnej części ekranu, pod nagłówkiem */}
         <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
-          <div className="px-4 py-2 bg-black/60 rounded-xl backdrop-blur-sm border border-white/20 flex items-center gap-2">
-            <span className="text-white/60 text-sm">Kąt:</span>
-            <span className="text-yellow-400 text-lg font-bold min-w-[3ch] text-center">{pitchAngle}°</span>
+          <div className={`px-4 py-2 rounded-xl backdrop-blur-sm border flex items-center gap-2 transition-colors ${
+            isAllOk 
+              ? 'bg-green-900/60 border-green-500/40' 
+              : 'bg-red-900/60 border-red-500/40'
+          }`}>
+            <span className="text-white/80 text-sm">Kąt:</span>
+            <span className={`text-lg font-bold min-w-[3ch] text-center ${isPitchOk ? 'text-green-400' : 'text-red-400'}`}>
+              {pitchAngle}°
+            </span>
+            {/* Ikona statusu */}
+            <span className="text-lg">
+              {isAllOk ? '✓' : '✗'}
+            </span>
           </div>
         </div>
       </>
@@ -327,11 +350,16 @@ export function CameraView({
   const renderLevelIndicator = () => {
     if (!isLevelSupported) return null
     
-    const isLevelX = Math.abs(tiltX) < 3
+    // Odchylenie poziomicy: -5 do 5° = OK, poza tym = ŹLE (czerwono)
+    const isLevelOk = Math.abs(tiltX) <= 5
     
     return (
       <div className="flex justify-center mb-4">
-        <div className="relative w-40 h-8 bg-black/40 rounded-full overflow-hidden border border-white/20">
+        <div className={`relative w-40 h-8 rounded-full overflow-hidden border transition-colors ${
+          isLevelOk 
+            ? 'bg-black/40 border-green-500/40' 
+            : 'bg-red-900/30 border-red-500/40'
+        }`}>
           {/* Środkowe znaczniki (cel) */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-5 bg-green-500/60" />
           <div className="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-0.5 h-2 bg-white/30" />
@@ -339,7 +367,11 @@ export function CameraView({
           
           {/* Bańka poziomu (oczko) */}
           <div 
-            className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-100 shadow-lg ${isLevelX ? 'bg-green-500 shadow-green-500/50' : 'bg-white shadow-white/30'}`}
+            className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-100 shadow-lg ${
+              isLevelOk 
+                ? 'bg-green-500 shadow-green-500/50' 
+                : 'bg-red-500 shadow-red-500/50'
+            }`}
             style={{ 
               left: `calc(50% + ${Math.max(-60, Math.min(60, tiltX * 1.5))}px - 8px)` 
             }}
