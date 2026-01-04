@@ -28,8 +28,8 @@ export function CameraView({
   const [minZoom, setMinZoom] = useState(1)
   const [maxZoom, setMaxZoom] = useState(1)
   
-  // Grid overlay
-  const [gridType, setGridType] = useState<'none' | 'thirds' | 'fibonacci'>('thirds')
+  // Grid overlay - siatka 3x3 zawsze widoczna
+  const [sepiaEnabled, setSepiaEnabled] = useState(false)
   
   // Poziomnica
   const [tiltX, setTiltX] = useState(0) // lewo-prawo
@@ -181,9 +181,9 @@ export function CameraView({
     }
   }, [onCapture])
 
-  // Przełączanie grid overlay (tylko 3x3 lub off)
-  const toggleGrid = useCallback(() => {
-    setGridType(prev => prev === 'none' ? 'thirds' : 'none')
+  // Przełączanie efektu sepii
+  const toggleSepia = useCallback(() => {
+    setSepiaEnabled(prev => !prev)
   }, [])
 
   // Inicjalizacja DeviceOrientation dla poziomicy
@@ -263,32 +263,41 @@ export function CameraView({
     setInitialPinchDistance(null)
   }
 
-  // Renderowanie grid overlay
+  // Renderowanie grid overlay - siatka 3x3 zawsze widoczna, sepia opcjonalna
   const renderGridOverlay = () => {
-    if (gridType === 'none') return null
+    return (
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div 
+          className="relative w-full h-full max-w-[80vw]"
+          style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
+        >
+          {/* Efekt sepii na zewnętrznych prostokątach (jeśli włączony) */}
+          {sepiaEnabled && (
+            <>
+              {/* Górny rząd */}
+              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              {/* Środkowy rząd - tylko boki, ŚRODEK BEZ FILTRA */}
+              <div className="absolute top-1/3 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-1/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              {/* Dolny rząd */}
+              <div className="absolute top-2/3 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-2/3 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+              <div className="absolute top-2/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+            </>
+          )}
 
-    if (gridType === 'thirds') {
-      // Siatka thirds (reguła trójpodziału) - proporcje 4:5
-      return (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div 
-            className="relative w-full h-full max-w-[80vw]"
-            style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
-          >
-            {/* Linie pionowe */}
-            <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/40" />
-            <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/40" />
-            {/* Linie poziome */}
-            <div className="absolute left-0 right-0 top-1/3 h-px bg-white/40" />
-            <div className="absolute left-0 right-0 top-2/3 h-px bg-white/40" />
-            {/* Ramka zewnętrzna */}
-            <div className="absolute inset-0 border border-white/30" />
-          </div>
+          {/* Linie siatki 3x3 - zawsze widoczne */}
+          <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/40" />
+          <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/40" />
+          <div className="absolute left-0 right-0 top-1/3 h-px bg-white/40" />
+          <div className="absolute left-0 right-0 top-2/3 h-px bg-white/40" />
+          {/* Ramka zewnętrzna */}
+          <div className="absolute inset-0 border border-white/30" />
         </div>
-      )
-    }
-
-    return null
+      </div>
+    )
   }
 
   // Renderowanie kąta przechyłu (tylko na górze ekranu)
@@ -471,17 +480,15 @@ export function CameraView({
 
         {/* Główne przyciski */}
         <div className="flex items-center justify-center gap-8">
-          {/* Przycisk grid */}
+          {/* Przycisk sepii - podświetla środek siatki */}
           <button
-            onClick={toggleGrid}
-            className={`w-12 h-12 flex items-center justify-center rounded-full ${gridType !== 'none' ? 'bg-white/30' : 'bg-white/10'}`}
+            onClick={toggleSepia}
+            className={`w-12 h-12 flex items-center justify-center rounded-full ${sepiaEnabled ? 'bg-amber-600/60' : 'bg-white/10'}`}
           >
             <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <line x1="9" y1="3" x2="9" y2="21" />
-              <line x1="15" y1="3" x2="15" y2="21" />
-              <line x1="3" y1="9" x2="21" y2="9" />
-              <line x1="3" y1="15" x2="21" y2="15" />
+              {/* Ikona oka/fokusa */}
+              <circle cx="12" cy="12" r="3" fill={sepiaEnabled ? "currentColor" : "none"} />
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
             </svg>
           </button>
 
@@ -523,8 +530,8 @@ export function CameraView({
 
         {/* Etykiety */}
         <div className="flex items-center justify-center gap-8 mt-2">
-          <span className="text-white/60 text-xs w-12 text-center">
-            {gridType === 'none' ? 'off' : '3x3'}
+          <span className={`text-xs w-12 text-center ${sepiaEnabled ? 'text-amber-400' : 'text-white/60'}`}>
+            Fokus
           </span>
           <span className="text-white/60 text-xs w-20 text-center">Zdjęcie</span>
           <span className="text-white/60 text-xs w-12 text-center">Poziom</span>
