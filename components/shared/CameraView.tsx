@@ -346,23 +346,53 @@ export function CameraView({
           className="relative w-full h-full max-w-[80vw]"
           style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
         >
-          {/* Efekt bokeh (rozmycie) na górnych prostokątach */}
+          {/* Efekt bokeh (rozmycie) z gradientem */}
           {bokehEnabled && (
             <>
-              {/* Górny rząd - rozmyty */}
-              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
-              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
-              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+              {/* Warstwa 1: Górna krawędź - maksymalny blur */}
+              <div className="absolute top-0 left-0 w-full h-[15%]" style={{ backdropFilter: `blur(${bokehIntensity}px)` }} />
+              
+              {/* Warstwa 2: Górny rząd - 80% blur */}
+              <div className="absolute top-[15%] left-0 w-full h-[18%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.8)}px)` }} />
+              
+              {/* Warstwa 3: Przejście - 50% blur (rozszerza się gdy bokeh mocniejszy) */}
+              {bokehIntensity >= 6 && (
+                <div className="absolute top-[33%] left-0 w-full h-[10%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.5)}px)` }} />
+              )}
+              
+              {/* Warstwa 4: Dodatkowe przejście dla mocnego bokeh */}
+              {bokehIntensity >= 12 && (
+                <>
+                  <div className="absolute top-[43%] left-0 w-full h-[8%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.3)}px)` }} />
+                  {/* Boki środkowego rzędu - lekki blur */}
+                  <div className="absolute top-1/3 left-0 w-[15%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.4)}px)` }} />
+                  <div className="absolute top-1/3 right-0 w-[15%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.4)}px)` }} />
+                </>
+              )}
+              
+              {/* Warstwa 5: Maksymalny bokeh - gradient dociera blisko środka */}
+              {bokehIntensity >= 16 && (
+                <>
+                  <div className="absolute top-[51%] left-0 w-full h-[6%]" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.2)}px)` }} />
+                  {/* Szersze boki */}
+                  <div className="absolute top-1/3 left-[15%] w-[10%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.25)}px)` }} />
+                  <div className="absolute top-1/3 right-[15%] w-[10%] h-1/3" style={{ backdropFilter: `blur(${Math.round(bokehIntensity * 0.25)}px)` }} />
+                </>
+              )}
             </>
           )}
           
-          {/* Efekt sepii na zewnętrznych prostokątach (jeśli włączony) */}
+          {/* Efekt sepii na zewnętrznych prostokątach (jeśli włączony) - bez górnego rzędu gdy bokeh aktywne */}
           {sepiaEnabled && (
             <>
-              {/* Górny rząd */}
-              <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: bokehEnabled ? `blur(${bokehIntensity}px) sepia(0.8) brightness(0.9)` : 'sepia(0.8) brightness(0.9)' }} />
-              <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: bokehEnabled ? `blur(${bokehIntensity}px) sepia(0.8) brightness(0.9)` : 'sepia(0.8) brightness(0.9)' }} />
-              <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: bokehEnabled ? `blur(${bokehIntensity}px) sepia(0.8) brightness(0.9)` : 'sepia(0.8) brightness(0.9)' }} />
+              {/* Górny rząd - tylko gdy bokeh wyłączone (bokeh ma własne warstwy) */}
+              {!bokehEnabled && (
+                <>
+                  <div className="absolute top-0 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+                  <div className="absolute top-0 left-1/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+                  <div className="absolute top-0 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
+                </>
+              )}
               {/* Środkowy rząd - tylko boki */}
               <div className="absolute top-1/3 left-0 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
               <div className="absolute top-1/3 left-2/3 w-1/3 h-1/3" style={{ backdropFilter: 'sepia(0.8) brightness(0.9)' }} />
