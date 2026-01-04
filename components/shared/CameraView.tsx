@@ -524,15 +524,15 @@ export function CameraView({
 
       {/* Dolny panel z kontrolkami */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-8">
-        {/* Zoom: wskaźnik cyfrowy nad suwakiem, całość 10px nad poziomnicą */}
+        {/* Zoom: wskaźnik cyfrowy bezpośrednio nad suwakiem */}
         {maxZoom > minZoom && (
           <div className="mb-2.5">
-            {/* Aktualne przybliżenie - NAD suwakiem */}
-            <div className="flex justify-center mb-1">
+            {/* Aktualne przybliżenie - bezpośrednio NAD suwakiem */}
+            <div className="flex justify-center">
               <span className="text-yellow-400 text-lg font-bold">{zoom.toFixed(1)}x</span>
             </div>
             {/* Suwak zoom */}
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-4 -mt-0.5">
               <span className="text-white text-sm">1x</span>
               <div className="relative">
                 <input
