@@ -264,8 +264,9 @@ export function CameraView({
         Math.floor(canvas.height / 3), // endY - do 1/3 wysokości
         bokehIntensity // radius blur
       )
-      const blurredImageData = new ImageData(blurredPixels, canvas.width, canvas.height)
-      ctx.putImageData(blurredImageData, 0, 0)
+      // Kopiuj rozmyte piksele z powrotem do oryginalnego ImageData
+      imageData.data.set(blurredPixels)
+      ctx.putImageData(imageData, 0, 0)
     }
 
     // Pobierz dane obrazu jako base64
