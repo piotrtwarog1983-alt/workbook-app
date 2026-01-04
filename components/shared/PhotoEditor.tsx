@@ -272,12 +272,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     return new ImageData(data, width, height)
   }
 
-  // Aktualizuj filtry gdy zmieni się obraz lub jego wymiary
+  // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
     if (originalImageRef.current && selectedImage && imageSize.width > 0) {
       applyFilters()
     }
-  }, [applyFilters, selectedImage, imageSize])
+  }, [applyFilters, selectedImage, imageSize, bokehStrength, bokehSize, bokehFeather])
 
   // Zastosuj kadrowanie
   const applyCrop = useCallback(() => {
