@@ -187,40 +187,43 @@ export function CameraView({
     }
   }, [minZoom, maxZoom])
 
-  // Szybki blur dla górnej części zdjęcia - używa próbkowania co N pikseli
+  // Szybki blur dla górnej części zdjęcia - 90% to gradient
   const fastBlurTopRegion = useCallback((
     ctx: CanvasRenderingContext2D,
     width: number, 
     height: number,
     intensity: number
   ) => {
-    // Ograniczamy blur do górnej 1/3 + przejście
+    // Blur do górnej 1/3 wysokości
     const blurEndY = Math.floor(height / 3)
-    const transitionStartY = Math.floor(blurEndY * 0.7)
+    // Gradient zaczyna się od 10% wysokości bluru (90% to gradient)
+    const fullBlurEndY = Math.floor(blurEndY * 0.1)
     
-    // Skalujemy intensywność (max 8 dla wydajności)
-    const maxRadius = Math.min(8, Math.round(intensity * 0.5))
+    // Mocniejsza intensywność - taka sama jak podgląd (0.7 * intensity)
+    const maxRadius = Math.min(12, Math.round(intensity * 0.7))
     if (maxRadius < 1) return
     
     const imageData = ctx.getImageData(0, 0, width, blurEndY)
     const pixels = imageData.data
     const result = new Uint8ClampedArray(pixels.length)
     
-    // Szybki blur - próbkowanie co 2 piksele dla dużych radiusów
-    const step = maxRadius > 4 ? 2 : 1
+    // Próbkowanie co 2 piksele dla wydajności
+    const step = 2
     
     for (let y = 0; y < blurEndY; y++) {
-      // Siła blur maleje przy przejściu
+      // Oblicz siłę blur - 90% to gradient
       let strength = 1
-      if (y > transitionStartY) {
-        strength = 1 - ((y - transitionStartY) / (blurEndY - transitionStartY))
+      if (y > fullBlurEndY) {
+        // Płynne przejście od 100% do 0%
+        strength = 1 - ((y - fullBlurEndY) / (blurEndY - fullBlurEndY))
       }
       const radius = Math.round(maxRadius * strength)
       
       for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4
+        
         if (radius < 1) {
           // Bez blur - kopiuj piksel
-          const i = (y * width + x) * 4
           result[i] = pixels[i]
           result[i + 1] = pixels[i + 1]
           result[i + 2] = pixels[i + 2]
@@ -234,15 +237,14 @@ export function CameraView({
           for (let kx = -radius; kx <= radius; kx += step) {
             const nx = Math.min(width - 1, Math.max(0, x + kx))
             const ny = Math.min(blurEndY - 1, Math.max(0, y + ky))
-            const i = (ny * width + nx) * 4
-            r += pixels[i]
-            g += pixels[i + 1]
-            b += pixels[i + 2]
+            const idx = (ny * width + nx) * 4
+            r += pixels[idx]
+            g += pixels[idx + 1]
+            b += pixels[idx + 2]
             count++
           }
         }
         
-        const i = (y * width + x) * 4
         result[i] = r / count
         result[i + 1] = g / count
         result[i + 2] = b / count
@@ -419,17 +421,17 @@ export function CameraView({
           className="relative w-full h-full max-w-[80vw]"
           style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
         >
-          {/* Efekt bokeh - tylko górna 1/3 kadru z płynnym gradientem (łagodniejszy) */}
+          {/* Efekt bokeh - tylko górna 1/3 kadru z płynnym gradientem (90% gradientu) */}
           {bokehEnabled && (
             <div 
               className="absolute inset-0"
               style={{ 
-                // Łagodniejszy blur - używamy połowy intensywności dla podglądu
-                backdropFilter: `blur(${Math.round(bokehIntensity * 0.6)}px)`,
-                WebkitBackdropFilter: `blur(${Math.round(bokehIntensity * 0.6)}px)`,
-                // Liniowy gradient - pełny blur na górze, przechodzi płynnie do 0 przy 1/3 wysokości
-                maskImage: `linear-gradient(to bottom, black 0%, black 15%, rgba(0,0,0,0.6) 22%, rgba(0,0,0,0.3) 28%, transparent 33.33%)`,
-                WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 15%, rgba(0,0,0,0.6) 22%, rgba(0,0,0,0.3) 28%, transparent 33.33%)`
+                // Intensywność blur dla podglądu
+                backdropFilter: `blur(${Math.round(bokehIntensity * 0.7)}px)`,
+                WebkitBackdropFilter: `blur(${Math.round(bokehIntensity * 0.7)}px)`,
+                // Gradient zajmuje 90% - tylko 10% na górze to pełny blur, reszta to płynne przejście
+                maskImage: `linear-gradient(to bottom, black 0%, black 3%, rgba(0,0,0,0.9) 6%, rgba(0,0,0,0.75) 12%, rgba(0,0,0,0.6) 18%, rgba(0,0,0,0.45) 22%, rgba(0,0,0,0.3) 26%, rgba(0,0,0,0.15) 30%, transparent 33.33%)`,
+                WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 3%, rgba(0,0,0,0.9) 6%, rgba(0,0,0,0.75) 12%, rgba(0,0,0,0.6) 18%, rgba(0,0,0,0.45) 22%, rgba(0,0,0,0.3) 26%, rgba(0,0,0,0.15) 30%, transparent 33.33%)`
               }} 
             />
           )}
