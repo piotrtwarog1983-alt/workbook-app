@@ -187,6 +187,55 @@ export function CameraView({
     }
   }, [minZoom, maxZoom])
 
+  // Funkcja box blur dla pojedynczego obszaru
+  const boxBlurRegion = useCallback((
+    pixels: Uint8ClampedArray, 
+    width: number, 
+    height: number,
+    startY: number,
+    endY: number,
+    radius: number
+  ): Uint8ClampedArray => {
+    const result = new Uint8ClampedArray(pixels.length)
+    // Kopiuj wszystkie piksele
+    result.set(pixels)
+    
+    // Blur tylko dla określonego regionu
+    for (let y = startY; y < endY; y++) {
+      // Oblicz siłę blur - płynne przejście przy końcu regionu
+      const transitionStart = endY - (endY - startY) * 0.3 // Ostatnie 30% to przejście
+      let blurStrength = 1
+      if (y > transitionStart) {
+        blurStrength = 1 - ((y - transitionStart) / (endY - transitionStart))
+      }
+      const effectiveRadius = Math.round(radius * blurStrength)
+      if (effectiveRadius < 1) continue
+      
+      for (let x = 0; x < width; x++) {
+        let r = 0, g = 0, b = 0, count = 0
+        
+        for (let ky = -effectiveRadius; ky <= effectiveRadius; ky++) {
+          for (let kx = -effectiveRadius; kx <= effectiveRadius; kx++) {
+            const nx = Math.min(width - 1, Math.max(0, x + kx))
+            const ny = Math.min(height - 1, Math.max(0, y + ky))
+            const i = (ny * width + nx) * 4
+            r += pixels[i]
+            g += pixels[i + 1]
+            b += pixels[i + 2]
+            count++
+          }
+        }
+        
+        const i = (y * width + x) * 4
+        result[i] = r / count
+        result[i + 1] = g / count
+        result[i + 2] = b / count
+      }
+    }
+    
+    return result
+  }, [])
+
   // Robienie zdjęcia i zapisywanie na telefonie
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return
@@ -204,8 +253,23 @@ export function CameraView({
     // Rysuj video na canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
+    // Jeśli bokeh jest włączone - nałóż blur na górną 1/3 zdjęcia
+    if (bokehEnabled && bokehIntensity > 0) {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const blurredPixels = boxBlurRegion(
+        imageData.data,
+        canvas.width,
+        canvas.height,
+        0, // startY - od góry
+        Math.floor(canvas.height / 3), // endY - do 1/3 wysokości
+        bokehIntensity // radius blur
+      )
+      const blurredImageData = new ImageData(blurredPixels, canvas.width, canvas.height)
+      ctx.putImageData(blurredImageData, 0, 0)
+    }
+
     // Pobierz dane obrazu jako base64
-    const imageData = canvas.toDataURL('image/jpeg', 0.9)
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9)
     
     // Nazwa pliku z datą i numerem strony
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
@@ -214,7 +278,7 @@ export function CameraView({
       : `TheOne-${timestamp}.jpg`
 
     // Konwertuj base64 na blob
-    const base64Response = await fetch(imageData)
+    const base64Response = await fetch(imageDataUrl)
     const blob = await base64Response.blob()
 
     // Pobierz plik bezpośrednio do folderu Downloads
@@ -238,7 +302,7 @@ export function CameraView({
     
     // Zwiększ licznik zdjęć
     setPhotoCount(prev => prev + 1)
-  }, [pageNumber])
+  }, [pageNumber, bokehEnabled, bokehIntensity, boxBlurRegion])
 
   // Przełączanie efektu sepii (zapisuje do localStorage)
   const toggleSepia = useCallback(() => {
@@ -346,16 +410,16 @@ export function CameraView({
           className="relative w-full h-full max-w-[80vw]"
           style={{ aspectRatio: '4/5', maxHeight: '70vh' }}
         >
-          {/* Efekt bokeh - płynny gradient z mask-image (radialny) */}
+          {/* Efekt bokeh - tylko górna 1/3 kadru z płynnym gradientem */}
           {bokehEnabled && (
             <div 
               className="absolute inset-0"
               style={{ 
                 backdropFilter: `blur(${bokehIntensity}px)`,
                 WebkitBackdropFilter: `blur(${bokehIntensity}px)`,
-                // Radialny gradient maski - środek przezroczysty, krawędzie nieprzezroczyste
-                maskImage: `radial-gradient(ellipse 45% 40% at 50% 50%, transparent 0%, transparent 20%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.85) 80%, black 100%)`,
-                WebkitMaskImage: `radial-gradient(ellipse 45% 40% at 50% 50%, transparent 0%, transparent 20%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.85) 80%, black 100%)`
+                // Liniowy gradient - pełny blur na górze, przechodzi płynnie do 0 przy 1/3 wysokości
+                maskImage: `linear-gradient(to bottom, black 0%, black 20%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.3) 30%, transparent 33.33%)`,
+                WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 20%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.3) 30%, transparent 33.33%)`
               }} 
             />
           )}
