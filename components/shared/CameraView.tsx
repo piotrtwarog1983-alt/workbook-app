@@ -102,6 +102,14 @@ export function CameraView({
           setMinZoom(deviceMinZoom)
           setMaxZoom(Math.min(deviceMaxZoom, 3)) // Maksymalnie 3x zoom
           setZoom(deviceMinZoom)
+          
+          // Wymuś ustawienie zoom na minimum (1:1) przy starcie
+          try {
+            const constraints = { advanced: [{ zoom: deviceMinZoom }] } as any
+            await track.applyConstraints(constraints)
+          } catch (zoomErr) {
+            console.warn('Nie udało się ustawić zoom:', zoomErr)
+          }
         }
       }
     } catch (err: any) {
