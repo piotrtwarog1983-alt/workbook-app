@@ -311,9 +311,13 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
       const base64Response = await fetch(imageData)
       const blob = await base64Response.blob()
 
-      // Zapisz zdjęcie - użyj Web Share API na iOS, fallback na download
-      try {
-        if (navigator.share && navigator.canShare) {
+      // Wykryj iOS (Safari na iPhone/iPad)
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+      
+      // Na iOS użyj Web Share API, na innych platformach - automatyczne pobieranie
+      if (isIOS && navigator.share && navigator.canShare) {
+        try {
           const file = new File([blob], fileName, { type: 'image/jpeg' })
           const shareData = { files: [file] }
           
@@ -322,13 +326,14 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           } else {
             downloadViaLink(blob, fileName)
           }
-        } else {
-          downloadViaLink(blob, fileName)
+        } catch (shareErr) {
+          if ((shareErr as Error).name !== 'AbortError') {
+            downloadViaLink(blob, fileName)
+          }
         }
-      } catch (shareErr) {
-        if ((shareErr as Error).name !== 'AbortError') {
-          downloadViaLink(blob, fileName)
-        }
+      } else {
+        // Android/Desktop - automatyczne pobieranie
+        downloadViaLink(blob, fileName)
       }
 
       onSave?.(imageData)

@@ -337,28 +337,30 @@ export function CameraView({
     const base64Response = await fetch(imageDataUrl)
     const blob = await base64Response.blob()
 
-    // Zapisz zdjęcie - użyj Web Share API na iOS, fallback na download
-    try {
-      // Sprawdź czy Web Share API jest dostępne i obsługuje pliki
-      if (navigator.share && navigator.canShare) {
+    // Wykryj iOS (Safari na iPhone/iPad)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    
+    // Na iOS użyj Web Share API (jedyny sposób zapisu do galerii), na innych platformach - automatyczne pobieranie
+    if (isIOS && navigator.share && navigator.canShare) {
+      try {
         const file = new File([blob], fileName, { type: 'image/jpeg' })
         const shareData = { files: [file] }
         
         if (navigator.canShare(shareData)) {
           await navigator.share(shareData)
         } else {
-          // Fallback - pobierz przez link
           downloadViaLink(blob, fileName)
         }
-      } else {
-        // Fallback dla przeglądarek bez Web Share API
-        downloadViaLink(blob, fileName)
+      } catch (err) {
+        // Użytkownik anulował - ignoruj
+        if ((err as Error).name !== 'AbortError') {
+          downloadViaLink(blob, fileName)
+        }
       }
-    } catch (err) {
-      // Użytkownik anulował share lub błąd - spróbuj pobrać
-      if ((err as Error).name !== 'AbortError') {
-        downloadViaLink(blob, fileName)
-      }
+    } else {
+      // Android/Desktop - automatyczne pobieranie
+      downloadViaLink(blob, fileName)
     }
 
     // Krótka wizualna informacja o zapisaniu (flash ekranu)
