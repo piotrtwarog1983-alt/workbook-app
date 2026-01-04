@@ -80,7 +80,9 @@ export function CameraView({
           facingMode: facingMode,
           width: { ideal: 1920 },
           height: { ideal: 1080 },
-        },
+          // Autofokus ciągły - domyślnie fokusuje w centrum kadru
+          focusMode: 'continuous',
+        } as MediaTrackConstraints,
         audio: false
       }
 
