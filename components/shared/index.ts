@@ -10,4 +10,4 @@ export { ProgressGallery } from './ProgressGallery'
 export { ProgressTimeline } from './ProgressTimeline'
 export { QRCodeUpload } from './QRCodeUpload'
 export { TipCloud } from './TipCloud'
-
+export { CameraView } from './CameraView'

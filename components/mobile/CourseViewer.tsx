@@ -15,6 +15,7 @@ import { ProgressEvaluation } from '../shared/ProgressEvaluation'
 import { ProgressTimeline } from '../shared/ProgressTimeline'
 import { VideoPlayer, VIDEO_PAGES } from '../shared/VideoPlayer'
 import { Confetti } from '../shared/Confetti'
+import { CameraView } from '../shared/CameraView'
 import { MOCK_COURSE } from '@/lib/mock-data'
 import { useTranslation, useLanguage } from '@/lib/LanguageContext'
 import { Language } from '@/lib/translations'
@@ -59,6 +60,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const pageIndicatorRef = useRef<HTMLDivElement>(null)
   const [showTips, setShowTips] = useState(false)
   const [showVideo, setShowVideo] = useState(false)
+  const [showCamera, setShowCamera] = useState(false)
   const [page45Texts, setPage45Texts] = useState<{ text1: string; text2: string; text3: string }>({
     text1: '',
     text2: '',
@@ -1546,78 +1548,15 @@ useEffect(() => {
                       
                       {/* Kontener na przyciski */}
                       <div className="flex flex-col items-center gap-6 w-full max-w-xs">
-                        {/* Przycisk aparatu */}
+                        {/* Przycisk aparatu - otwiera CameraView */}
                         <button
-                          onClick={async () => {
-                            try {
-                              const token = localStorage.getItem('token')
-                              if (!token) {
-                                alert('Musisz być zalogowany')
-                                return
-                              }
-
-                              setQrUploading(true)
-                              setQrUploadStatus('idle')
-
-                              let uploadId = userUploadId
-                              if (!uploadId) {
-                                const response = await fetch('/api/user/upload-id', {
-                                  headers: { 'Authorization': `Bearer ${token}` }
-                                })
-                                const data = await response.json()
-                                if (!data.uploadId) {
-                                  alert('Nie udało się pobrać ID użytkownika')
-                                  setQrUploading(false)
-                                  return
-                                }
-                                uploadId = data.uploadId
-                                setUserUploadId(uploadId)
-                              }
-
-                              const input = document.createElement('input')
-                              input.type = 'file'
-                              input.accept = 'image/*'
-                              input.capture = 'environment'
-                              input.onchange = async (e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0]
-                                if (file) {
-                                  try {
-                                    const formData = new FormData()
-                                    formData.append('image', file)
-                                    formData.append('pageNumber', currentPage.pageNumber.toString())
-                                    formData.append('uploadId', uploadId!)
-
-                                    const uploadResponse = await fetch('/api/upload-photo', {
-                                      method: 'POST',
-                                      headers: { 'Authorization': `Bearer ${token}` },
-                                      body: formData
-                                    })
-
-                                    if (uploadResponse.ok) {
-                                      setQrUploadStatus('success')
-                                      setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
-                                      setTimeout(() => setQrUploadStatus('idle'), 3000)
-                                    } else {
-                                      setQrUploadStatus('error')
-                                      setTimeout(() => setQrUploadStatus('idle'), 3000)
-                                    }
-                                  } catch (err) {
-                                    console.error('Upload error:', err)
-                                    setQrUploadStatus('error')
-                                    setTimeout(() => setQrUploadStatus('idle'), 3000)
-                                  } finally {
-                                    setQrUploading(false)
-                                  }
-                                } else {
-                                  setQrUploading(false)
-                                }
-                              }
-                              input.click()
-                            } catch (err) {
-                              console.error('Error:', err)
-                              alert('Wystąpił błąd')
-                              setQrUploading(false)
+                          onClick={() => {
+                            const token = localStorage.getItem('token')
+                            if (!token) {
+                              alert('Musisz być zalogowany')
+                              return
                             }
+                            setShowCamera(true)
                           }}
                           disabled={qrUploading}
                           className={`relative w-[120px] h-[120px] rounded-[32px] overflow-hidden transition-all duration-150 ${qrUploading ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.95] active:translate-y-1'}`}
@@ -3565,6 +3504,76 @@ useEffect(() => {
             
                 </div>
         </div>
+      )}
+      
+      {/* CameraView - własny interfejs aparatu */}
+      {showCamera && (
+        <CameraView
+          pageNumber={currentPage?.pageNumber}
+          onClose={() => setShowCamera(false)}
+          onCapture={async (imageData) => {
+            try {
+              const token = localStorage.getItem('token')
+              if (!token) {
+                alert('Musisz być zalogowany')
+                setShowCamera(false)
+                return
+              }
+
+              setShowCamera(false)
+              setQrUploading(true)
+              setQrUploadStatus('idle')
+
+              // Pobierz uploadId
+              let uploadId = userUploadId
+              if (!uploadId) {
+                const response = await fetch('/api/user/upload-id', {
+                  headers: { 'Authorization': `Bearer ${token}` }
+                })
+                const data = await response.json()
+                if (!data.uploadId) {
+                  alert('Nie udało się pobrać ID użytkownika')
+                  setQrUploading(false)
+                  return
+                }
+                uploadId = data.uploadId
+                setUserUploadId(uploadId)
+              }
+
+              // Konwertuj base64 na Blob
+              const base64Response = await fetch(imageData)
+              const blob = await base64Response.blob()
+              const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' })
+
+              // Upload zdjęcia
+              const formData = new FormData()
+              formData.append('image', file)
+              formData.append('pageNumber', currentPage.pageNumber.toString())
+              formData.append('uploadId', uploadId!)
+
+              const uploadResponse = await fetch('/api/upload-photo', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+              })
+
+              if (uploadResponse.ok) {
+                setQrUploadStatus('success')
+                setCompletedPages(prev => [...new Set([...prev, currentPage.pageNumber])])
+                setTimeout(() => setQrUploadStatus('idle'), 3000)
+              } else {
+                setQrUploadStatus('error')
+                setTimeout(() => setQrUploadStatus('idle'), 3000)
+              }
+            } catch (err) {
+              console.error('Upload error:', err)
+              setQrUploadStatus('error')
+              setTimeout(() => setQrUploadStatus('idle'), 3000)
+            } finally {
+              setQrUploading(false)
+            }
+          }}
+        />
       )}
     </div>
   )
