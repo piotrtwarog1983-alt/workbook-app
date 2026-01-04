@@ -185,36 +185,24 @@ export function CameraView({
     // Konwertuj base64 na blob
     const base64Response = await fetch(imageData)
     const blob = await base64Response.blob()
-    const file = new File([blob], fileName, { type: 'image/jpeg' })
 
-    // Próbuj użyć Web Share API (działa na iOS i niektórych Android)
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Zdjęcie z TheOne',
-        })
-        // Po udostępnieniu zamknij aparat
-        onClose?.()
-        return
-      } catch (err) {
-        // Użytkownik anulował lub błąd - kontynuuj z fallback
-        console.log('Share cancelled or failed, using download fallback')
-      }
-    }
-
-    // Fallback: Pobierz plik (działa na wszystkich przeglądarkach)
+    // Pobierz plik bezpośrednio do folderu Downloads
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = fileName
+    link.style.display = 'none'
     document.body.appendChild(link)
     link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    
+    // Poczekaj chwilę przed usunięciem linku (dla pewności pobrania)
+    setTimeout(() => {
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 100)
 
     // Pokaż komunikat o zapisaniu
-    alert(`Zdjęcie "${fileName}" zostało zapisane!`)
+    alert(`Zdjęcie zapisane!\n\nPlik: ${fileName}\nLokalizacja: Pobrane (Downloads)`)
     
     // Zamknij aparat po zapisaniu
     onClose?.()
