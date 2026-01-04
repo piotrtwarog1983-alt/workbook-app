@@ -51,15 +51,33 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     fileInputRef.current?.click()
   }, [])
 
-  // Inicjalizacja ramki kadrowania
+  // Inicjalizacja ramki kadrowania - proporcje 4:5
   const initCropBox = useCallback((containerWidth: number, containerHeight: number) => {
+    const aspectRatio = 4 / 5 // Stałe proporcje 4:5
     const margin = 20
-    setCropBox({
-      x: margin,
-      y: margin,
-      width: containerWidth - margin * 2,
-      height: containerHeight - margin * 2
-    })
+    
+    const availableWidth = containerWidth - margin * 2
+    const availableHeight = containerHeight - margin * 2
+    
+    let cropWidth: number
+    let cropHeight: number
+    
+    // Dopasuj do dostępnej przestrzeni zachowując proporcje 4:5
+    if (availableWidth / availableHeight > aspectRatio) {
+      // Dostępna przestrzeń jest szersza - dopasuj do wysokości
+      cropHeight = availableHeight
+      cropWidth = cropHeight * aspectRatio
+    } else {
+      // Dostępna przestrzeń jest wyższa - dopasuj do szerokości
+      cropWidth = availableWidth
+      cropHeight = cropWidth / aspectRatio
+    }
+    
+    // Wyśrodkuj ramkę
+    const x = (containerWidth - cropWidth) / 2
+    const y = (containerHeight - cropHeight) / 2
+    
+    setCropBox({ x, y, width: cropWidth, height: cropHeight })
   }, [])
 
   // Obsługa wyboru pliku
@@ -458,32 +476,41 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         x: newX,
         y: newY
       }))
-    } else if (e.touches.length === 2 && isResizing && initialPinchX !== null && initialPinchY !== null) {
-      // Skalowanie ramki - niezależne dla X i Y
+    } else if (e.touches.length === 2 && isResizing && initialPinchDistance !== null) {
+      // Skalowanie ramki - zachowuje proporcje 4:5
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
       
-      // Aktualne odległości X i Y
-      const currentDistanceX = Math.abs(touch2.clientX - touch1.clientX)
-      const currentDistanceY = Math.abs(touch2.clientY - touch1.clientY)
+      const aspectRatio = 4 / 5 // Stałe proporcje
       
-      // Oblicz skalę osobno dla X i Y
-      // Używamy minimalnej wartości początkowej żeby uniknąć dzielenia przez 0
-      const scaleX = initialPinchX > 10 ? currentDistanceX / initialPinchX : 1
-      const scaleY = initialPinchY > 10 ? currentDistanceY / initialPinchY : 1
+      // Aktualna odległość między palcami
+      const currentDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      )
       
-      // Nowe wymiary - skalowane niezależnie
-      let newWidth = initialCropBox.width * scaleX
-      let newHeight = initialCropBox.height * scaleY
+      // Oblicz skalę (jednolitą dla obu wymiarów)
+      const scale = currentDistance / initialPinchDistance
+      
+      // Nowa szerokość z zachowaniem proporcji
+      let newWidth = initialCropBox.width * scale
+      let newHeight = newWidth / aspectRatio
       
       // Minimalne wymiary
-      const minSize = 50
-      newWidth = Math.max(minSize, newWidth)
-      newHeight = Math.max(minSize, newHeight)
+      const minWidth = 80
+      const minHeight = minWidth / aspectRatio
+      newWidth = Math.max(minWidth, newWidth)
+      newHeight = Math.max(minHeight, newHeight)
       
-      // Maksymalne wymiary (nie większe niż kontener)
-      newWidth = Math.min(containerRect.width, newWidth)
-      newHeight = Math.min(containerRect.height, newHeight)
+      // Maksymalne wymiary (nie większe niż kontener, z zachowaniem proporcji)
+      if (newWidth > containerRect.width) {
+        newWidth = containerRect.width
+        newHeight = newWidth / aspectRatio
+      }
+      if (newHeight > containerRect.height) {
+        newHeight = containerRect.height
+        newWidth = newHeight * aspectRatio
+      }
       
       // Wyśrodkuj względem środka pinch
       const centerX = pinchCenter.x
