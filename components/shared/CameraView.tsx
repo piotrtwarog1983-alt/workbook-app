@@ -493,11 +493,10 @@ export function CameraView({
           )}
           
           {/* ŚRODKOWY PROSTOKĄT = SYGNALIZATOR POZYCJI */}
-          {/* Czerwona sepia gdy pozycja nieprawidłowa */}
+          {/* Czerwone obramowanie gdy pozycja nieprawidłowa */}
           {!isPositionOk && isLevelSupported && (
             <div 
-              className="absolute top-1/3 left-1/3 w-1/3 h-1/3 transition-opacity duration-300" 
-              style={{ backdropFilter: 'sepia(1) saturate(3) hue-rotate(-50deg) brightness(0.9)' }} 
+              className="absolute top-1/3 left-1/3 w-1/3 h-1/3 border-2 border-red-500 transition-all duration-300" 
             />
           )}
 
