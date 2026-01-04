@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import { PhotoEditor } from './PhotoEditor'
 
 interface CameraViewProps {
   onCapture?: (imageData: string) => void
@@ -46,6 +47,9 @@ export function CameraView({
   // Wizualne potwierdzenie zdjęcia
   const [photoFlash, setPhotoFlash] = useState(false)
   const [photoCount, setPhotoCount] = useState(0)
+  
+  // Edytor zdjęć
+  const [showEditor, setShowEditor] = useState(false)
   
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -579,29 +583,19 @@ export function CameraView({
             <div className="w-16 h-16 rounded-full bg-white" />
           </button>
 
-          {/* Przycisk poziomicy */}
+          {/* Przycisk edycji zdjęć */}
           <button
-            onClick={() => {
-              // Żądanie uprawnień dla iOS
-              if (typeof window !== 'undefined') {
-                const DeviceOrientationEvent = (window as any).DeviceOrientationEvent
-                if (DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                  DeviceOrientationEvent.requestPermission()
-                    .then((response: string) => {
-                      if (response === 'granted') {
-                        setIsLevelSupported(true)
-                      }
-                    })
-                    .catch(console.error)
-                }
-              }
-            }}
-            className={`w-12 h-12 flex items-center justify-center rounded-full ${isLevelSupported ? 'bg-white/30' : 'bg-white/10'}`}
+            onClick={() => setShowEditor(true)}
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10"
           >
             <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <circle cx="12" cy="12" r="3" />
+              {/* Ikona edycji/suwaki */}
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <circle cx="8" cy="6" r="2" fill="currentColor" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <circle cx="14" cy="12" r="2" fill="currentColor" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+              <circle cx="10" cy="18" r="2" fill="currentColor" />
             </svg>
           </button>
         </div>
@@ -612,12 +606,19 @@ export function CameraView({
             Fokus
           </span>
           <span className="text-white/60 text-xs w-20 text-center">Zdjęcie</span>
-          <span className="text-white/60 text-xs w-12 text-center">Poziom</span>
+          <span className="text-white/60 text-xs w-12 text-center">Edycja</span>
         </div>
       </div>
 
       {/* Ukryty canvas do robienia zdjęć */}
       <canvas ref={canvasRef} className="hidden" />
+      
+      {/* Edytor zdjęć */}
+      {showEditor && (
+        <PhotoEditor 
+          onClose={() => setShowEditor(false)}
+        />
+      )}
     </div>
   )
 }
