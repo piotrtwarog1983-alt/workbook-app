@@ -257,7 +257,7 @@ export function CameraView({
     ctx.putImageData(imageData, 0, 0)
   }, [])
 
-  // Robienie zdjęcia i zapisywanie na telefonie
+  // Robienie zdjęcia i zapisywanie na telefonie - przycięte do proporcji siatki 4:5
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return
 
@@ -267,12 +267,42 @@ export function CameraView({
     
     if (!ctx) return
 
-    // Ustaw rozmiar canvas na rozmiar video
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    const videoWidth = video.videoWidth
+    const videoHeight = video.videoHeight
 
-    // Rysuj video na canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    // Oblicz obszar siatki (proporcje 4:5, wyśrodkowany)
+    const gridAspectRatio = 4 / 5
+    const videoAspectRatio = videoWidth / videoHeight
+    
+    let cropWidth: number
+    let cropHeight: number
+    let cropX: number
+    let cropY: number
+    
+    if (videoAspectRatio > gridAspectRatio) {
+      // Video jest szersze - przytnij boki
+      cropHeight = videoHeight
+      cropWidth = videoHeight * gridAspectRatio
+      cropX = (videoWidth - cropWidth) / 2
+      cropY = 0
+    } else {
+      // Video jest wyższe - przytnij góra/dół
+      cropWidth = videoWidth
+      cropHeight = videoWidth / gridAspectRatio
+      cropX = 0
+      cropY = (videoHeight - cropHeight) / 2
+    }
+
+    // Ustaw canvas na rozmiar przyciętego obrazu (proporcje 4:5)
+    canvas.width = cropWidth
+    canvas.height = cropHeight
+
+    // Rysuj przycięty fragment video na canvas
+    ctx.drawImage(
+      video, 
+      cropX, cropY, cropWidth, cropHeight,  // źródło (przycięty obszar)
+      0, 0, cropWidth, cropHeight           // cel (cały canvas)
+    )
 
     // Jeśli bokeh jest włączone - nałóż blur na górną 1/3 zdjęcia
     if (bokehEnabled && bokehIntensity > 0) {
