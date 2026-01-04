@@ -15,28 +15,44 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [activeTab, setActiveTab] = useState<EditorTab>('adjust')
   
-  // Parametry edycji
-  const [brightness, setBrightness] = useState(100) // 0-200, 100 = normalne
-  const [temperature, setTemperature] = useState(0) // -100 do 100, 0 = neutralne
-  const [tint, setTint] = useState(0) // -100 do 100, 0 = neutralne
+  // Wymiary obrazu
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 })
   
-  // Kadrowanie
-  const [cropActive, setCropActive] = useState(false)
-  const [cropBox, setCropBox] = useState({ x: 10, y: 10, width: 80, height: 80 }) // w procentach
-  const [isDragging, setIsDragging] = useState<string | null>(null) // 'move' | 'resize-*'
+  // Parametry edycji
+  const [brightness, setBrightness] = useState(100)
+  const [temperature, setTemperature] = useState(0)
+  const [tint, setTint] = useState(0)
+  
+  // Kadrowanie - współrzędne w pikselach względem wyświetlanego obrazu
+  const [cropBox, setCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [initialCropBox, setInitialCropBox] = useState({ x: 10, y: 10, width: 80, height: 80 })
+  const [initialCropBox, setInitialCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 })
+  const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null)
+  const [pinchCenter, setPinchCenter] = useState({ x: 0, y: 0 })
   
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const displayCanvasRef = useRef<HTMLCanvasElement>(null)
   const originalImageRef = useRef<HTMLImageElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const cropAreaRef = useRef<HTMLDivElement>(null)
+  const cropContainerRef = useRef<HTMLDivElement>(null)
+  const imageContainerRef = useRef<HTMLDivElement>(null)
 
   // Otwórz selektor plików
   const openFilePicker = useCallback(() => {
     fileInputRef.current?.click()
+  }, [])
+
+  // Inicjalizacja ramki kadrowania
+  const initCropBox = useCallback((containerWidth: number, containerHeight: number) => {
+    const margin = 20
+    setCropBox({
+      x: margin,
+      y: margin,
+      width: containerWidth - margin * 2,
+      height: containerHeight - margin * 2
+    })
   }, [])
 
   // Obsługa wyboru pliku
@@ -45,18 +61,34 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setSelectedImage(reader.result as string)
+        const imgSrc = reader.result as string
+        setSelectedImage(imgSrc)
+        
         // Reset parametrów
         setBrightness(100)
         setTemperature(0)
         setTint(0)
-        setCropBox({ x: 10, y: 10, width: 80, height: 80 })
-        setCropActive(false)
         setActiveTab('adjust')
+        
+        // Pobierz wymiary obrazu
+        const img = new Image()
+        img.onload = () => {
+          setImageSize({ width: img.naturalWidth, height: img.naturalHeight })
+          originalImageRef.current = img
+        }
+        img.src = imgSrc
       }
       reader.readAsDataURL(file)
     }
   }, [])
+
+  // Inicjalizacja ramki gdy przełączamy na tryb kadrowania
+  useEffect(() => {
+    if (activeTab === 'crop' && imageContainerRef.current && selectedImage) {
+      const rect = imageContainerRef.current.getBoundingClientRect()
+      initCropBox(rect.width, rect.height)
+    }
+  }, [activeTab, selectedImage, initCropBox])
 
   // Zastosuj filtry do canvas
   const applyFilters = useCallback(() => {
@@ -68,46 +100,34 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
 
     const img = originalImageRef.current
 
-    // Ustaw rozmiar canvas
     canvas.width = img.naturalWidth
     canvas.height = img.naturalHeight
-
-    // Narysuj oryginalne zdjęcie
     ctx.drawImage(img, 0, 0)
 
-    // Pobierz dane pikseli
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const data = imageData.data
 
-    // Zastosuj filtry pixel po pikselu
     for (let i = 0; i < data.length; i += 4) {
       let r = data[i]
       let g = data[i + 1]
       let b = data[i + 2]
 
-      // Jasność (brightness)
       const brightnessFactor = brightness / 100
       r = Math.min(255, r * brightnessFactor)
       g = Math.min(255, g * brightnessFactor)
       b = Math.min(255, b * brightnessFactor)
 
-      // Temperatura (ciepłe/zimne kolory)
       if (temperature > 0) {
-        // Cieplejsze - więcej czerwonego/żółtego
         r = Math.min(255, r + temperature * 0.5)
         b = Math.max(0, b - temperature * 0.3)
       } else if (temperature < 0) {
-        // Zimniejsze - więcej niebieskiego
         r = Math.max(0, r + temperature * 0.3)
         b = Math.min(255, b - temperature * 0.5)
       }
 
-      // Odcień (tint) - zielony/magenta
       if (tint > 0) {
-        // Więcej magenty
         g = Math.max(0, g - tint * 0.3)
       } else if (tint < 0) {
-        // Więcej zieleni
         g = Math.min(255, g - tint * 0.3)
       }
 
@@ -117,82 +137,54 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     }
 
     ctx.putImageData(imageData, 0, 0)
-    
-    // Zaktualizuj display canvas
-    updateDisplayCanvas()
   }, [brightness, temperature, tint])
 
-  // Aktualizuj podgląd (display canvas)
-  const updateDisplayCanvas = useCallback(() => {
-    if (!canvasRef.current || !displayCanvasRef.current) return
-    
-    const srcCanvas = canvasRef.current
-    const displayCanvas = displayCanvasRef.current
-    const displayCtx = displayCanvas.getContext('2d')
-    if (!displayCtx) return
-    
-    // Zachowaj proporcje oryginalnego obrazu
-    const maxWidth = Math.min(window.innerWidth - 32, 400)
-    const maxHeight = window.innerHeight - 400
-    
-    const ratio = Math.min(maxWidth / srcCanvas.width, maxHeight / srcCanvas.height)
-    displayCanvas.width = srcCanvas.width * ratio
-    displayCanvas.height = srcCanvas.height * ratio
-    
-    displayCtx.drawImage(srcCanvas, 0, 0, displayCanvas.width, displayCanvas.height)
-  }, [])
-
-  // Załaduj obraz gdy zostanie wybrany
+  // Aktualizuj filtry
   useEffect(() => {
-    if (selectedImage) {
-      const img = new Image()
-      img.onload = () => {
-        originalImageRef.current = img
-        applyFilters()
-      }
-      img.src = selectedImage
-    }
-  }, [selectedImage])
-
-  // Aktualizuj filtry gdy się zmienią
-  useEffect(() => {
-    if (originalImageRef.current) {
+    if (originalImageRef.current && selectedImage) {
       applyFilters()
     }
-  }, [applyFilters])
+  }, [applyFilters, selectedImage])
 
   // Zastosuj kadrowanie
   const applyCrop = useCallback(() => {
-    if (!canvasRef.current || !originalImageRef.current) return
+    if (!canvasRef.current || !originalImageRef.current || !imageContainerRef.current) return
     
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    
+    const container = imageContainerRef.current.getBoundingClientRect()
     const img = originalImageRef.current
     
-    // Oblicz współrzędne kadrowania w pikselach
-    const srcX = (cropBox.x / 100) * img.naturalWidth
-    const srcY = (cropBox.y / 100) * img.naturalHeight
-    const srcWidth = (cropBox.width / 100) * img.naturalWidth
-    const srcHeight = (cropBox.height / 100) * img.naturalHeight
+    // Oblicz skalę między wyświetlanym obrazem a oryginalnym
+    const scaleX = img.naturalWidth / container.width
+    const scaleY = img.naturalHeight / container.height
     
-    // Stwórz nowy obraz z obszaru kadrowania
+    // Przelicz współrzędne na oryginalne wymiary
+    const srcX = Math.max(0, cropBox.x * scaleX)
+    const srcY = Math.max(0, cropBox.y * scaleY)
+    const srcWidth = Math.min(img.naturalWidth - srcX, cropBox.width * scaleX)
+    const srcHeight = Math.min(img.naturalHeight - srcY, cropBox.height * scaleY)
+    
+    // Stwórz nowy canvas z przyciętym obrazem
     const tempCanvas = document.createElement('canvas')
     tempCanvas.width = srcWidth
     tempCanvas.height = srcHeight
     const tempCtx = tempCanvas.getContext('2d')
     if (!tempCtx) return
     
-    // Narysuj wycięty fragment
-    tempCtx.drawImage(img, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight)
+    // Najpierw narysuj przefiltrowany obraz
+    applyFilters()
     
-    // Utwórz nowy obraz z wyciętego fragmentu
+    // Wytnij fragment z przefiltrowanego canvas
+    tempCtx.drawImage(
+      canvasRef.current, 
+      srcX, srcY, srcWidth, srcHeight, 
+      0, 0, srcWidth, srcHeight
+    )
+    
+    // Utwórz nowy obraz
     const croppedImage = new Image()
     croppedImage.onload = () => {
       originalImageRef.current = croppedImage
-      setCropBox({ x: 10, y: 10, width: 80, height: 80 })
-      setCropActive(false)
+      setImageSize({ width: croppedImage.naturalWidth, height: croppedImage.naturalHeight })
       setActiveTab('adjust')
       applyFilters()
     }
@@ -206,13 +198,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setIsProcessing(true)
     
     try {
+      applyFilters()
       const imageData = canvasRef.current.toDataURL('image/jpeg', 0.9)
       
-      // Nazwa pliku
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
       const fileName = `TheOne-edited-${timestamp}.jpg`
 
-      // Konwertuj na blob i pobierz
       const base64Response = await fetch(imageData)
       const blob = await base64Response.blob()
 
@@ -229,169 +220,247 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         URL.revokeObjectURL(url)
       }, 100)
 
-      // Callback
       onSave?.(imageData)
-      
     } catch (err) {
       console.error('Błąd zapisywania:', err)
     } finally {
       setIsProcessing(false)
     }
-  }, [onSave])
+  }, [onSave, applyFilters])
 
-  // Reset do oryginału
+  // Reset filtrów
   const resetFilters = useCallback(() => {
     setBrightness(100)
     setTemperature(0)
     setTint(0)
   }, [])
 
-  // Obsługa przeciągania obszaru kadrowania
-  const handleCropTouchStart = (e: React.TouchEvent, action: string) => {
-    e.stopPropagation()
-    const touch = e.touches[0]
-    setIsDragging(action)
-    setDragStart({ x: touch.clientX, y: touch.clientY })
-    setInitialCropBox({ ...cropBox })
-  }
+  // === OBSŁUGA DOTYKU DLA KADROWANIA ===
+  
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!imageContainerRef.current) return
+    
+    const containerRect = imageContainerRef.current.getBoundingClientRect()
+    
+    if (e.touches.length === 1) {
+      // Jeden palec - przesuwanie
+      const touch = e.touches[0]
+      const touchX = touch.clientX - containerRect.left
+      const touchY = touch.clientY - containerRect.top
+      
+      // Sprawdź czy dotyk jest wewnątrz ramki
+      if (
+        touchX >= cropBox.x &&
+        touchX <= cropBox.x + cropBox.width &&
+        touchY >= cropBox.y &&
+        touchY <= cropBox.y + cropBox.height
+      ) {
+        setIsDragging(true)
+        setDragStart({ x: touch.clientX, y: touch.clientY })
+        setInitialCropBox({ ...cropBox })
+      }
+    } else if (e.touches.length === 2) {
+      // Dwa palce - skalowanie (pinch)
+      setIsDragging(false)
+      setIsResizing(true)
+      
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      )
+      
+      setInitialPinchDistance(distance)
+      setInitialCropBox({ ...cropBox })
+      
+      // Środek pomiędzy palcami
+      setPinchCenter({
+        x: (touch1.clientX + touch2.clientX) / 2 - containerRect.left,
+        y: (touch1.clientY + touch2.clientY) / 2 - containerRect.top
+      })
+    }
+  }, [cropBox])
 
-  const handleCropTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging || !cropAreaRef.current) return
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!imageContainerRef.current) return
     
-    const touch = e.touches[0]
-    const rect = cropAreaRef.current.getBoundingClientRect()
+    const containerRect = imageContainerRef.current.getBoundingClientRect()
     
-    const deltaX = ((touch.clientX - dragStart.x) / rect.width) * 100
-    const deltaY = ((touch.clientY - dragStart.y) / rect.height) * 100
-    
-    if (isDragging === 'move') {
-      setCropBox({
-        ...initialCropBox,
-        x: Math.max(0, Math.min(100 - initialCropBox.width, initialCropBox.x + deltaX)),
-        y: Math.max(0, Math.min(100 - initialCropBox.height, initialCropBox.y + deltaY))
-      })
-    } else if (isDragging === 'resize-br') {
-      setCropBox({
-        ...initialCropBox,
-        width: Math.max(20, Math.min(100 - initialCropBox.x, initialCropBox.width + deltaX)),
-        height: Math.max(20, Math.min(100 - initialCropBox.y, initialCropBox.height + deltaY))
-      })
-    } else if (isDragging === 'resize-tl') {
-      const newX = Math.max(0, Math.min(initialCropBox.x + initialCropBox.width - 20, initialCropBox.x + deltaX))
-      const newY = Math.max(0, Math.min(initialCropBox.y + initialCropBox.height - 20, initialCropBox.y + deltaY))
+    if (e.touches.length === 1 && isDragging) {
+      // Przesuwanie ramki
+      const touch = e.touches[0]
+      const deltaX = touch.clientX - dragStart.x
+      const deltaY = touch.clientY - dragStart.y
+      
+      let newX = initialCropBox.x + deltaX
+      let newY = initialCropBox.y + deltaY
+      
+      // Ogranicz do kontenera
+      newX = Math.max(0, Math.min(containerRect.width - cropBox.width, newX))
+      newY = Math.max(0, Math.min(containerRect.height - cropBox.height, newY))
+      
+      setCropBox(prev => ({
+        ...prev,
+        x: newX,
+        y: newY
+      }))
+    } else if (e.touches.length === 2 && isResizing && initialPinchDistance !== null) {
+      // Skalowanie ramki
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      )
+      
+      const scale = distance / initialPinchDistance
+      
+      // Nowe wymiary
+      let newWidth = initialCropBox.width * scale
+      let newHeight = initialCropBox.height * scale
+      
+      // Minimalne wymiary
+      const minSize = 50
+      newWidth = Math.max(minSize, newWidth)
+      newHeight = Math.max(minSize, newHeight)
+      
+      // Maksymalne wymiary (nie większe niż kontener)
+      newWidth = Math.min(containerRect.width, newWidth)
+      newHeight = Math.min(containerRect.height, newHeight)
+      
+      // Wyśrodkuj względem środka pinch
+      const centerX = pinchCenter.x
+      const centerY = pinchCenter.y
+      
+      let newX = centerX - newWidth / 2
+      let newY = centerY - newHeight / 2
+      
+      // Ogranicz do kontenera
+      newX = Math.max(0, Math.min(containerRect.width - newWidth, newX))
+      newY = Math.max(0, Math.min(containerRect.height - newHeight, newY))
+      
       setCropBox({
         x: newX,
         y: newY,
-        width: initialCropBox.width + (initialCropBox.x - newX),
-        height: initialCropBox.height + (initialCropBox.y - newY)
+        width: newWidth,
+        height: newHeight
       })
     }
-  }, [isDragging, dragStart, initialCropBox])
+  }, [isDragging, isResizing, dragStart, initialCropBox, initialPinchDistance, pinchCenter, cropBox.width, cropBox.height])
 
-  const handleCropTouchEnd = () => {
-    setIsDragging(null)
-  }
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false)
+    setIsResizing(false)
+    setInitialPinchDistance(null)
+  }, [])
 
   // Renderowanie zakładki kadrowania
   const renderCropUI = () => {
     if (!selectedImage) return null
     
+    // Oblicz proporcje dla wyświetlania
+    const aspectRatio = imageSize.width / imageSize.height || 4/5
+    
     return (
-      <div className="space-y-4">
-        <p className="text-white/70 text-sm text-center">
-          Przeciągnij rogi lub środek, aby wybrać obszar
+      <div className="flex flex-col h-full">
+        <p className="text-white/70 text-sm text-center mb-2">
+          Przesuń ramkę palcem • Ściśnij palcami aby zmienić rozmiar
         </p>
         
-        {/* Obszar kadrowania */}
+        {/* Kontener obrazu z ramką kadrowania */}
         <div 
-          ref={cropAreaRef}
-          className="relative mx-auto overflow-hidden rounded-lg"
-          style={{ 
-            maxWidth: '100%',
-            aspectRatio: displayCanvasRef.current 
-              ? `${displayCanvasRef.current.width}/${displayCanvasRef.current.height}` 
-              : '4/5'
-          }}
-          onTouchMove={handleCropTouchMove}
-          onTouchEnd={handleCropTouchEnd}
+          ref={cropContainerRef}
+          className="flex-1 flex items-center justify-center overflow-hidden"
         >
-          {/* Obraz w tle */}
-          <canvas
-            ref={displayCanvasRef}
-            className="w-full h-full object-contain"
-          />
-          
-          {/* Ciemna warstwa poza obszarem kadrowania */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Górna ciemna część */}
-            <div 
-              className="absolute left-0 right-0 top-0 bg-black/60"
-              style={{ height: `${cropBox.y}%` }}
-            />
-            {/* Dolna ciemna część */}
-            <div 
-              className="absolute left-0 right-0 bottom-0 bg-black/60"
-              style={{ height: `${100 - cropBox.y - cropBox.height}%` }}
-            />
-            {/* Lewa ciemna część */}
-            <div 
-              className="absolute left-0 bg-black/60"
-              style={{ 
-                top: `${cropBox.y}%`, 
-                height: `${cropBox.height}%`,
-                width: `${cropBox.x}%`
-              }}
-            />
-            {/* Prawa ciemna część */}
-            <div 
-              className="absolute right-0 bg-black/60"
-              style={{ 
-                top: `${cropBox.y}%`, 
-                height: `${cropBox.height}%`,
-                width: `${100 - cropBox.x - cropBox.width}%`
-              }}
-            />
-          </div>
-          
-          {/* Ramka obszaru kadrowania */}
           <div 
-            className="absolute border-2 border-white"
-            style={{
-              left: `${cropBox.x}%`,
-              top: `${cropBox.y}%`,
-              width: `${cropBox.width}%`,
-              height: `${cropBox.height}%`
+            ref={imageContainerRef}
+            className="relative bg-black"
+            style={{ 
+              width: '100%',
+              maxWidth: '400px',
+              aspectRatio: aspectRatio,
+              maxHeight: 'calc(100vh - 350px)'
             }}
-            onTouchStart={(e) => handleCropTouchStart(e, 'move')}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {/* Siatka 3x3 */}
-            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
-              {[...Array(9)].map((_, i) => (
-                <div key={i} className="border border-white/30" />
-              ))}
+            {/* Obraz */}
+            <img 
+              src={selectedImage}
+              alt="Do kadrowania"
+              className="absolute inset-0 w-full h-full object-contain"
+              draggable={false}
+            />
+            
+            {/* Ciemna warstwa poza ramką */}
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Góra */}
+              <div 
+                className="absolute left-0 right-0 top-0 bg-black/70"
+                style={{ height: cropBox.y }}
+              />
+              {/* Dół */}
+              <div 
+                className="absolute left-0 right-0 bottom-0 bg-black/70"
+                style={{ height: `calc(100% - ${cropBox.y + cropBox.height}px)` }}
+              />
+              {/* Lewa */}
+              <div 
+                className="absolute left-0 bg-black/70"
+                style={{ 
+                  top: cropBox.y, 
+                  height: cropBox.height,
+                  width: cropBox.x
+                }}
+              />
+              {/* Prawa */}
+              <div 
+                className="absolute right-0 bg-black/70"
+                style={{ 
+                  top: cropBox.y, 
+                  height: cropBox.height,
+                  width: `calc(100% - ${cropBox.x + cropBox.width}px)`
+                }}
+              />
             </div>
             
-            {/* Uchwyt górny-lewy */}
+            {/* Ramka kadrowania */}
             <div 
-              className="absolute -top-2 -left-2 w-5 h-5 bg-white rounded-full shadow-lg"
-              onTouchStart={(e) => handleCropTouchStart(e, 'resize-tl')}
-            />
-            
-            {/* Uchwyt dolny-prawy */}
-            <div 
-              className="absolute -bottom-2 -right-2 w-5 h-5 bg-white rounded-full shadow-lg"
-              onTouchStart={(e) => handleCropTouchStart(e, 'resize-br')}
-            />
+              className="absolute border-2 border-white pointer-events-none"
+              style={{
+                left: cropBox.x,
+                top: cropBox.y,
+                width: cropBox.width,
+                height: cropBox.height
+              }}
+            >
+              {/* Siatka 3x3 */}
+              <div className="absolute inset-0">
+                {/* Linie pionowe */}
+                <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/50" />
+                <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/50" />
+                {/* Linie poziome */}
+                <div className="absolute left-0 right-0 top-1/3 h-px bg-white/50" />
+                <div className="absolute left-0 right-0 top-2/3 h-px bg-white/50" />
+              </div>
+              
+              {/* Narożniki - wskaźniki wizualne */}
+              <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white" />
+              <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white" />
+              <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white" />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white" />
+            </div>
           </div>
         </div>
         
-        {/* Przyciski kadrowania */}
-        <div className="flex gap-4">
+        {/* Przyciski */}
+        <div className="flex gap-4 mt-4">
           <button
-            onClick={() => {
-              setCropBox({ x: 10, y: 10, width: 80, height: 80 })
-              setActiveTab('adjust')
-            }}
+            onClick={() => setActiveTab('adjust')}
             className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform"
           >
             Anuluj
@@ -506,21 +575,51 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         </button>
       </div>
 
-      {/* Obszar podglądu */}
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+      {/* Główna zawartość */}
+      <div className="flex-1 flex flex-col p-4 overflow-hidden">
         {selectedImage ? (
           activeTab === 'crop' ? (
-            // W trybie kadrowania renderujemy cropUI
-            null
+            renderCropUI()
           ) : (
-            <canvas
-              ref={displayCanvasRef}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              style={{ maxHeight: 'calc(100vh - 400px)' }}
-            />
+            <>
+              {/* Podgląd obrazu z filtrami */}
+              <div className="flex-1 flex items-center justify-center overflow-hidden mb-4">
+                <canvas
+                  ref={canvasRef}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                  style={{ maxHeight: 'calc(100vh - 400px)' }}
+                />
+              </div>
+              
+              {/* Zakładki */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setActiveTab('adjust')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'adjust' 
+                      ? 'bg-white/20 text-white' 
+                      : 'bg-white/5 text-white/60'
+                  }`}
+                >
+                  ☀️ Dostosuj
+                </button>
+                <button
+                  onClick={() => setActiveTab('crop')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'crop' 
+                      ? 'bg-white/20 text-white' 
+                      : 'bg-white/5 text-white/60'
+                  }`}
+                >
+                  ✂️ Kadruj
+                </button>
+              </div>
+              
+              {renderAdjustUI()}
+            </>
           )
         ) : (
-          <div className="text-center">
+          <div className="flex-1 flex items-center justify-center">
             <button
               onClick={openFilePicker}
               className="w-32 h-32 rounded-2xl bg-white/10 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform"
@@ -535,41 +634,6 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           </div>
         )}
       </div>
-
-      {/* Panel kontrolek */}
-      {selectedImage && (
-        <div className="bg-black/90 p-4 pb-8">
-          {/* Zakładki */}
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setActiveTab('adjust')}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'adjust' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-white/5 text-white/60'
-              }`}
-            >
-              ☀️ Dostosuj
-            </button>
-            <button
-              onClick={() => setActiveTab('crop')}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'crop' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-white/5 text-white/60'
-              }`}
-            >
-              ✂️ Kadruj
-            </button>
-          </div>
-          
-          {/* Zawartość zakładki */}
-          {activeTab === 'adjust' ? renderAdjustUI() : renderCropUI()}
-        </div>
-      )}
-
-      {/* Ukryty canvas do przetwarzania */}
-      <canvas ref={canvasRef} className="hidden" />
 
       {/* Ukryty input do wyboru plików */}
       <input
