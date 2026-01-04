@@ -36,6 +36,10 @@ export function CameraView({
   const [tiltY, setTiltY] = useState(0) // przód-tył
   const [isLevelSupported, setIsLevelSupported] = useState(false)
   
+  // Wizualne potwierdzenie zdjęcia
+  const [photoFlash, setPhotoFlash] = useState(false)
+  const [photoCount, setPhotoCount] = useState(0)
+  
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -201,12 +205,13 @@ export function CameraView({
       URL.revokeObjectURL(url)
     }, 100)
 
-    // Pokaż komunikat o zapisaniu
-    alert(`Zdjęcie zapisane!\n\nPlik: ${fileName}\nLokalizacja: Pobrane (Downloads)`)
+    // Krótka wizualna informacja o zapisaniu (flash ekranu)
+    setPhotoFlash(true)
+    setTimeout(() => setPhotoFlash(false), 200)
     
-    // Zamknij aparat po zapisaniu
-    onClose?.()
-  }, [pageNumber, onClose])
+    // Zwiększ licznik zdjęć
+    setPhotoCount(prev => prev + 1)
+  }, [pageNumber])
 
   // Przełączanie efektu sepii
   const toggleSepia = useCallback(() => {
@@ -398,6 +403,11 @@ export function CameraView({
 
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
+      {/* Flash przy robieniu zdjęcia */}
+      {photoFlash && (
+        <div className="absolute inset-0 z-50 bg-white pointer-events-none animate-pulse" />
+      )}
+      
       {/* Nagłówek */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
         {/* Przycisk zamknięcia */}
@@ -411,12 +421,15 @@ export function CameraView({
           ✕
         </button>
 
-        {/* Informacja o stronie */}
-        {pageNumber && (
-          <span className="text-white text-sm opacity-70">
-            Strona {pageNumber}
-          </span>
-        )}
+        {/* Informacja o stronie lub licznik zdjęć */}
+        <span className="text-white text-sm opacity-70">
+          {pageNumber ? `Strona ${pageNumber}` : ''}
+          {photoCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-green-500/30 rounded-full text-green-400">
+              📷 {photoCount}
+            </span>
+          )}
+        </span>
 
         {/* Pusty element dla wyrównania */}
         <div className="w-10 h-10" />
