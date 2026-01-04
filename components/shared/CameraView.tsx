@@ -524,34 +524,36 @@ export function CameraView({
 
       {/* Dolny panel z kontrolkami */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-8">
-        {/* Zoom slider z aktualnym przybliżeniem */}
+        {/* Zoom: wskaźnik cyfrowy nad suwakiem, całość 10px nad poziomnicą */}
         {maxZoom > minZoom && (
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-white text-sm">1x</span>
-            <div className="relative">
-              <input
-                type="range"
-                min={minZoom}
-                max={maxZoom}
-                step={0.1}
-                value={zoom}
-                onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
-                className="w-48 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #fff ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%, rgba(255,255,255,0.3) ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%)`
-                }}
-              />
+          <div className="mb-2.5">
+            {/* Aktualne przybliżenie - NAD suwakiem */}
+            <div className="flex justify-center mb-1">
+              <span className="text-yellow-400 text-lg font-bold">{zoom.toFixed(1)}x</span>
             </div>
-            <span className="text-white text-sm">3x</span>
+            {/* Suwak zoom */}
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-white text-sm">1x</span>
+              <div className="relative">
+                <input
+                  type="range"
+                  min={minZoom}
+                  max={maxZoom}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
+                  className="w-48 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #fff ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%, rgba(255,255,255,0.3) ${((zoom - minZoom) / (maxZoom - minZoom)) * 100}%)`
+                  }}
+                />
+              </div>
+              <span className="text-white text-sm">3x</span>
+            </div>
           </div>
         )}
         
-        {/* Aktualne przybliżenie */}
-        <div className="flex justify-center mb-4">
-          <span className="text-yellow-400 text-lg font-bold">{zoom.toFixed(1)}x</span>
-        </div>
-        
-        {/* Poziomnica - między suwakiem a przyciskami */}
+        {/* Poziomnica - między zoomem a przyciskami */}
         {renderLevelIndicator()}
 
         {/* Główne przyciski */}
