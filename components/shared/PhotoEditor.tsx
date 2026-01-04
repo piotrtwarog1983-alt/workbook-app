@@ -242,6 +242,9 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   // === OBSŁUGA DOTYKU DLA KADROWANIA ===
   
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault() // Blokuje zoom przeglądarki
+    e.stopPropagation()
+    
     if (!imageContainerRef.current) return
     
     const containerRect = imageContainerRef.current.getBoundingClientRect()
@@ -288,6 +291,9 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   }, [cropBox])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault() // Blokuje zoom przeglądarki
+    e.stopPropagation()
+    
     if (!imageContainerRef.current) return
     
     const containerRect = imageContainerRef.current.getBoundingClientRect()
@@ -386,7 +392,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
               width: '100%',
               maxWidth: '400px',
               aspectRatio: aspectRatio,
-              maxHeight: 'calc(100vh - 350px)'
+              maxHeight: 'calc(100vh - 350px)',
+              touchAction: 'none' // Blokuje zoom przeglądarki na tym elemencie
             }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}

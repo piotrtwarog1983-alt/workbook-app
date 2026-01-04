@@ -15,11 +15,17 @@
   --safe-area-bottom: 0px;
 }
 
+html {
+  touch-action: manipulation; /* Blokuje podwójne tapnięcie zoom i pinch zoom */
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: #1a1d24;
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
+  -webkit-text-size-adjust: 100%; /* Zapobiega automatycznemu skalowaniu tekstu */
+  -ms-text-size-adjust: 100%;
 }
 
 /* Inter font class */
