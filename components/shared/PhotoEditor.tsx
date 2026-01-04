@@ -148,7 +148,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
 
   // Zastosuj kadrowanie
   const applyCrop = useCallback(() => {
-    if (!canvasRef.current || !originalImageRef.current || !imageContainerRef.current) return
+    if (!originalImageRef.current || !imageContainerRef.current) return
     
     const container = imageContainerRef.current.getBoundingClientRect()
     const img = originalImageRef.current
@@ -158,10 +158,10 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     const scaleY = img.naturalHeight / container.height
     
     // Przelicz współrzędne na oryginalne wymiary
-    const srcX = Math.max(0, cropBox.x * scaleX)
-    const srcY = Math.max(0, cropBox.y * scaleY)
-    const srcWidth = Math.min(img.naturalWidth - srcX, cropBox.width * scaleX)
-    const srcHeight = Math.min(img.naturalHeight - srcY, cropBox.height * scaleY)
+    const srcX = Math.max(0, Math.round(cropBox.x * scaleX))
+    const srcY = Math.max(0, Math.round(cropBox.y * scaleY))
+    const srcWidth = Math.max(1, Math.round(Math.min(img.naturalWidth - srcX, cropBox.width * scaleX)))
+    const srcHeight = Math.max(1, Math.round(Math.min(img.naturalHeight - srcY, cropBox.height * scaleY)))
     
     // Stwórz nowy canvas z przyciętym obrazem
     const tempCanvas = document.createElement('canvas')
@@ -170,26 +170,30 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     const tempCtx = tempCanvas.getContext('2d')
     if (!tempCtx) return
     
-    // Najpierw narysuj przefiltrowany obraz
-    applyFilters()
-    
-    // Wytnij fragment z przefiltrowanego canvas
+    // Rysuj bezpośrednio z oryginalnego obrazu
     tempCtx.drawImage(
-      canvasRef.current, 
+      img, 
       srcX, srcY, srcWidth, srcHeight, 
       0, 0, srcWidth, srcHeight
     )
     
+    // Pobierz nowy obraz jako base64
+    const croppedImageData = tempCanvas.toDataURL('image/jpeg', 0.95)
+    
     // Utwórz nowy obraz
     const croppedImage = new Image()
     croppedImage.onload = () => {
+      // Zaktualizuj wszystkie stany
       originalImageRef.current = croppedImage
       setImageSize({ width: croppedImage.naturalWidth, height: croppedImage.naturalHeight })
+      setSelectedImage(croppedImageData) // <-- Kluczowe! Zaktualizuj selectedImage
+      setBrightness(100) // Reset filtrów po przycięciu
+      setTemperature(0)
+      setTint(0)
       setActiveTab('adjust')
-      applyFilters()
     }
-    croppedImage.src = tempCanvas.toDataURL('image/jpeg', 0.95)
-  }, [cropBox, applyFilters])
+    croppedImage.src = croppedImageData
+  }, [cropBox])
 
   // Zapisz zdjęcie
   const savePhoto = useCallback(async () => {
