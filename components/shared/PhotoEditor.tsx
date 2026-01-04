@@ -28,12 +28,18 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [cropBox, setCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
+  const [isRotating, setIsRotating] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [initialCropBox, setInitialCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 })
   const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null)
   const [initialPinchX, setInitialPinchX] = useState<number | null>(null)
   const [initialPinchY, setInitialPinchY] = useState<number | null>(null)
   const [pinchCenter, setPinchCenter] = useState({ x: 0, y: 0 })
+  
+  // Obrót obrazu
+  const [rotation, setRotation] = useState(0) // w stopniach
+  const [initialRotation, setInitialRotation] = useState(0)
+  const [initialTouchAngle, setInitialTouchAngle] = useState(0)
   
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -89,6 +95,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setBrightness(100)
         setTemperature(0)
         setTint(0)
+        setRotation(0)
         setActiveTab('adjust')
         
         // Pobierz wymiary obrazu
@@ -167,7 +174,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     }
   }, [applyFilters, selectedImage, imageSize])
 
-  // Zastosuj kadrowanie
+  // Zastosuj kadrowanie z obrotem
   const applyCrop = useCallback(() => {
     if (!originalImageRef.current || !imageContainerRef.current) return
     
@@ -178,43 +185,100 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     const scaleX = img.naturalWidth / container.width
     const scaleY = img.naturalHeight / container.height
     
-    // Przelicz współrzędne na oryginalne wymiary
-    const srcX = Math.max(0, Math.round(cropBox.x * scaleX))
-    const srcY = Math.max(0, Math.round(cropBox.y * scaleY))
-    const srcWidth = Math.max(1, Math.round(Math.min(img.naturalWidth - srcX, cropBox.width * scaleX)))
-    const srcHeight = Math.max(1, Math.round(Math.min(img.naturalHeight - srcY, cropBox.height * scaleY)))
-    
-    // Stwórz nowy canvas z przyciętym obrazem
-    const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = srcWidth
-    tempCanvas.height = srcHeight
-    const tempCtx = tempCanvas.getContext('2d')
-    if (!tempCtx) return
-    
-    // Rysuj bezpośrednio z oryginalnego obrazu
-    tempCtx.drawImage(
-      img, 
-      srcX, srcY, srcWidth, srcHeight, 
-      0, 0, srcWidth, srcHeight
-    )
-    
-    // Pobierz nowy obraz jako base64
-    const croppedImageData = tempCanvas.toDataURL('image/jpeg', 0.95)
-    
-    // Utwórz nowy obraz
-    const croppedImage = new Image()
-    croppedImage.onload = () => {
-      // Zaktualizuj wszystkie stany
-      originalImageRef.current = croppedImage
-      setImageSize({ width: croppedImage.naturalWidth, height: croppedImage.naturalHeight })
-      setSelectedImage(croppedImageData) // <-- Kluczowe! Zaktualizuj selectedImage
-      setBrightness(100) // Reset filtrów po przycięciu
-      setTemperature(0)
-      setTint(0)
-      setActiveTab('adjust')
+    // Jeśli jest obrót, najpierw obróć cały obraz
+    if (rotation !== 0) {
+      // Stwórz canvas do obrócenia całego obrazu
+      const rotatedCanvas = document.createElement('canvas')
+      const rotatedCtx = rotatedCanvas.getContext('2d')
+      if (!rotatedCtx) return
+      
+      const angleRad = rotation * Math.PI / 180
+      const cos = Math.abs(Math.cos(angleRad))
+      const sin = Math.abs(Math.sin(angleRad))
+      
+      // Nowe wymiary po obrocie
+      const newWidth = Math.round(img.naturalWidth * cos + img.naturalHeight * sin)
+      const newHeight = Math.round(img.naturalHeight * cos + img.naturalWidth * sin)
+      
+      rotatedCanvas.width = newWidth
+      rotatedCanvas.height = newHeight
+      
+      // Przesuń do środka, obróć, narysuj
+      rotatedCtx.translate(newWidth / 2, newHeight / 2)
+      rotatedCtx.rotate(angleRad)
+      rotatedCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2)
+      
+      // Oblicz przesunięcie spowodowane obrotem
+      const offsetX = (newWidth - img.naturalWidth) / 2
+      const offsetY = (newHeight - img.naturalHeight) / 2
+      
+      // Przelicz współrzędne na obrócony obraz
+      const srcX = Math.max(0, Math.round(cropBox.x * scaleX + offsetX))
+      const srcY = Math.max(0, Math.round(cropBox.y * scaleY + offsetY))
+      const srcWidth = Math.max(1, Math.round(cropBox.width * scaleX))
+      const srcHeight = Math.max(1, Math.round(cropBox.height * scaleY))
+      
+      // Stwórz canvas na przycięty fragment
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = srcWidth
+      tempCanvas.height = srcHeight
+      const tempCtx = tempCanvas.getContext('2d')
+      if (!tempCtx) return
+      
+      tempCtx.drawImage(
+        rotatedCanvas,
+        srcX, srcY, srcWidth, srcHeight,
+        0, 0, srcWidth, srcHeight
+      )
+      
+      const croppedImageData = tempCanvas.toDataURL('image/jpeg', 0.95)
+      
+      const croppedImage = new Image()
+      croppedImage.onload = () => {
+        originalImageRef.current = croppedImage
+        setImageSize({ width: croppedImage.naturalWidth, height: croppedImage.naturalHeight })
+        setSelectedImage(croppedImageData)
+        setBrightness(100)
+        setTemperature(0)
+        setTint(0)
+        setRotation(0)
+        setActiveTab('adjust')
+      }
+      croppedImage.src = croppedImageData
+    } else {
+      // Bez obrotu - standardowe przycinanie
+      const srcX = Math.max(0, Math.round(cropBox.x * scaleX))
+      const srcY = Math.max(0, Math.round(cropBox.y * scaleY))
+      const srcWidth = Math.max(1, Math.round(Math.min(img.naturalWidth - srcX, cropBox.width * scaleX)))
+      const srcHeight = Math.max(1, Math.round(Math.min(img.naturalHeight - srcY, cropBox.height * scaleY)))
+      
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = srcWidth
+      tempCanvas.height = srcHeight
+      const tempCtx = tempCanvas.getContext('2d')
+      if (!tempCtx) return
+      
+      tempCtx.drawImage(
+        img,
+        srcX, srcY, srcWidth, srcHeight,
+        0, 0, srcWidth, srcHeight
+      )
+      
+      const croppedImageData = tempCanvas.toDataURL('image/jpeg', 0.95)
+      
+      const croppedImage = new Image()
+      croppedImage.onload = () => {
+        originalImageRef.current = croppedImage
+        setImageSize({ width: croppedImage.naturalWidth, height: croppedImage.naturalHeight })
+        setSelectedImage(croppedImageData)
+        setBrightness(100)
+        setTemperature(0)
+        setTint(0)
+        setActiveTab('adjust')
+      }
+      croppedImage.src = croppedImageData
     }
-    croppedImage.src = croppedImageData
-  }, [cropBox])
+  }, [cropBox, rotation])
 
   // Zapisz zdjęcie
   const savePhoto = useCallback(async () => {
@@ -258,6 +322,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setBrightness(100)
     setTemperature(0)
     setTint(0)
+    setRotation(0)
   }, [])
 
   // === OBSŁUGA DOTYKU DLA KADROWANIA ===
@@ -269,27 +334,40 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     if (!imageContainerRef.current) return
     
     const containerRect = imageContainerRef.current.getBoundingClientRect()
+    const centerX = containerRect.width / 2
+    const centerY = containerRect.height / 2
     
     if (e.touches.length === 1) {
-      // Jeden palec - przesuwanie
       const touch = e.touches[0]
       const touchX = touch.clientX - containerRect.left
       const touchY = touch.clientY - containerRect.top
       
-      // Sprawdź czy dotyk jest wewnątrz ramki
-      if (
+      // Sprawdź czy dotyk jest wewnątrz ramki kadrowania
+      const isInsideCropBox = 
         touchX >= cropBox.x &&
         touchX <= cropBox.x + cropBox.width &&
         touchY >= cropBox.y &&
         touchY <= cropBox.y + cropBox.height
-      ) {
+      
+      if (isInsideCropBox) {
+        // Wewnątrz ramki - przesuwanie ramki
         setIsDragging(true)
+        setIsRotating(false)
         setDragStart({ x: touch.clientX, y: touch.clientY })
         setInitialCropBox({ ...cropBox })
+      } else {
+        // Poza ramką - obracanie obrazu
+        setIsRotating(true)
+        setIsDragging(false)
+        setInitialRotation(rotation)
+        // Oblicz początkowy kąt od środka obrazu do palca
+        const angle = Math.atan2(touchY - centerY, touchX - centerX) * (180 / Math.PI)
+        setInitialTouchAngle(angle)
       }
     } else if (e.touches.length === 2) {
       // Dwa palce - skalowanie (pinch)
       setIsDragging(false)
+      setIsRotating(false)
       setIsResizing(true)
       
       const touch1 = e.touches[0]
@@ -315,7 +393,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         y: (touch1.clientY + touch2.clientY) / 2 - containerRect.top
       })
     }
-  }, [cropBox])
+  }, [cropBox, rotation])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault() // Blokuje zoom przeglądarki
@@ -324,6 +402,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     if (!imageContainerRef.current) return
     
     const containerRect = imageContainerRef.current.getBoundingClientRect()
+    const centerX = containerRect.width / 2
+    const centerY = containerRect.height / 2
     
     if (e.touches.length === 1 && isDragging) {
       // Przesuwanie ramki
@@ -343,6 +423,25 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         x: newX,
         y: newY
       }))
+    } else if (e.touches.length === 1 && isRotating) {
+      // Obracanie obrazu
+      const touch = e.touches[0]
+      const touchX = touch.clientX - containerRect.left
+      const touchY = touch.clientY - containerRect.top
+      
+      // Oblicz aktualny kąt od środka obrazu do palca
+      const currentAngle = Math.atan2(touchY - centerY, touchX - centerX) * (180 / Math.PI)
+      
+      // Różnica kątów
+      let deltaAngle = currentAngle - initialTouchAngle
+      
+      // Nowy kąt obrotu
+      let newRotation = initialRotation + deltaAngle
+      
+      // Ogranicz do ±45 stopni
+      newRotation = Math.max(-45, Math.min(45, newRotation))
+      
+      setRotation(newRotation)
     } else if (e.touches.length === 2 && isResizing && initialPinchDistance !== null) {
       // Skalowanie ramki - zachowuje proporcje 4:5
       const touch1 = e.touches[0]
@@ -380,11 +479,11 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
       }
       
       // Wyśrodkuj względem środka pinch
-      const centerX = pinchCenter.x
-      const centerY = pinchCenter.y
+      const cX = pinchCenter.x
+      const cY = pinchCenter.y
       
-      let newX = centerX - newWidth / 2
-      let newY = centerY - newHeight / 2
+      let newX = cX - newWidth / 2
+      let newY = cY - newHeight / 2
       
       // Ogranicz do kontenera
       newX = Math.max(0, Math.min(containerRect.width - newWidth, newX))
@@ -397,11 +496,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         height: newHeight
       })
     }
-  }, [isDragging, isResizing, dragStart, initialCropBox, initialPinchX, initialPinchY, pinchCenter, cropBox.width, cropBox.height])
+  }, [isDragging, isResizing, isRotating, dragStart, initialCropBox, initialPinchDistance, initialRotation, initialTouchAngle, pinchCenter, cropBox.width, cropBox.height])
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false)
     setIsResizing(false)
+    setIsRotating(false)
     setInitialPinchDistance(null)
     setInitialPinchX(null)
     setInitialPinchY(null)
@@ -417,7 +517,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     return (
       <div className="flex flex-col h-full">
         <p className="text-white/70 text-sm text-center mb-2">
-          Przesuń ramkę palcem • Ściśnij palcami aby zmienić rozmiar
+          Ramka: przesuń/skaluj • Poza ramką: obracaj
         </p>
         
         {/* Kontener obrazu z ramką kadrowania */}
@@ -439,11 +539,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Obraz */}
+            {/* Obraz z obrotem */}
             <img 
               src={selectedImage}
               alt="Do kadrowania"
-              className="absolute inset-0 w-full h-full object-contain"
+              className="absolute inset-0 w-full h-full object-contain transition-transform duration-75"
+              style={{ transform: `rotate(${rotation}deg)` }}
               draggable={false}
             />
             
@@ -508,10 +609,45 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           </div>
         </div>
         
+        {/* Suwak obrotu */}
+        <div className="mt-3 space-y-2">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-white/70">🔄 Obrót</span>
+            <span className="text-yellow-400 font-mono w-16 text-right">{rotation.toFixed(1)}°</span>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-px h-3 bg-white/50" />
+            </div>
+            <input
+              type="range"
+              min={-45}
+              max={45}
+              step={0.1}
+              value={rotation}
+              onChange={(e) => setRotation(parseFloat(e.target.value))}
+              className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
+            />
+          </div>
+          <div className="flex justify-between text-xs text-white/40">
+            <span>-45°</span>
+            <button 
+              onClick={() => setRotation(0)}
+              className="text-white/60 hover:text-white transition-colors"
+            >
+              ⟲ Reset
+            </button>
+            <span>+45°</span>
+          </div>
+        </div>
+        
         {/* Przyciski */}
         <div className="flex gap-4 mt-4">
           <button
-            onClick={() => setActiveTab('adjust')}
+            onClick={() => {
+              setActiveTab('adjust')
+              setRotation(0) // Reset obrotu przy anulowaniu
+            }}
             className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform"
           >
             Anuluj
