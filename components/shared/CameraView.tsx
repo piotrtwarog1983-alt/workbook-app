@@ -29,7 +29,14 @@ export function CameraView({
   const [maxZoom, setMaxZoom] = useState(1)
   
   // Grid overlay - siatka 3x3 zawsze widoczna
-  const [sepiaEnabled, setSepiaEnabled] = useState(false)
+  // Odczytaj zapisane ustawienie Fokus z localStorage
+  const [sepiaEnabled, setSepiaEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cameraFocusEnabled')
+      return saved === 'true'
+    }
+    return false
+  })
   
   // Poziomnica
   const [tiltX, setTiltX] = useState(0) // lewo-prawo
@@ -213,9 +220,13 @@ export function CameraView({
     setPhotoCount(prev => prev + 1)
   }, [pageNumber])
 
-  // Przełączanie efektu sepii
+  // Przełączanie efektu sepii (zapisuje do localStorage)
   const toggleSepia = useCallback(() => {
-    setSepiaEnabled(prev => !prev)
+    setSepiaEnabled(prev => {
+      const newValue = !prev
+      localStorage.setItem('cameraFocusEnabled', String(newValue))
+      return newValue
+    })
   }, [])
 
   // Inicjalizacja DeviceOrientation dla poziomicy
