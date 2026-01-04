@@ -7,7 +7,7 @@ interface PhotoEditorProps {
   onSave?: (imageData: string) => void
 }
 
-type EditorTab = 'adjust' | 'crop' | 'bokeh'
+type EditorTab = 'adjust' | 'crop'
 
 export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   // Stan edytora
@@ -23,10 +23,6 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [temperature, setTemperature] = useState(0)
   const [tint, setTint] = useState(0)
   
-  // Bokeh
-  const [bokehStrength, setBokehStrength] = useState(0) // 0-20 px blur
-  const [bokehSize, setBokehSize] = useState(40) // % promienia obszaru ostrości
-  const [bokehFeather, setBokehFeather] = useState(30) // % przejścia (gradient)
   
   // Kadrowanie - współrzędne w pikselach względem wyświetlanego obrazu
   const [cropBox, setCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 })
@@ -162,140 +158,14 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     }
 
     ctx.putImageData(imageData, 0, 0)
-    
-    // Zastosuj bokeh jeśli jest aktywne
-    if (bokehStrength > 0) {
-      applyBokehEffect(canvas, ctx)
-    }
-  }, [brightness, temperature, tint, bokehStrength, bokehSize, bokehFeather])
+  }, [brightness, temperature, tint])
   
-  // Zastosuj efekt bokeh (rozmyte tło)
-  const applyBokehEffect = useCallback((canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
-    const width = canvas.width
-    const height = canvas.height
-    const centerX = width / 2
-    const centerY = height / 2
-    
-    // Promień obszaru ostrości (w pikselach)
-    const sharpRadius = (Math.min(width, height) * bokehSize) / 100
-    // Promień przejścia (gradient)
-    const featherRadius = sharpRadius + (Math.min(width, height) * bokehFeather) / 100
-    
-    // Zapisz ostry obraz
-    const sharpImageData = ctx.getImageData(0, 0, width, height)
-    
-    // Stwórz rozmyty obraz używając OffscreenCanvas lub dodatkowego canvas
-    const blurCanvas = document.createElement('canvas')
-    blurCanvas.width = width
-    blurCanvas.height = height
-    const blurCtx = blurCanvas.getContext('2d')
-    if (!blurCtx) return
-    
-    // Narysuj oryginalny obraz na blurCanvas
-    blurCtx.putImageData(sharpImageData, 0, 0)
-    
-    // Zastosuj blur używając stackBlur (uproszczony box blur)
-    const blurredData = stackBlur(blurCtx.getImageData(0, 0, width, height), bokehStrength)
-    
-    // Teraz złóż oba obrazy z radialnym gradientem
-    const finalImageData = ctx.createImageData(width, height)
-    const sharpData = sharpImageData.data
-    const blurData = blurredData.data
-    const finalData = finalImageData.data
-    
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const i = (y * width + x) * 4
-        
-        // Oblicz odległość od centrum
-        const dx = x - centerX
-        const dy = y - centerY
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        
-        // Oblicz współczynnik mieszania (0 = ostry, 1 = rozmyty)
-        let blend = 0
-        if (distance > featherRadius) {
-          blend = 1 // Pełny blur
-        } else if (distance > sharpRadius) {
-          // Gradient między ostrym a rozmytym
-          blend = (distance - sharpRadius) / (featherRadius - sharpRadius)
-        }
-        // Wygładź przejście
-        blend = blend * blend * (3 - 2 * blend) // smoothstep
-        
-        // Mieszaj piksele
-        finalData[i] = sharpData[i] * (1 - blend) + blurData[i] * blend
-        finalData[i + 1] = sharpData[i + 1] * (1 - blend) + blurData[i + 1] * blend
-        finalData[i + 2] = sharpData[i + 2] * (1 - blend) + blurData[i + 2] * blend
-        finalData[i + 3] = 255
-      }
-    }
-    
-    ctx.putImageData(finalImageData, 0, 0)
-  }, [bokehStrength, bokehSize, bokehFeather])
-  
-  // Uproszczony stack blur (box blur wielokrotny)
-  const stackBlur = (imageData: ImageData, radius: number): ImageData => {
-    const width = imageData.width
-    const height = imageData.height
-    const data = new Uint8ClampedArray(imageData.data)
-    
-    const iterations = Math.max(1, Math.ceil(radius / 3))
-    const actualRadius = Math.ceil(radius / iterations)
-    
-    for (let iter = 0; iter < iterations; iter++) {
-      // Blur poziomy
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          let r = 0, g = 0, b = 0, count = 0
-          
-          for (let dx = -actualRadius; dx <= actualRadius; dx++) {
-            const nx = Math.max(0, Math.min(width - 1, x + dx))
-            const i = (y * width + nx) * 4
-            r += data[i]
-            g += data[i + 1]
-            b += data[i + 2]
-            count++
-          }
-          
-          const i = (y * width + x) * 4
-          data[i] = r / count
-          data[i + 1] = g / count
-          data[i + 2] = b / count
-        }
-      }
-      
-      // Blur pionowy
-      for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-          let r = 0, g = 0, b = 0, count = 0
-          
-          for (let dy = -actualRadius; dy <= actualRadius; dy++) {
-            const ny = Math.max(0, Math.min(height - 1, y + dy))
-            const i = (ny * width + x) * 4
-            r += data[i]
-            g += data[i + 1]
-            b += data[i + 2]
-            count++
-          }
-          
-          const i = (y * width + x) * 4
-          data[i] = r / count
-          data[i + 1] = g / count
-          data[i + 2] = b / count
-        }
-      }
-    }
-    
-    return new ImageData(data, width, height)
-  }
-
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
     if (originalImageRef.current && selectedImage && imageSize.width > 0) {
       applyFilters()
     }
-  }, [applyFilters, selectedImage, imageSize, bokehStrength, bokehSize, bokehFeather])
+  }, [applyFilters, selectedImage, imageSize])
 
   // Zastosuj kadrowanie
   const applyCrop = useCallback(() => {
@@ -388,9 +258,6 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setBrightness(100)
     setTemperature(0)
     setTint(0)
-    setBokehStrength(0)
-    setBokehSize(40)
-    setBokehFeather(30)
   }, [])
 
   // === OBSŁUGA DOTYKU DLA KADROWANIA ===
@@ -740,88 +607,6 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     )
   }
 
-  // Renderowanie zakładki Bokeh
-  const renderBokehUI = () => {
-    if (!selectedImage) return null
-    
-    return (
-      <div className="space-y-4">
-        <p className="text-white/60 text-xs text-center">
-          Rozmywa tło zachowując ostrość w centrum kadru
-        </p>
-        
-        {/* Siła rozmycia */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-white/70">🔮 Siła rozmycia</span>
-            <span className="text-yellow-400 font-mono">{bokehStrength}px</span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={20}
-            value={bokehStrength}
-            onChange={(e) => setBokehStrength(parseInt(e.target.value))}
-            className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Rozmiar obszaru ostrości */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-white/70">⭕ Obszar ostrości</span>
-            <span className="text-yellow-400 font-mono">{bokehSize}%</span>
-          </div>
-          <input
-            type="range"
-            min={10}
-            max={80}
-            value={bokehSize}
-            onChange={(e) => setBokehSize(parseInt(e.target.value))}
-            className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Przejście (gradient) */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-white/70">🌫️ Przejście</span>
-            <span className="text-yellow-400 font-mono">{bokehFeather}%</span>
-          </div>
-          <input
-            type="range"
-            min={5}
-            max={60}
-            value={bokehFeather}
-            onChange={(e) => setBokehFeather(parseInt(e.target.value))}
-            className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Przyciski akcji */}
-        <div className="flex gap-4 pt-2">
-          <button
-            onClick={() => {
-              setBokehStrength(0)
-              setBokehSize(40)
-              setBokehFeather(30)
-            }}
-            className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform"
-          >
-            Wyłącz bokeh
-          </button>
-          <button
-            onClick={savePhoto}
-            disabled={isProcessing}
-            className="flex-1 py-3 bg-green-600 rounded-xl text-white font-medium active:scale-95 transition-transform disabled:opacity-50"
-          >
-            {isProcessing ? 'Zapisuję...' : '💾 Zapisz'}
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
       {/* Nagłówek */}
@@ -844,45 +629,40 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
       {/* Główna zawartość */}
       <div className="flex-1 flex flex-col p-4 overflow-hidden">
         {selectedImage ? (
-          activeTab === 'crop' ? (
-            renderCropUI()
-          ) : (
-            <>
-              {/* Podgląd obrazu z filtrami */}
-              <div className="flex-1 flex items-center justify-center overflow-hidden mb-4">
-                <canvas
-                  ref={canvasRef}
-                  className="max-w-full max-h-full object-contain rounded-lg"
-                  style={{ maxHeight: 'calc(100vh - 400px)' }}
-                />
-              </div>
-              
-              {/* Zakładki */}
-              <div className="flex gap-2 mb-4">
-                <button
-                  onClick={() => setActiveTab('adjust')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'adjust' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'}`}
-                >
-                  ☀️ Dostosuj
-                </button>
-                <button
-                  onClick={() => setActiveTab('bokeh')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'bokeh' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'}`}
-                >
-                  🔮 Bokeh
-                </button>
-                <button
-                  onClick={() => setActiveTab('crop')}
-                  className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-white/5 text-white/60"
-                >
-                  ✂️ Kadruj
-                </button>
-              </div>
-              
-              {activeTab === 'adjust' && renderAdjustUI()}
-              {activeTab === 'bokeh' && renderBokehUI()}
-            </>
-          )
+          <>
+            {activeTab === 'crop' ? (
+              renderCropUI()
+            ) : (
+              <>
+                {/* Podgląd obrazu z filtrami */}
+                <div className="flex-1 flex items-center justify-center overflow-hidden mb-4">
+                  <canvas
+                    ref={canvasRef}
+                    className="max-w-full max-h-full object-contain rounded-lg"
+                    style={{ maxHeight: 'calc(100vh - 400px)' }}
+                  />
+                </div>
+                
+                {/* Zakładki */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setActiveTab('adjust')}
+                    className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-white/20 text-white"
+                  >
+                    ☀️ Dostosuj
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('crop')}
+                    className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-white/5 text-white/60"
+                  >
+                    ✂️ Kadruj
+                  </button>
+                </div>
+                
+                {renderAdjustUI()}
+              </>
+            )}
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <button
