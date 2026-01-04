@@ -313,44 +313,66 @@ export function CameraView({
     return null
   }
 
-  // Renderowanie poziomicy
+  // Renderowanie poziomicy i kąta przechyłu
   const renderLevel = () => {
     if (!showLevel || !isLevelSupported) return null
 
-    // Określ czy telefon jest wypoziomowany
+    // Określ czy telefon jest wypoziomowany (lewo-prawo)
     const isLevelX = Math.abs(tiltX) < 2
-    const isLevelY = Math.abs(tiltY) < 2
-    const isLevel = isLevelX && isLevelY
+    
+    // Kąt przechyłu (pitch) - jak bardzo telefon jest przechylony do przodu/tyłu
+    // tiltY = 0 oznacza telefon trzymany pionowo
+    // tiltY = -90 oznacza telefon trzymany poziomo (ekran do góry)
+    // tiltY = 90 oznacza telefon trzymany poziomo (ekran do dołu)
+    const pitchAngle = Math.round(tiltY + 90) // Normalizacja: 0° = poziomo, 90° = pionowo
 
     return (
-      <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2">
-        {/* Wskaźnik poziomu */}
-        <div className="relative w-48 h-12 bg-black/50 rounded-full overflow-hidden">
-          {/* Środkowa linia (cel) */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-8 bg-green-500/50" />
-          
-          {/* Bańka poziomu (ruch lewo-prawo) */}
-          <div 
-            className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-8 rounded-full transition-all duration-100 ${isLevelX ? 'bg-green-500' : 'bg-white'}`}
-            style={{ 
-              left: `calc(50% + ${Math.max(-80, Math.min(80, tiltX * 2))}px - 8px)` 
-            }}
-          />
+      <>
+        {/* Poziomnica - tylko oczko, na dole ekranu */}
+        <div className="absolute bottom-28 left-1/2 transform -translate-x-1/2">
+          <div className="relative w-40 h-10 bg-black/60 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
+            {/* Środkowe znaczniki (cel) */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-6 bg-green-500/60" />
+            <div className="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-0.5 h-3 bg-white/30" />
+            <div className="absolute top-1/2 left-3/4 transform -translate-y-1/2 w-0.5 h-3 bg-white/30" />
+            
+            {/* Bańka poziomu (oczko) */}
+            <div 
+              className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full transition-all duration-75 shadow-lg ${isLevelX ? 'bg-green-500 shadow-green-500/50' : 'bg-white shadow-white/30'}`}
+              style={{ 
+                left: `calc(50% + ${Math.max(-60, Math.min(60, tiltX * 3))}px - 10px)` 
+              }}
+            />
+          </div>
         </div>
 
-        {/* Wskaźnik kąta */}
-        <div className="flex items-center gap-4 text-white text-sm">
-          <span className={isLevelX ? 'text-green-400' : 'text-white'}>
-            {tiltX.toFixed(1)}°
-          </span>
-          <span className={isLevel ? 'text-green-400 font-bold' : 'text-white/60'}>
-            {isLevel ? '✓ Poziomo' : 'Wyrównaj'}
-          </span>
-          <span className={isLevelY ? 'text-green-400' : 'text-white'}>
-            {tiltY.toFixed(1)}°
-          </span>
+        {/* Wskaźnik kąta przechyłu (pitch) - po lewej stronie ekranu */}
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 flex flex-col items-center">
+          <div className="relative w-10 h-32 bg-black/60 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
+            {/* Znaczniki kąta */}
+            <div className="absolute left-1/2 top-[10%] transform -translate-x-1/2 w-4 h-0.5 bg-white/30" />
+            <div className="absolute left-1/2 top-1/4 transform -translate-x-1/2 w-3 h-0.5 bg-white/20" />
+            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 w-5 h-0.5 bg-yellow-500/60" />
+            <div className="absolute left-1/2 top-3/4 transform -translate-x-1/2 w-3 h-0.5 bg-white/20" />
+            <div className="absolute left-1/2 top-[90%] transform -translate-x-1/2 w-4 h-0.5 bg-white/30" />
+            
+            {/* Wskaźnik kąta (oczko) */}
+            <div 
+              className="absolute left-1/2 transform -translate-x-1/2 w-5 h-5 rounded-full bg-yellow-400 shadow-lg shadow-yellow-400/50 transition-all duration-75"
+              style={{ 
+                // Mapowanie: pitchAngle 0-180 na pozycję 10%-90%
+                top: `${Math.max(10, Math.min(90, 50 - (pitchAngle - 90) * 0.4))}%`,
+                transform: 'translate(-50%, -50%)'
+              }}
+            />
+          </div>
+          
+          {/* Etykieta kąta */}
+          <div className="mt-2 px-2 py-1 bg-black/60 rounded-lg backdrop-blur-sm">
+            <span className="text-yellow-400 text-sm font-medium">{pitchAngle}°</span>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
