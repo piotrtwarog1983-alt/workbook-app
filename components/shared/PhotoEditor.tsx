@@ -139,12 +139,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     ctx.putImageData(imageData, 0, 0)
   }, [brightness, temperature, tint])
 
-  // Aktualizuj filtry
+  // Aktualizuj filtry gdy zmieni się obraz lub jego wymiary
   useEffect(() => {
-    if (originalImageRef.current && selectedImage) {
+    if (originalImageRef.current && selectedImage && imageSize.width > 0) {
       applyFilters()
     }
-  }, [applyFilters, selectedImage])
+  }, [applyFilters, selectedImage, imageSize])
 
   // Zastosuj kadrowanie
   const applyCrop = useCallback(() => {
