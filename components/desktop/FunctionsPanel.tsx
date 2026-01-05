@@ -106,11 +106,11 @@ export function FunctionsPanel({
         {showLanguageMenu && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowLanguageMenu(false)} />
-            <div className="absolute bottom-48 right-16 py-2 w-36 bg-white border border-[#C9A962]/20 rounded-lg shadow-2xl z-50">
+            <div className="absolute bottom-48 right-16 py-2 w-36 panel-elegant panel-glow rounded-lg shadow-2xl z-50">
               <button
                 onClick={() => { setLanguage('PL'); setShowLanguageMenu(false) }}
                 className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
-                  language === 'PL' ? 'text-[#C9A962] bg-[#C9A962]/10' : 'text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#F5F0E8]'
+                  language === 'PL' ? 'text-cyan-400 bg-cyan-500/10' : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <span>🇵🇱</span>
@@ -124,7 +124,7 @@ export function FunctionsPanel({
               <button
                 onClick={() => { setLanguage('DE'); setShowLanguageMenu(false) }}
                 className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
-                  language === 'DE' ? 'text-[#C9A962] bg-[#C9A962]/10' : 'text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#F5F0E8]'
+                  language === 'DE' ? 'text-cyan-400 bg-cyan-500/10' : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <span>🇩🇪</span>
@@ -138,7 +138,7 @@ export function FunctionsPanel({
               <button
                 onClick={() => { setLanguage('EN'); setShowLanguageMenu(false) }}
                 className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
-                  language === 'EN' ? 'text-[#C9A962] bg-[#C9A962]/10' : 'text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#F5F0E8]'
+                  language === 'EN' ? 'text-cyan-400 bg-cyan-500/10' : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <span>🇺🇸</span>

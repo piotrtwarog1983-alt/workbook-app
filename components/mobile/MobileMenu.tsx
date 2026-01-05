@@ -35,37 +35,37 @@ export function MobileMenu({
   if (!isOpen) return null
 
   return (
-    <div className="lg:hidden fixed inset-0 z-50 bg-[#2D2A26]/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="absolute bottom-0 left-0 right-0 bg-[#FAF8F5] rounded-t-3xl p-4 max-h-[85vh] overflow-hidden flex flex-col shadow-2xl border-t border-[#C9A962]/20"
+        className="absolute bottom-0 left-0 right-0 bg-gray-900 rounded-t-3xl p-4 max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar */}
         <div className="flex justify-center mb-4">
-          <div className="w-12 h-1 bg-[#C9A962]/40 rounded-full"></div>
+          <div className="w-12 h-1 bg-gray-600 rounded-full"></div>
         </div>
         
         {/* Header with close, language and logout */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[#2D2A26] font-medium">Menu</h3>
+          <h3 className="text-white font-medium">Menu</h3>
           <div className="flex gap-2">
             {/* Language selector */}
             <div className="relative">
               <button
                 onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                className="p-2 bg-white border border-[#C9A962]/20 rounded-lg text-[#6B6560] flex items-center gap-1 shadow-sm"
+                className="p-2 bg-gray-800 rounded-lg text-white/70 flex items-center gap-1"
               >
                 <span>{languages.find(l => l.code === language)?.flag}</span>
                 <span className="text-xs">{language}</span>
               </button>
               {showLanguageMenu && (
-                <div className="absolute top-full right-0 mt-1 py-1 w-32 bg-white border border-[#C9A962]/20 rounded-lg shadow-xl z-50">
+                <div className="absolute top-full right-0 mt-1 py-1 w-32 bg-gray-800 rounded-lg shadow-xl z-50">
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
                       onClick={() => { setLanguage(lang.code); setShowLanguageMenu(false) }}
                       className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${
-                        language === lang.code ? 'text-[#C9A962] bg-[#C9A962]/10' : 'text-[#6B6560] hover:bg-[#F5F0E8]'
+                        language === lang.code ? 'text-cyan-400 bg-cyan-500/10' : 'text-gray-300 hover:bg-gray-700'
                       }`}
                     >
                       <span>{lang.flag}</span>
@@ -77,7 +77,7 @@ export function MobileMenu({
             </div>
             <button
               onClick={onLogout}
-              className="p-2 bg-white border border-[#C9A962]/20 rounded-lg text-[#6B6560] shadow-sm hover:text-[#C9A962]"
+              className="p-2 bg-gray-800 rounded-lg text-white/70"
               aria-label={t.common.logout}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +86,7 @@ export function MobileMenu({
             </button>
             <button
               onClick={onClose}
-              className="p-2 bg-white border border-[#C9A962]/20 rounded-lg text-[#6B6560] shadow-sm hover:text-[#C9A962]"
+              className="p-2 bg-gray-800 rounded-lg text-white/70"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -99,10 +99,8 @@ export function MobileMenu({
         <div className="flex gap-2 mb-4 justify-center">
           <button
             onClick={() => setActivePanel('gallery')}
-            className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all ${
-              activePanel === 'gallery' 
-                ? 'bg-gradient-to-r from-[#C9A962] to-[#D4BC7B] text-white shadow-md' 
-                : 'bg-white border border-[#C9A962]/20 text-[#6B6560]'
+            className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 ${
+              activePanel === 'gallery' ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,10 +110,8 @@ export function MobileMenu({
           </button>
           <button
             onClick={() => setActivePanel('chat')}
-            className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all ${
-              activePanel === 'chat' 
-                ? 'bg-gradient-to-r from-[#C9A962] to-[#D4BC7B] text-white shadow-md' 
-                : 'bg-white border border-[#C9A962]/20 text-[#6B6560]'
+            className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 ${
+              activePanel === 'chat' ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,10 +121,8 @@ export function MobileMenu({
           </button>
           <button
             onClick={() => setActivePanel('video')}
-            className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all ${
-              activePanel === 'video' 
-                ? 'bg-gradient-to-r from-[#C9A962] to-[#D4BC7B] text-white shadow-md' 
-                : 'bg-white border border-[#C9A962]/20 text-[#6B6560]'
+            className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 ${
+              activePanel === 'video' ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,12 +134,12 @@ export function MobileMenu({
         </div>
         
         {/* Panel content */}
-        <div className="flex-1 overflow-hidden rounded-xl min-h-[300px] bg-white border border-[#C9A962]/10 shadow-inner">
+        <div className="flex-1 overflow-hidden rounded-xl min-h-[300px]">
           {activePanel === 'gallery' && (
             <ProgressGallery onProgressUpdate={onProgressUpdate} />
           )}
           {activePanel === 'chat' && (
-            <div className="w-full h-full p-4 overflow-auto">
+            <div className="w-full h-full p-4 panel-elegant panel-glow overflow-auto rounded-xl">
               <ChatBox />
             </div>
           )}

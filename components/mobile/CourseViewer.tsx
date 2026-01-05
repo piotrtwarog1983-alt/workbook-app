@@ -599,8 +599,8 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center" style={{ minHeight: 'var(--vh, 100vh)', background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
-        <div className="text-lg text-[#6B6560]">{t.course.loadingCourse}</div>
+      <div className="flex items-center justify-center" style={{ minHeight: 'var(--vh, 100vh)' }}>
+        <div className="text-lg text-white">{t.course.loadingCourse}</div>
       </div>
     )
   }
@@ -3168,14 +3168,14 @@ useEffect(() => {
       </div>
 
       {/* Mobile: Instagram-style progress bar + menu button */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ background: '#FAF8F5', height: '80px', padding: '16px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', borderTop: '1px solid rgba(201, 169, 98, 0.15)' }}>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ background: '#1a1a1a', height: '80px', padding: '16px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', borderTop: 'none' }}>
         {/* System oznaczania stron - na całą szerokość, max 20px wysokości */}
         <div 
           className="w-full flex items-center justify-between px-2"
           style={{ 
             height: '20px',
             maxHeight: '20px',
-            background: '#FAF8F5'
+            background: '#1a1a1a'
           }}
         >
           {/* Kropki postępu */}
@@ -3214,7 +3214,7 @@ useEffect(() => {
               idx === currentPageIndex ? (
                 <span 
               key={idx}
-                  className="text-[#C9A962] font-semibold leading-none"
+                  className="text-white font-medium leading-none"
                   style={{ fontSize: '10px', textAlign: 'center' }}
                 >
                   {page.pageNumber}
@@ -3224,8 +3224,8 @@ useEffect(() => {
                   key={idx}
                   className={`rounded-full transition-all duration-300 ${
                     idx < currentPageIndex 
-                      ? 'bg-[#C9A962]' 
-                      : 'bg-[#C9A962]/30'
+                      ? 'bg-white/60' 
+                      : 'bg-white/30'
                   }`}
                   style={{ width: '3px', height: '3px' }}
                 />
@@ -3269,10 +3269,10 @@ useEffect(() => {
 
       {/* Mobile: Functions modal */}
       {showMobileMenu && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-[#2D2A26]/40 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}>
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}>
           <div 
             className="fixed inset-0 p-4 overflow-hidden flex flex-col"
-            style={{ background: '#FAF8F5' }}
+            style={{ background: '#1a1a1a' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Zawartość menu - zawsze widoczne */}
@@ -3281,14 +3281,14 @@ useEffect(() => {
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
               {menuActivePanel === 'chat' && (
-                <div className="w-full h-full p-4 bg-white border border-[#C9A962]/10 rounded-xl overflow-auto shadow-inner">
+                <div className="w-full h-full p-4 bg-gray-800 rounded-xl overflow-auto">
                   <ChatBox />
                 </div>
               )}
       </div>
 
             {/* Pasek dolny z przyciskami - fixed na dole */}
-            <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center gap-3 py-6 px-4" style={{ background: '#FAF8F5', paddingBottom: 'calc(24px + env(safe-area-inset-bottom))', minHeight: '100px', borderTop: '1px solid rgba(201, 169, 98, 0.15)' }}>
+            <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center gap-3 py-6 px-4" style={{ background: '#1a1a1a', paddingBottom: 'calc(24px + env(safe-area-inset-bottom))', minHeight: '100px' }}>
               {/* Star - Twoje postępy */}
               <button
                 onClick={() => setMenuActivePanel('gallery')}

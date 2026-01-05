@@ -130,16 +130,16 @@ export default function LoginPage() {
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
       {/* Przycisk zamykania - tylko w PWA */}
       {isPWA && (
         <button
           onClick={handleClose}
-          className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white border border-[#C9A962]/30 shadow-sm transition-all active:scale-95"
+          className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 transition-all active:scale-95"
           aria-label="Zamknij aplikację"
         >
           <svg 
-            className="w-6 h-6 text-[#8B7355]" 
+            className="w-6 h-6 text-white" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -160,18 +160,18 @@ export default function LoginPage() {
       </div>
 
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-2 text-center text-[#2D2A26]">{t.login.title}</h1>
-        <p className="text-[#6B6560] text-center mb-8">{t.login.subtitle}</p>
+        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.login.title}</h1>
+        <p className="text-gray-400 text-center mb-8">{t.login.subtitle}</p>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[#6B6560] mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
               {t.login.email}
             </label>
             <input
@@ -180,13 +180,13 @@ export default function LoginPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
               placeholder={t.login.emailPlaceholder}
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#6B6560] mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
               {t.login.password}
             </label>
             <div className="relative">
@@ -196,13 +196,13 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 pr-12 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
                 placeholder={t.login.passwordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B7355] hover:text-[#C9A962] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -212,7 +212,7 @@ export default function LoginPage() {
           <div className="flex justify-end">
             <Link 
               href="/forgot-password" 
-              className="text-sm text-[#8B7355] hover:text-[#C9A962] transition-colors"
+              className="text-sm text-gray-400 hover:text-primary-400 transition-colors"
             >
               {t.login.forgotPassword}
             </Link>
@@ -228,14 +228,14 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <span className="text-[#6B6560] text-sm">{t.login.noAccount} </span>
-          <Link href="/signup" className="text-[#C9A962] hover:text-[#A88B4A] transition-colors text-sm font-medium">
+          <span className="text-gray-400 text-sm">{t.login.noAccount} </span>
+          <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
             {t.login.registerHere}
           </Link>
         </div>
 
         <div className="mt-4 text-center">
-          <Link href="/" className="text-[#8B7355] hover:text-[#6B6560] transition-colors text-xs">
+          <Link href="/" className="text-gray-500 hover:text-gray-400 transition-colors text-xs">
             {t.common.back}
           </Link>
         </div>

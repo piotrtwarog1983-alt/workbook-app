@@ -20,8 +20,8 @@ export function LanguageSwitcher() {
           onClick={() => setLanguage(lang.code)}
           className={`px-3 py-1.5 text-sm font-medium rounded transition-all ${
             language === lang.code
-              ? 'bg-gradient-to-r from-[#C9A962] to-[#D4BC7B] text-white shadow-sm border border-[#C9A962]'
-              : 'text-[#6B6560] hover:text-[#C9A962] hover:bg-[#F5F0E8] border border-transparent'
+              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+              : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
           }`}
           title={lang.label}
         >

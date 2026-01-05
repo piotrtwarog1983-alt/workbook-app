@@ -564,8 +564,8 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
-        <div className="text-lg text-[#6B6560]">{t.course.loadingCourse}</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-white">{t.course.loadingCourse}</div>
       </div>
     )
   }
