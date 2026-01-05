@@ -3235,7 +3235,7 @@ useEffect(() => {
         </div>
         
         {/* Przyciski dolnego paska - aparat na środku, menu po prawej */}
-        <div className="flex justify-between items-center px-4" style={{ marginTop: '-2px' }}>
+        <div className="flex justify-between items-center px-4" style={{ marginTop: '-5px' }}>
           {/* Lewa strona - pusta */}
           <div className="w-[40px] h-[40px]"></div>
           
