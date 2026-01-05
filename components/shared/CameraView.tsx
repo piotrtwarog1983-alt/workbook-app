@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { PhotoEditor } from './PhotoEditor'
+import { useLanguage } from '@/lib/LanguageContext'
 
 interface CameraViewProps {
   onCapture?: (imageData: string) => void
@@ -19,6 +20,9 @@ export function CameraView({
   showGridOverlay = true,
   showLevel = true 
 }: CameraViewProps) {
+  // Tłumaczenia
+  const { t } = useLanguage()
+  
   // Stan kamery
   const [isActive, setIsActive] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,13 +95,13 @@ export function CameraView({
       
       // Sprawdź czy mamy bezpieczny kontekst
       if (!isSecureContext) {
-        setError('Kamera wymaga HTTPS. Użyj aplikacji przez https:// lub localhost.')
+        setError(t.camera.requiresHttps)
         return
       }
 
       // Sprawdź czy API jest dostępne
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setError('Twoja przeglądarka nie obsługuje dostępu do kamery.')
+        setError(t.camera.browserNotSupported)
         return
       }
       
@@ -148,16 +152,16 @@ export function CameraView({
     } catch (err: any) {
       console.error('Camera error:', err)
       if (err.name === 'NotAllowedError') {
-        setError('Brak uprawnień do kamery. Włącz dostęp w ustawieniach przeglądarki.')
+        setError(t.camera.noPermission)
       } else if (err.name === 'NotFoundError') {
-        setError('Nie znaleziono kamery na tym urządzeniu.')
+        setError(t.camera.notFound)
       } else if (err.name === 'NotSupportedError' || err.name === 'SecurityError') {
-        setError('Kamera wymaga HTTPS. Użyj aplikacji przez https:// lub localhost.')
+        setError(t.camera.requiresHttps)
       } else {
-        setError(`Błąd kamery: ${err.message}`)
+        setError(`${t.camera.error}: ${err.message}`)
       }
     }
-  }, [facingMode, isSecureContext])
+  }, [facingMode, isSecureContext, t.camera])
 
   // Zatrzymanie kamery
   const stopCamera = useCallback(() => {
@@ -546,7 +550,7 @@ export function CameraView({
         {/* Kąt przechyłu - minimalistyczny wskaźnik */}
         <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
           <div className="px-4 py-2 bg-black/60 rounded-xl backdrop-blur-sm border border-white/20 flex items-center gap-2">
-            <span className="text-white/60 text-sm">Kąt:</span>
+            <span className="text-white/60 text-sm">{t.camera.angle}:</span>
             <span className="text-white text-lg font-bold min-w-[3ch] text-center">
               {pitchAngle}°
             </span>
@@ -609,7 +613,7 @@ export function CameraView({
 
         {/* Informacja o stronie lub licznik zdjęć */}
         <span className="text-white text-sm opacity-70">
-          {pageNumber ? `Strona ${pageNumber}` : ''}
+          {pageNumber ? `${t.camera.page} ${pageNumber}` : ''}
           {photoCount > 0 && (
             <span className="ml-2 px-2 py-0.5 bg-green-500/30 rounded-full text-green-400">
               📷 {photoCount}
@@ -638,12 +642,12 @@ export function CameraView({
                 onClick={startCamera}
                 className="px-6 py-3 bg-white/20 rounded-full text-white mb-4"
               >
-                Spróbuj ponownie
+                {t.camera.tryAgain}
               </button>
               
               {/* Fallback - użyj natywnego aparatu */}
               <div className="mt-4">
-                <p className="text-white/60 text-sm mb-3">lub użyj natywnego aparatu:</p>
+                <p className="text-white/60 text-sm mb-3">{t.camera.orUseNative}</p>
                 <input
                   type="file"
                   accept="image/*"
@@ -665,7 +669,7 @@ export function CameraView({
                   htmlFor="camera-fallback-input"
                   className="inline-block px-6 py-3 bg-blue-500 rounded-full text-white cursor-pointer hover:bg-blue-600 transition-colors"
                 >
-                  📷 Otwórz aparat
+                  📷 {t.camera.openCamera}
                 </label>
               </div>
             </div>
@@ -804,13 +808,13 @@ export function CameraView({
         {/* Etykiety */}
         <div className="flex items-center justify-center gap-6 mt-2">
           <span className={`text-xs w-11 text-center ${sepiaEnabled ? 'text-amber-400' : 'text-white/60'}`}>
-            Fokus
+            {t.camera.focus}
           </span>
           <span className={`text-xs w-11 text-center ${bokehEnabled ? 'text-purple-400' : 'text-white/60'}`}>
-            Bokeh
+            {t.camera.bokeh}
           </span>
-          <span className="text-white/60 text-xs w-20 text-center">Zdjęcie</span>
-          <span className="text-white/60 text-xs w-11 text-center">Edycja</span>
+          <span className="text-white/60 text-xs w-20 text-center">{t.camera.photo}</span>
+          <span className="text-white/60 text-xs w-11 text-center">{t.camera.edit}</span>
         </div>
       </div>
 

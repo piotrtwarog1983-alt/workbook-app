@@ -215,6 +215,43 @@ export const translations = {
       notFound: 'Nie znaleziono zasobu.',
       serverError: 'Błąd serwera. Spróbuj ponownie później.',
     },
+
+    // Aparat
+    camera: {
+      requiresHttps: 'Kamera wymaga HTTPS. Użyj aplikacji przez https:// lub localhost.',
+      browserNotSupported: 'Twoja przeglądarka nie obsługuje dostępu do kamery.',
+      noPermission: 'Brak uprawnień do kamery. Włącz dostęp w ustawieniach przeglądarki.',
+      notFound: 'Nie znaleziono kamery na tym urządzeniu.',
+      error: 'Błąd kamery',
+      page: 'Strona',
+      angle: 'Kąt',
+      tryAgain: 'Spróbuj ponownie',
+      orUseNative: 'lub użyj natywnego aparatu:',
+      openCamera: 'Otwórz aparat',
+      focus: 'Fokus',
+      bokeh: 'Bokeh',
+      photo: 'Zdjęcie',
+      edit: 'Edycja',
+    },
+
+    // Edytor zdjęć
+    editor: {
+      title: 'Edycja zdjęcia',
+      reset: 'Reset',
+      cropHint: 'Ramka: przesuń/skaluj • Poza ramką: obracaj',
+      rotation: 'Obrót',
+      cancel: 'Anuluj',
+      crop: 'Przytnij',
+      brightness: 'Jasność',
+      temperature: 'Temperatura',
+      tint: 'Odcień',
+      otherPhoto: 'Inne zdjęcie',
+      saving: 'Zapisuję...',
+      save: 'Zapisz',
+      selectPhoto: 'Wybierz zdjęcie',
+      adjust: 'Dostosuj',
+      cropTab: 'Kadruj',
+    },
   },
 
   DE: {
@@ -431,6 +468,43 @@ export const translations = {
       notFound: 'Ressource nicht gefunden.',
       serverError: 'Serverfehler. Bitte versuchen Sie es später erneut.',
     },
+
+    // Kamera
+    camera: {
+      requiresHttps: 'Kamera erfordert HTTPS. Verwenden Sie die App über https:// oder localhost.',
+      browserNotSupported: 'Ihr Browser unterstützt keinen Kamerazugriff.',
+      noPermission: 'Keine Kameraberechtigung. Aktivieren Sie den Zugriff in den Browsereinstellungen.',
+      notFound: 'Keine Kamera auf diesem Gerät gefunden.',
+      error: 'Kamerafehler',
+      page: 'Seite',
+      angle: 'Winkel',
+      tryAgain: 'Erneut versuchen',
+      orUseNative: 'oder native Kamera verwenden:',
+      openCamera: 'Kamera öffnen',
+      focus: 'Fokus',
+      bokeh: 'Bokeh',
+      photo: 'Foto',
+      edit: 'Bearbeiten',
+    },
+
+    // Fotoeditor
+    editor: {
+      title: 'Fotobearbeitung',
+      reset: 'Zurücksetzen',
+      cropHint: 'Rahmen: ziehen/skalieren • Außerhalb: drehen',
+      rotation: 'Drehung',
+      cancel: 'Abbrechen',
+      crop: 'Zuschneiden',
+      brightness: 'Helligkeit',
+      temperature: 'Temperatur',
+      tint: 'Farbton',
+      otherPhoto: 'Anderes Foto',
+      saving: 'Speichern...',
+      save: 'Speichern',
+      selectPhoto: 'Foto auswählen',
+      adjust: 'Anpassen',
+      cropTab: 'Zuschneiden',
+    },
   },
 
   EN: {
@@ -646,6 +720,43 @@ export const translations = {
       unauthorized: 'Session expired. Please sign in again.',
       notFound: 'Resource not found.',
       serverError: 'Server error. Please try again later.',
+    },
+
+    // Camera
+    camera: {
+      requiresHttps: 'Camera requires HTTPS. Use the app via https:// or localhost.',
+      browserNotSupported: 'Your browser does not support camera access.',
+      noPermission: 'No camera permission. Enable access in browser settings.',
+      notFound: 'No camera found on this device.',
+      error: 'Camera error',
+      page: 'Page',
+      angle: 'Angle',
+      tryAgain: 'Try again',
+      orUseNative: 'or use native camera:',
+      openCamera: 'Open camera',
+      focus: 'Focus',
+      bokeh: 'Bokeh',
+      photo: 'Photo',
+      edit: 'Edit',
+    },
+
+    // Photo Editor
+    editor: {
+      title: 'Photo editing',
+      reset: 'Reset',
+      cropHint: 'Frame: drag/scale • Outside: rotate',
+      rotation: 'Rotation',
+      cancel: 'Cancel',
+      crop: 'Crop',
+      brightness: 'Brightness',
+      temperature: 'Temperature',
+      tint: 'Tint',
+      otherPhoto: 'Other photo',
+      saving: 'Saving...',
+      save: 'Save',
+      selectPhoto: 'Select photo',
+      adjust: 'Adjust',
+      cropTab: 'Crop',
     },
   },
 } as const

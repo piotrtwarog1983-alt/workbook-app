@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 interface PhotoEditorProps {
   onClose: () => void
@@ -10,6 +11,9 @@ interface PhotoEditorProps {
 type EditorTab = 'adjust' | 'crop'
 
 export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
+  // Tłumaczenia
+  const { t } = useLanguage()
+  
   // Stan edytora
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -544,7 +548,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     return (
       <div className="flex flex-col h-full">
         <p className="text-white/70 text-sm text-center mb-2">
-          Ramka: przesuń/skaluj • Poza ramką: obracaj
+          {t.editor.cropHint}
         </p>
         
         {/* Kontener obrazu z ramką kadrowania */}
@@ -639,7 +643,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         {/* Suwak obrotu */}
         <div className="mt-3 space-y-2">
           <div className="flex justify-between items-center text-sm">
-            <span className="text-white/70">🔄 Obrót</span>
+            <span className="text-white/70">🔄 {t.editor.rotation}</span>
             <span className="text-yellow-400 font-mono w-16 text-right">{rotation.toFixed(1)}°</span>
           </div>
           <div className="relative">
@@ -662,7 +666,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
               onClick={() => setRotation(0)}
               className="text-white/60 hover:text-white transition-colors"
             >
-              ⟲ Reset
+              ⟲ {t.editor.reset}
             </button>
             <span>+45°</span>
           </div>
@@ -677,13 +681,13 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
             }}
             className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform"
           >
-            Anuluj
+            {t.editor.cancel}
           </button>
           <button
             onClick={applyCrop}
             className="flex-1 py-3 bg-green-600 rounded-xl text-white font-medium active:scale-95 transition-transform"
           >
-            ✂️ Przytnij
+            ✂️ {t.editor.crop}
           </button>
         </div>
       </div>
@@ -699,7 +703,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         {/* Jasność */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">☀️ Jasność</span>
+            <span className="text-white/70">☀️ {t.editor.brightness}</span>
             <span className="text-yellow-400 font-mono">{brightness}%</span>
           </div>
           <input
@@ -715,7 +719,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         {/* Temperatura */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">🌡️ Temperatura</span>
+            <span className="text-white/70">🌡️ {t.editor.temperature}</span>
             <span className="text-yellow-400 font-mono">{temperature > 0 ? '+' : ''}{temperature}</span>
           </div>
           <div className="relative">
@@ -734,7 +738,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         {/* Odcień */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">🎨 Odcień</span>
+            <span className="text-white/70">🎨 {t.editor.tint}</span>
             <span className="text-yellow-400 font-mono">{tint > 0 ? '+' : ''}{tint}</span>
           </div>
           <div className="relative">
@@ -756,14 +760,14 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
             onClick={openFilePicker}
             className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform"
           >
-            Inne zdjęcie
+            {t.editor.otherPhoto}
           </button>
           <button
             onClick={savePhoto}
             disabled={isProcessing}
             className="flex-1 py-3 bg-green-600 rounded-xl text-white font-medium active:scale-95 transition-transform disabled:opacity-50"
           >
-            {isProcessing ? 'Zapisuję...' : '💾 Zapisz'}
+            {isProcessing ? t.editor.saving : `💾 ${t.editor.save}`}
           </button>
         </div>
       </div>
@@ -780,12 +784,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         >
           ✕
         </button>
-        <span className="text-white font-medium">Edycja zdjęcia</span>
+        <span className="text-white font-medium">{t.editor.title}</span>
         <button
           onClick={resetFilters}
           className="text-white/70 text-sm px-3 py-1"
         >
-          Reset
+          {t.editor.reset}
         </button>
       </div>
 
@@ -812,13 +816,13 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
                     onClick={() => setActiveTab('adjust')}
                     className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-white/20 text-white"
                   >
-                    ☀️ Dostosuj
+                    ☀️ {t.editor.adjust}
                   </button>
                   <button
                     onClick={() => setActiveTab('crop')}
                     className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-white/5 text-white/60"
                   >
-                    ✂️ Kadruj
+                    ✂️ {t.editor.cropTab}
                   </button>
                 </div>
                 
@@ -837,7 +841,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <path d="M21 15l-5-5L5 21" />
               </svg>
-              <span className="text-white/60 text-sm">Wybierz zdjęcie</span>
+              <span className="text-white/60 text-sm">{t.editor.selectPhoto}</span>
             </button>
           </div>
         )}
