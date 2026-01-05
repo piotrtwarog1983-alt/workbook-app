@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { ProgressGallery } from '../shared/ProgressGallery'
-import { DictionaryInline } from '../shared/DictionaryInline'
 import { ChatBox } from '../shared/ChatBox'
 import { VideoPlayer, VIDEO_PAGES } from '../shared/VideoPlayer'
 import { ProgressTimeline } from '../shared/ProgressTimeline'
@@ -22,7 +21,7 @@ export function FunctionsPanel({
   onGoToPage
 }: FunctionsPanelProps) {
   const { t, language, setLanguage } = useLanguage()
-  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat' | 'video'>('gallery')
+  const [activePanel, setActivePanel] = useState<'gallery' | 'chat' | 'video'>('gallery')
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
 
   // Auto-switch to video for specific pages
@@ -41,17 +40,6 @@ export function FunctionsPanel({
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-
-        <button
-          onClick={() => setActivePanel('dictionary')}
-          className={`w-14 h-14 flex items-center justify-center ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
-          aria-label={t.dictionary.title}
-          title={t.dictionary.title}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
         </button>
 
@@ -83,11 +71,6 @@ export function FunctionsPanel({
       <div className="w-[380px] h-[520px] overflow-hidden rounded-xl">
         {activePanel === 'gallery' && (
           <ProgressGallery onProgressUpdate={onProgressUpdate} />
-        )}
-        {activePanel === 'dictionary' && (
-          <div className="w-full h-full p-4 panel-elegant panel-glow overflow-auto">
-            <DictionaryInline />
-          </div>
         )}
         {activePanel === 'chat' && (
           <div className="w-full h-full p-4 panel-elegant panel-glow overflow-auto">

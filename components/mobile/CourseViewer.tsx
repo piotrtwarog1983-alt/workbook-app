@@ -6,7 +6,6 @@ import { PROGRESS_PAGES, isProgressPage } from '@/lib/progress-pages'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { TipCloud } from '../shared/TipCloud'
-import { DictionaryInline } from '../shared/DictionaryInline'
 import { ChatBox } from '../shared/ChatBox'
 import { PhotoUploadComponent } from '../shared/PhotoUploadComponent'
 import { QRCodeUpload } from '../shared/QRCodeUpload'
@@ -42,8 +41,8 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activePanel, setActivePanel] = useState<'gallery' | 'dictionary' | 'chat' | 'video'>('gallery')
-  const [menuActivePanel, setMenuActivePanel] = useState<'gallery' | 'dictionary' | 'chat'>('gallery')
+  const [activePanel, setActivePanel] = useState<'gallery' | 'chat' | 'video'>('gallery')
+  const [menuActivePanel, setMenuActivePanel] = useState<'gallery' | 'chat'>('gallery')
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
   const [overlayText, setOverlayText] = useState<string>('')
   const [loadingText, setLoadingText] = useState(false)
@@ -2978,12 +2977,6 @@ useEffect(() => {
               {activePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
-              {activePanel === 'dictionary' && (
-                <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto rounded-2xl">
-                  <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.dictionary.title}</h3>
-                  <DictionaryInline />
-                </div>
-              )}
               {activePanel === 'chat' && (
                 <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow overflow-auto rounded-2xl">
                   <ChatBox />
@@ -3020,28 +3013,6 @@ useEffect(() => {
                     strokeLinejoin="round"
                     strokeWidth={1.5}
                     d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-            </button>
-
-              {/* Dictionary button - ikona książki */}
-            <button
-                onClick={() => setActivePanel('dictionary')}
-                className={`w-14 h-14 flex items-center justify-center ${activePanel === 'dictionary' ? 'btn-icon-elegant-active' : 'btn-icon-elegant'}`}
-                aria-label={t.dictionary.title}
-                title={t.dictionary.title}
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-            >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                   />
                 </svg>
             </button>
@@ -3309,12 +3280,6 @@ useEffect(() => {
               {menuActivePanel === 'gallery' && (
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
-              {menuActivePanel === 'dictionary' && (
-                <div className="w-full h-full p-4 bg-gray-800 rounded-xl overflow-auto">
-                  <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.dictionary.title}</h3>
-                  <DictionaryInline />
-                </div>
-              )}
               {menuActivePanel === 'chat' && (
                 <div className="w-full h-full p-4 bg-gray-800 rounded-xl overflow-auto">
                   <ChatBox />
@@ -3355,25 +3320,6 @@ useEffect(() => {
                   border: 'none',
                   borderRadius: 0,
                   backgroundImage: 'url(/course/ikony/Chat.png)',
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundColor: 'transparent'
-                }}
-              />
-              
-              {/* Info - Słownik fotografa */}
-              <button
-                onClick={() => setMenuActivePanel('dictionary')}
-                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
-                style={{ 
-                  width: '50px',
-                  height: '50px',
-                  aspectRatio: '1/1',
-                  padding: 0,
-                  border: 'none',
-                  borderRadius: 0,
-                  backgroundImage: 'url(/course/ikony/Info.png)',
                   backgroundSize: 'contain',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',

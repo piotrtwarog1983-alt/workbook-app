@@ -20,8 +20,8 @@ export interface CourseViewerSharedProps {
   setCurrentPageIndex: (index: number) => void
   loading: boolean
   error: string
-  activePanel: 'gallery' | 'dictionary' | 'chat' | 'video'
-  setActivePanel: (panel: 'gallery' | 'dictionary' | 'chat' | 'video') => void
+  activePanel: 'gallery' | 'chat' | 'video'
+  setActivePanel: (panel: 'gallery' | 'chat' | 'video') => void
   showLanguageMenu: boolean
   setShowLanguageMenu: (show: boolean) => void
   overlayText: string

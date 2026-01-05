@@ -164,13 +164,6 @@ export const translations = {
       loadMore: 'Wczytaj starsze',
     },
 
-    // Słownik
-    dictionary: {
-      title: 'Słownik fotografa',
-      searchPlaceholder: 'Szukaj terminu...',
-      noResults: 'Nie znaleziono terminów',
-    },
-
     // Galeria postępów
     gallery: {
       title: 'Twoje zdjęcia',
@@ -417,13 +410,6 @@ export const translations = {
       loadMore: 'Ältere laden',
     },
 
-    // Glossar
-    dictionary: {
-      title: 'Glossar',
-      searchPlaceholder: 'Begriff suchen...',
-      noResults: 'Keine Begriffe gefunden',
-    },
-
     // Fortschrittsgalerie
     gallery: {
       title: 'Ihre Fotos',
@@ -668,13 +654,6 @@ export const translations = {
       you: 'You',
       admin: 'Team',
       loadMore: 'Load older',
-    },
-
-    // Dictionary
-    dictionary: {
-      title: 'Glossary',
-      searchPlaceholder: 'Search term...',
-      noResults: 'No terms found',
     },
 
     // Progress gallery

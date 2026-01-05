@@ -11,14 +11,6 @@ export const LazyChatBox = dynamic(
   }
 )
 
-export const LazyDictionaryInline = dynamic(
-  () => import('../shared/DictionaryInline').then(mod => ({ default: mod.DictionaryInline })),
-  { 
-    loading: () => <div className="animate-pulse bg-gray-800 h-full rounded-xl" />,
-    ssr: false 
-  }
-)
-
 export const LazyProgressGallery = dynamic(
   () => import('../shared/ProgressGallery').then(mod => ({ default: mod.ProgressGallery })),
   { 
