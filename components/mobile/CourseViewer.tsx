@@ -788,7 +788,11 @@ useEffect(() => {
                       {!showTips ? (
                         <button
                           onClick={() => setShowTips(true)}
-                          className="relative w-12 h-12 flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 active:opacity-60 bg-transparent border-none p-0"
+                          className="relative w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:scale-110 active:scale-95 bg-transparent border-none p-0"
+                          style={{
+                            filter: 'drop-shadow(0 0 8px rgba(255, 255, 150, 0.9)) drop-shadow(0 0 16px rgba(255, 255, 100, 0.7)) drop-shadow(0 0 24px rgba(255, 200, 50, 0.5))',
+                            animation: 'pulse-glow 2s ease-in-out infinite'
+                          }}
                           aria-label="Pokaż wskazówki"
                         >
                           <Image
@@ -796,7 +800,10 @@ useEffect(() => {
                             alt="Wskazówki"
                             width={48}
                             height={48}
-                            className="object-contain"
+                            className="object-contain relative z-10"
+                            style={{
+                              filter: 'brightness(1.2)'
+                            }}
                           />
                         </button>
                       ) : (
@@ -861,7 +868,11 @@ useEffect(() => {
                       {!showTips ? (
                         <button
                           onClick={() => setShowTips(true)}
-                          className="relative w-12 h-12 flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 active:opacity-60 bg-transparent border-none p-0"
+                          className="relative w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:scale-110 active:scale-95 bg-transparent border-none p-0"
+                          style={{
+                            filter: 'drop-shadow(0 0 8px rgba(255, 255, 150, 0.9)) drop-shadow(0 0 16px rgba(255, 255, 100, 0.7)) drop-shadow(0 0 24px rgba(255, 200, 50, 0.5))',
+                            animation: 'pulse-glow 2s ease-in-out infinite'
+                          }}
                           aria-label="Pokaż wskazówki"
                         >
                           <Image
@@ -869,7 +880,10 @@ useEffect(() => {
                             alt="Wskazówki"
                             width={48}
                             height={48}
-                            className="object-contain"
+                            className="object-contain relative z-10"
+                            style={{
+                              filter: 'brightness(1.2)'
+                            }}
                           />
                         </button>
                       ) : (
