@@ -3181,73 +3181,72 @@ useEffect(() => {
               </div>
       </div>
 
-      {/* Mobile: Instagram-style progress bar + menu button */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ background: '#1a1a1a', height: '80px', padding: '16px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', borderTop: 'none' }}>
-        {/* System oznaczania stron - na całą szerokość, max 20px wysokości */}
+      {/* Mobile: Wskaźnik stron - lewa strona ekranu */}
+      <div 
+        className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-50 px-2 py-4"
+        style={{ 
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)'
+        }}
+      >
+        {/* Kropki postępu - pionowo */}
         <div 
-          className="w-full flex items-center justify-between px-2"
-          style={{ 
-            height: '20px',
-            maxHeight: '20px',
-            background: '#1a1a1a'
+          ref={pageIndicatorRef}
+          className="flex flex-col items-center gap-1.5 relative"
+          onTouchStart={(e) => {
+            if (!pageIndicatorRef.current) return
+            const touch = e.touches[0]
+            const rect = pageIndicatorRef.current.getBoundingClientRect()
+            const y = touch.clientY - rect.top
+            const height = rect.height
+            const pageIndex = Math.round((y / height) * (pages.length - 1))
+            if (pageIndex >= 0 && pageIndex < pages.length) {
+              setIsDraggingPage(true)
+              setCurrentPageIndex(pageIndex)
+            }
+          }}
+          onTouchMove={(e) => {
+            if (!isDraggingPage || !pageIndicatorRef.current) return
+            e.preventDefault()
+            const touch = e.touches[0]
+            const rect = pageIndicatorRef.current.getBoundingClientRect()
+            const y = touch.clientY - rect.top
+            const height = rect.height
+            const pageIndex = Math.max(0, Math.min(pages.length - 1, Math.round((y / height) * (pages.length - 1))))
+            if (pageIndex !== currentPageIndex) {
+              setCurrentPageIndex(pageIndex)
+            }
+          }}
+          onTouchEnd={() => {
+            setIsDraggingPage(false)
           }}
         >
-          {/* Kropki postępu */}
-          <div 
-            ref={pageIndicatorRef}
-            className="w-full flex items-center justify-between relative"
-            onTouchStart={(e) => {
-              if (!pageIndicatorRef.current) return
-              const touch = e.touches[0]
-              const rect = pageIndicatorRef.current.getBoundingClientRect()
-              const x = touch.clientX - rect.left
-              const width = rect.width
-              const pageIndex = Math.round((x / width) * (pages.length - 1))
-              if (pageIndex >= 0 && pageIndex < pages.length) {
-                setIsDraggingPage(true)
-                setCurrentPageIndex(pageIndex)
-              }
-            }}
-            onTouchMove={(e) => {
-              if (!isDraggingPage || !pageIndicatorRef.current) return
-              e.preventDefault()
-              const touch = e.touches[0]
-              const rect = pageIndicatorRef.current.getBoundingClientRect()
-              const x = touch.clientX - rect.left
-              const width = rect.width
-              const pageIndex = Math.max(0, Math.min(pages.length - 1, Math.round((x / width) * (pages.length - 1))))
-              if (pageIndex !== currentPageIndex) {
-                setCurrentPageIndex(pageIndex)
-              }
-            }}
-            onTouchEnd={() => {
-              setIsDraggingPage(false)
-            }}
-          >
-            {pages.map((page: any, idx: number) => (
-              idx === currentPageIndex ? (
-                <span 
-              key={idx}
-                  className="text-white font-medium leading-none"
-                  style={{ fontSize: '10px', textAlign: 'center' }}
-                >
-                  {page.pageNumber}
-                </span>
-              ) : (
-                <div
-                  key={idx}
-                  className={`rounded-full transition-all duration-300 ${
-                    idx < currentPageIndex 
-                      ? 'bg-white/60' 
-                      : 'bg-white/30'
-                  }`}
-                  style={{ width: '3px', height: '3px' }}
-                />
-              )
-            ))}
-          </div>
+          {pages.map((page: any, idx: number) => (
+            idx === currentPageIndex ? (
+              <span 
+                key={idx}
+                className="text-white font-medium leading-none min-w-[20px] text-center"
+                style={{ fontSize: '10px' }}
+              >
+                {page.pageNumber}
+              </span>
+            ) : (
+              <div
+                key={idx}
+                className={`rounded-full transition-all duration-300 ${
+                  idx < currentPageIndex 
+                    ? 'bg-white/60' 
+                    : 'bg-white/30'
+                }`}
+                style={{ width: '3px', height: '3px' }}
+              />
+            )
+          ))}
         </div>
-        
+      </div>
+
+      {/* Mobile: Instagram-style progress bar + menu button */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ background: '#1a1a1a', height: '80px', padding: '16px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', borderTop: 'none' }}>
         {/* Przyciski dolnego paska - aparat na środku, menu po prawej */}
         <div className="flex justify-between items-center px-4" style={{ marginTop: '-5px' }}>
           {/* Lewa strona - pusta */}
