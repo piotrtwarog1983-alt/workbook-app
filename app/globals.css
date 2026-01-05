@@ -19,6 +19,32 @@ html {
   touch-action: manipulation; /* Blokuje podwójne tapnięcie zoom i pinch zoom */
 }
 
+/* Pełnoekranowy tryb PWA - ukrywa pasek nawigacyjny */
+@supports (padding: env(safe-area-inset-bottom)) {
+  :root {
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-left: env(safe-area-inset-left);
+    --safe-area-right: env(safe-area-inset-right);
+  }
+}
+
+/* Tryb fullscreen PWA */
+@media all and (display-mode: fullscreen) {
+  html, body {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
+/* Tryb standalone PWA */
+@media all and (display-mode: standalone) {
+  html, body {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: #1a1d24;
