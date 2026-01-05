@@ -3234,10 +3234,51 @@ useEffect(() => {
           </div>
         </div>
         
-        {/* Menu button - kontener z strzałka.png */}
-        <div className="flex justify-center items-center" style={{ marginTop: '-2px' }}>
-        <button
-          onClick={() => setShowMobileMenu(true)}
+        {/* Przyciski dolnego paska - aparat na środku, menu po prawej */}
+        <div className="flex justify-between items-center px-4" style={{ marginTop: '-2px' }}>
+          {/* Lewa strona - pusta */}
+          <div className="w-[40px] h-[40px]"></div>
+          
+          {/* Środek - przycisk aparatu */}
+          <button
+            onClick={() => {
+              const token = localStorage.getItem('token')
+              if (!token) {
+                alert('Musisz być zalogowany')
+                return
+              }
+              setShowCamera(true)
+            }}
+            className="relative w-[50px] h-[50px] rounded-[14px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
+            style={{ 
+              boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
+              padding: 0,
+              border: 'none',
+              backgroundImage: 'url(/course/ikony/aparat.png)',
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
+            }}
+          />
+          
+          {/* Prawa strona - przycisk menu */}
+          <button
+            onClick={() => setShowMobileMenu(true)}
             className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
             style={{ 
               boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
