@@ -802,7 +802,7 @@ useEffect(() => {
                             height={48}
                             className="object-contain relative z-10"
                             style={{
-                              filter: 'brightness(1.2)'
+                              filter: 'brightness(1.3) drop-shadow(0 0 2px rgba(255, 255, 255, 1)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 1px rgba(255, 255, 255, 1))'
                             }}
                           />
                         </button>
@@ -882,7 +882,7 @@ useEffect(() => {
                             height={48}
                             className="object-contain relative z-10"
                             style={{
-                              filter: 'brightness(1.2)'
+                              filter: 'brightness(1.3) drop-shadow(0 0 2px rgba(255, 255, 255, 1)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 1px rgba(255, 255, 255, 1))'
                             }}
                           />
                         </button>
