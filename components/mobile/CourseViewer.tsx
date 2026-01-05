@@ -3183,10 +3183,15 @@ useEffect(() => {
 
       {/* Mobile: Wskaźnik stron - lewa strona ekranu */}
       <div 
-        className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-50 px-2 py-4"
+        className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-50 py-4"
         style={{ 
+          width: '10px',
+          backgroundColor: '#000000',
           paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)'
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         {/* Kropki postępu - pionowo */}
