@@ -99,13 +99,13 @@ function ResetPasswordContent() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
         <div className="absolute top-4 right-4">
           <LanguageSwitcher />
         </div>
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">{t.common.loading}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9A962] mx-auto mb-4"></div>
+          <p className="text-[#6B6560]">{t.common.loading}</p>
         </div>
       </div>
     )
@@ -113,19 +113,19 @@ function ResetPasswordContent() {
 
   if (!tokenValid && !success) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
         <div className="absolute top-4 right-4">
           <LanguageSwitcher />
         </div>
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
           <div className="text-center">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">{t.common.error}</h1>
-            <p className="text-gray-400 mb-6">{error}</p>
+            <h1 className="text-2xl font-bold text-[#2D2A26] mb-4">{t.common.error}</h1>
+            <p className="text-[#6B6560] mb-6">{error}</p>
             <Link
               href="/forgot-password"
               className="inline-block btn-primary-elegant px-6 py-3 font-semibold rounded-lg"
@@ -140,19 +140,19 @@ function ResetPasswordContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
         <div className="absolute top-4 right-4">
           <LanguageSwitcher />
         </div>
         <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">{t.common.success}</h1>
-            <p className="text-gray-400 mb-6">
+            <h1 className="text-2xl font-bold text-[#2D2A26] mb-4">{t.common.success}</h1>
+            <p className="text-[#6B6560] mb-6">
               {t.resetPassword.successMessage}
             </p>
             <Link
@@ -168,26 +168,26 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
       </div>
 
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.resetPassword.title}</h1>
-        <p className="text-gray-400 text-center mb-8">
+        <h1 className="text-2xl font-bold mb-2 text-center text-[#2D2A26]">{t.resetPassword.title}</h1>
+        <p className="text-[#6B6560] text-center mb-8">
           {t.resetPassword.subtitle}
         </p>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-[#6B6560] mb-2">
               {t.resetPassword.password}
             </label>
             <div className="relative">
@@ -197,13 +197,13 @@ function ResetPasswordContent() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
                 placeholder={t.resetPassword.passwordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B7355] hover:text-[#C9A962] transition-colors"
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -211,7 +211,7 @@ function ResetPasswordContent() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#6B6560] mb-2">
               {t.resetPassword.confirmPassword}
             </label>
             <div className="relative">
@@ -221,13 +221,13 @@ function ResetPasswordContent() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
                 placeholder={t.resetPassword.confirmPasswordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B7355] hover:text-[#C9A962] transition-colors"
               >
                 {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -249,10 +249,10 @@ function ResetPasswordContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
       <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center rounded-2xl">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-        <p className="text-gray-400">...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9A962] mx-auto mb-4"></div>
+        <p className="text-[#6B6560]">...</p>
       </div>
     </div>
   )

@@ -173,21 +173,21 @@ export function ChatBox() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C9A962]"></div>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">
+      <h3 className="text-sm font-medium text-[#8B7355] tracking-wider mb-4">
         {t.chat.title}
       </h3>
 
       {/* Messages container */}
       <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-[#8B7355] py-8">
             <p className="text-sm">{t.chat.noMessages}</p>
           </div>
         ) : (
@@ -199,8 +199,8 @@ export function ChatBox() {
               <div
                 className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
                   message.sender === 'user'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white/10 text-gray-200'
+                    ? 'bg-gradient-to-r from-[#C9A962] to-[#D4BC7B] text-white shadow-sm'
+                    : 'bg-[#F5F0E8] text-[#2D2A26] border border-[#C9A962]/10'
                 } ${message.status === 'sending' ? 'opacity-60' : ''}`}
               >
                 <p className="whitespace-pre-wrap">{message.text}</p>
@@ -221,13 +221,13 @@ export function ChatBox() {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder={t.chat.placeholder}
-          className="flex-1 px-3 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 text-sm"
+          className="flex-1 px-3 py-2 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 text-sm"
           disabled={sending}
         />
         <button
           type="submit"
           disabled={!newMessage.trim() || sending}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 bg-gradient-to-r from-[#C9A962] to-[#D4BC7B] text-white rounded-lg hover:from-[#D4BC7B] hover:to-[#C9A962] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
           title={t.chat.send}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

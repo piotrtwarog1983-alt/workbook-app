@@ -133,25 +133,25 @@ function SignupContent() {
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
       {/* Language switcher w górnym prawym rogu */}
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
       </div>
 
       <div className="max-w-md w-full panel-elegant panel-glow p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold mb-2 text-center text-white">{t.signup.title}</h1>
-        <p className="text-gray-400 text-center mb-8">{t.signup.subtitle}</p>
+        <h1 className="text-2xl font-bold mb-2 text-center text-[#2D2A26]">{t.signup.title}</h1>
+        <p className="text-[#6B6560] text-center mb-8">{t.signup.subtitle}</p>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-[#6B6560] mb-2">
               {t.signup.email}
             </label>
             <input
@@ -160,13 +160,13 @@ function SignupContent() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
               placeholder={t.signup.emailPlaceholder}
             />
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-[#6B6560] mb-2">
               {t.signup.name}
             </label>
             <input
@@ -174,13 +174,13 @@ function SignupContent() {
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
               placeholder={t.signup.namePlaceholder}
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-[#6B6560] mb-2">
               {t.signup.password}
             </label>
             <div className="relative">
@@ -190,13 +190,13 @@ function SignupContent() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
                 placeholder={t.signup.passwordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B7355] hover:text-[#C9A962] transition-colors"
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -204,7 +204,7 @@ function SignupContent() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#6B6560] mb-2">
               {t.signup.confirmPassword}
             </label>
             <div className="relative">
@@ -214,13 +214,13 @@ function SignupContent() {
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-500 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white border border-[#C9A962]/25 text-[#2D2A26] rounded-lg focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] placeholder-[#8B7355]/50 transition-all"
                 placeholder={t.signup.confirmPasswordPlaceholder}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B7355] hover:text-[#C9A962] transition-colors"
               >
                 {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -234,15 +234,15 @@ function SignupContent() {
               id="terms"
               checked={acceptedTerms}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-1 w-4 h-4 accent-primary-500 bg-white/5 border-white/20 rounded"
+              className="mt-1 w-4 h-4 accent-[#C9A962] bg-white border-[#C9A962]/30 rounded"
             />
-            <label htmlFor="terms" className="text-sm text-gray-400 leading-relaxed">
+            <label htmlFor="terms" className="text-sm text-[#6B6560] leading-relaxed">
               {t.signup.termsAccept}{' '}
               <a 
                 href="https://eulaliafotografia.com/regulamin" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-primary-400 hover:text-primary-300 underline"
+                className="text-[#C9A962] hover:text-[#A88B4A] underline"
               >
                 {t.signup.termsOfService}
               </a>
@@ -251,7 +251,7 @@ function SignupContent() {
                 href="https://eulaliafotografia.com/polityka-prywatnosci" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-primary-400 hover:text-primary-300 underline"
+                className="text-[#C9A962] hover:text-[#A88B4A] underline"
               >
                 {t.signup.privacyPolicy}
               </a>
@@ -268,8 +268,8 @@ function SignupContent() {
         </form>
 
         <div className="mt-6 text-center">
-          <span className="text-gray-400 text-sm">{t.signup.haveAccount} </span>
-          <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
+          <span className="text-[#6B6560] text-sm">{t.signup.haveAccount} </span>
+          <Link href="/login" className="text-[#C9A962] hover:text-[#A88B4A] transition-colors text-sm font-medium">
             {t.signup.loginHere}
           </Link>
         </div>
@@ -280,10 +280,10 @@ function SignupContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#1a1d24' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #F5F0E8 100%)' }}>
       <div className="max-w-md w-full panel-elegant panel-glow p-8 text-center rounded-2xl">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-        <p className="text-gray-400">...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9A962] mx-auto mb-4"></div>
+        <p className="text-[#6B6560]">...</p>
       </div>
     </div>
   )
