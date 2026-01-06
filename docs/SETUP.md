@@ -29,7 +29,9 @@ npx prisma generate
 npx prisma db seed
 ```
 
-## Krok 3: Konfiguracja Lemon Squeezy
+## Krok 3: Konfiguracja systemów płatności
+
+### Opcja A: Lemon Squeezy
 
 1. Zaloguj się do panelu Lemon Squeezy
 2. Przejdź do ustawień webhooków
@@ -43,6 +45,28 @@ npx prisma db seed
 LEMON_SQUEEZY_WEBHOOK_SECRET="twój-secret-z-lemon-squeezy"
 NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL="https://twoj-sklep.lemonsqueezy.com/checkout/buy/twoj-produkt-id"
 ```
+
+### Opcja B: Stripe
+
+1. Zaloguj się do [Stripe Dashboard](https://dashboard.stripe.com)
+2. Przejdź do **Developers** → **Webhooks**
+3. Kliknij **Add endpoint**
+4. Dodaj endpoint:
+   - URL: `https://twoja-domena.com/api/webhooks/stripe`
+   - Events: 
+     - `checkout.session.completed`
+     - `payment_intent.succeeded`
+     - `payment_intent.payment_failed`
+5. Skopiuj **Signing secret** z endpointu
+6. Dodaj do `.env`:
+
+```
+STRIPE_SECRET_KEY="sk_live_xxx lub sk_test_xxx"
+STRIPE_WEBHOOK_SECRET="whsec_xxx"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_live_xxx lub pk_test_xxx"
+```
+
+**Uwaga:** Możesz używać obu systemów płatności jednocześnie - każdy ma własny webhook.
 
 ## Krok 4: Konfiguracja JWT
 
@@ -119,6 +143,8 @@ npm start
 
 ## Testowanie przepływu zakupu
 
+### Testowanie Lemon Squeezy
+
 1. Przejdź na stronę główną (`/`)
 2. Kliknij przycisk "Kup teraz" (przekierowanie do Lemon Squeezy)
 3. Wykonaj testową płatność w Lemon Squeezy
@@ -126,6 +152,21 @@ npm start
 5. Sprawdź email (w development mode będzie w logach konsoli)
 6. Użyj linku z emaila do rejestracji
 7. Zaloguj się i sprawdź dostęp do kursu
+
+### Testowanie Stripe
+
+1. Użyj [Stripe CLI](https://stripe.com/docs/stripe-cli) do testowania lokalnie:
+   ```bash
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   ```
+2. Skopiuj webhook signing secret z CLI do `.env`
+3. Utwórz testowy Checkout Session (przez API lub test mode)
+4. Wykonaj testową płatność używając [karty testowej](https://stripe.com/docs/testing):
+   - Numer: `4242 4242 4242 4242`
+   - Data: dowolna przyszła
+   - CVC: dowolne 3 cyfry
+5. Sprawdź, czy webhook został wywołany (logi serwera)
+6. Sprawdź email i dokończ rejestrację
 
 ## Struktura danych kursu
 
@@ -157,11 +198,19 @@ Przykład:
 - Sprawdź `DATABASE_URL` w `.env`
 - Uruchom `npx prisma migrate dev` ponownie
 
-### Webhook nie działa
+### Webhook Lemon Squeezy nie działa
 
 - Sprawdź, czy URL webhooka jest dostępny publicznie (użyj ngrok dla developmentu)
 - Sprawdź `LEMON_SQUEEZY_WEBHOOK_SECRET` w `.env`
 - Sprawdź logi serwera
+
+### Webhook Stripe nie działa
+
+- Sprawdź, czy URL webhooka jest dostępny publicznie
+- Użyj [Stripe CLI](https://stripe.com/docs/stripe-cli) do testowania lokalnie
+- Sprawdź `STRIPE_WEBHOOK_SECRET` w `.env`
+- Sprawdź logi w [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
+- Upewnij się, że wybrałeś odpowiednie eventy (`checkout.session.completed`)
 
 ### Obrazy się nie ładują
 

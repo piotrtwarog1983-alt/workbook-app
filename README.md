@@ -59,6 +59,15 @@ Zobacz `.env.example` dla wymaganych zmiennych:
 - `RESEND_API_KEY` - Klucz API Resend
 - `NEXT_PUBLIC_APP_URL` - URL aplikacji
 
+### Płatności (wybierz jeden lub oba):
+**Lemon Squeezy:**
+- `LEMON_SQUEEZY_WEBHOOK_SECRET` - Secret webhooka
+
+**Stripe:**
+- `STRIPE_SECRET_KEY` - Klucz prywatny Stripe
+- `STRIPE_WEBHOOK_SECRET` - Secret webhooka Stripe
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Klucz publiczny Stripe
+
 ## License
 
 Proprietary - © 2025 Eulalia Twarog
