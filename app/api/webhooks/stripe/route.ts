@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
           status: session.status,
           total: session.amount_total ? session.amount_total / 100 : null, // Stripe amounts are in cents
           currency: session.currency?.toUpperCase() || 'PLN',
-          orderData: event,
+          orderData: event as unknown as Record<string, unknown>,
           registrationTokenId: registrationToken.id,
         },
       })
