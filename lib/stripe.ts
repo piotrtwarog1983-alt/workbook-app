@@ -27,27 +27,55 @@ export function verifyStripeSignature(
     }
 
     const timestamp = timestampPart.split('=')[1]
+    console.log('⏰ Timestamp:', timestamp)
     
     // Check timestamp to prevent replay attacks (allow 30 minutes tolerance for resend)
     const currentTime = Math.floor(Date.now() / 1000)
     const eventTime = parseInt(timestamp, 10)
     const timestampAge = currentTime - eventTime
     
-    console.log('⏰ Timestamp age:', timestampAge, 'seconds')
+    console.log('⏰ Current time:', currentTime)
+    console.log('⏰ Event time:', eventTime)
+    console.log('⏰ Age:', timestampAge, 'seconds')
     
     // Allow 30 minutes tolerance (1800 seconds) for resend scenarios
-    if (timestampAge > 1800) {
-      console.warn('⚠️ Signature timestamp is old:', timestampAge, 'seconds - but allowing for resend testing')
-      // Don't fail for old timestamps during testing - just log warning
+    if (timestampAge > 1800 || timestampAge < -300) {
+      console.warn('⚠️ Signature timestamp out of range:', timestampAge, 'seconds')
+      console.warn('⚠️ Allowing for testing, but this should be reviewed in production')
     }
 
     // Create the signed payload (Stripe format: timestamp.payload)
     const signedPayload = `${timestamp}.${payload}`
     console.log('📦 Signed payload length:', signedPayload.length)
 
-    // Compute the expected signature using the secret directly
-    // Note: Stripe secrets include 'whsec_' prefix and should be used as-is
-    const hmac = crypto.createHmac('sha256', secret)
+    // Stripe webhook secret format: whsec_...
+    // We need to remove the prefix and decode from base64
+    let signingSecret: string | Buffer
+    if (secret.startsWith('whsec_')) {
+      const secretWithoutPrefix = secret.slice(6) // Remove 'whsec_'
+      try {
+        // Decode the base64 secret to get the raw signing key
+        signingSecret = Buffer.from(secretWithoutPrefix, 'base64')
+        console.log('🔑 Using decoded base64 secret (length:', signingSecret.length, 'bytes)')
+      } catch (decodeError) {
+        console.error('❌ Failed to decode secret from base64:', decodeError)
+        // Fallback: try using the secret directly (without prefix)
+        signingSecret = secretWithoutPrefix
+        console.warn('⚠️ Falling back to using secret as-is (without base64 decode)')
+      }
+    } else {
+      // If no prefix, assume it's already the raw secret or base64 encoded
+      try {
+        signingSecret = Buffer.from(secret, 'base64')
+        console.log('🔑 Using provided secret as base64 (length:', signingSecret.length, 'bytes)')
+      } catch {
+        signingSecret = secret
+        console.log('🔑 Using provided secret as-is (length:', secret.length, 'chars)')
+      }
+    }
+
+    // Compute the expected signature using HMAC-SHA256
+    const hmac = crypto.createHmac('sha256', signingSecret)
     const computedSignature = hmac.update(signedPayload).digest('hex')
     
     console.log('🔐 Computed signature (first 20 chars):', computedSignature.substring(0, 20))
