@@ -56,8 +56,7 @@ export async function POST(request: NextRequest) {
     console.log('🔐 STRIPE_WEBHOOK_SECRET configured:', !!STRIPE_WEBHOOK_SECRET)
 
     // Verify webhook signature (only if secret is configured)
-    // TEMPORARILY DISABLED FOR DEBUGGING - TODO: Re-enable after fixing secret
-    if (false && STRIPE_WEBHOOK_SECRET && STRIPE_WEBHOOK_SECRET.length > 0) {
+    if (STRIPE_WEBHOOK_SECRET && STRIPE_WEBHOOK_SECRET.length > 0) {
       if (!signature) {
         console.error('❌ Missing Stripe signature header')
         await logWebhook({
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
         await logWebhook({
           status: 'error',
           statusCode: 401,
-          message: 'Invalid Stripe signature',
+          message: 'Invalid Stripe signature - check Vercel logs for details',
         })
         return NextResponse.json(
           { error: 'Invalid signature' },
@@ -87,10 +86,10 @@ export async function POST(request: NextRequest) {
         )
       }
     } else {
-      console.warn('⚠️ Signature verification TEMPORARILY DISABLED for debugging')
+      console.warn('⚠️ STRIPE_WEBHOOK_SECRET not configured - skipping signature verification')
       await logWebhook({
         status: 'processing',
-        message: 'Signature verification temporarily disabled for debugging',
+        message: 'STRIPE_WEBHOOK_SECRET not configured - skipping signature verification',
       })
     }
 
