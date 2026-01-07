@@ -71,39 +71,13 @@ export function verifyStripeSignature(
     console.log('📦 Payload preview (first 100 chars):', payload.substring(0, 100))
 
     // Stripe webhook secret format: whsec_...
-    // We need to remove the prefix and decode from base64 to get the raw signing key
-    let signingSecret: string | Buffer
+    // IMPORTANT: Stripe uses the secret directly as a string for HMAC, NO base64 decoding!
+    // The entire secret including the 'whsec_' prefix is used as the HMAC key
+    console.log('🔑 Using secret directly as HMAC key (no decoding)')
+    console.log('🔑 Secret format check: starts with whsec_?', secret.startsWith('whsec_'))
     
-    if (secret.startsWith('whsec_')) {
-      const secretWithoutPrefix = secret.slice(6) // Remove 'whsec_'
-      console.log('🔑 Removing whsec_ prefix, remaining length:', secretWithoutPrefix.length)
-      
-      try {
-        // Decode the base64 secret to get the raw signing key (32 bytes)
-        signingSecret = Buffer.from(secretWithoutPrefix, 'base64')
-        console.log('✅ Successfully decoded secret from base64')
-        console.log('🔑 Decoded secret length:', signingSecret.length, 'bytes')
-        console.log('🔑 Secret type:', Buffer.isBuffer(signingSecret) ? 'Buffer' : typeof signingSecret)
-      } catch (decodeError: any) {
-        console.error('❌ Failed to decode secret from base64:', decodeError.message)
-        // Fallback: try using the secret directly (without prefix)
-        signingSecret = secretWithoutPrefix
-        console.warn('⚠️ Falling back to using secret as-is (without base64 decode)')
-        console.warn('⚠️ This may cause verification to fail')
-      }
-    } else {
-      console.warn('⚠️ Secret does not start with whsec_ prefix')
-      // If no prefix, try decoding as base64 first
-      try {
-        signingSecret = Buffer.from(secret, 'base64')
-        console.log('🔑 Using provided secret as base64 (length:', signingSecret.length, 'bytes)')
-      } catch {
-        // Last resort: use as-is
-        signingSecret = secret
-        console.warn('🔑 Using provided secret as-is (length:', secret.length, 'chars)')
-        console.warn('⚠️ This may cause verification to fail - secret should be whsec_...')
-      }
-    }
+    // Use the secret directly - this is how Stripe's official library does it
+    const signingSecret = secret
 
     // Compute the expected signature using HMAC-SHA256
     const hmac = crypto.createHmac('sha256', signingSecret)
