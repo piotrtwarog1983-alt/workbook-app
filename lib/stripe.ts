@@ -103,7 +103,15 @@ export interface StripeCheckoutSession {
   }
   amount_total: number | null
   currency: string | null
-  metadata?: Record<string, string>
+  locale?: string | null  // Stripe locale e.g. 'pl', 'de', 'en'
+  metadata?: {
+    language?: string  // Custom language from checkout
+    firstName?: string
+    lastName?: string
+    email?: string
+    orderId?: string
+    [key: string]: string | undefined
+  }
 }
 
 /**

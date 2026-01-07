@@ -91,7 +91,15 @@ export async function POST(request: NextRequest) {
 
     const registrationUrl = `${appUrl?.replace(/\/$/, '') || 'http://localhost:3000'}/signup?token=${token}`
 
-    await sendRegistrationEmail(customerEmail, registrationUrl)
+    // Determine language from custom_data or meta
+    // Lemon Squeezy can pass custom data through checkout
+    const customData = meta?.custom_data || order?.custom_data || {}
+    const rawLanguage = customData?.language || 'pl'
+    const language = rawLanguage.toUpperCase() as 'PL' | 'DE' | 'EN'
+    const validLanguage = ['PL', 'DE', 'EN'].includes(language) ? language : 'PL'
+    console.log('🌍 Email language:', validLanguage)
+
+    await sendRegistrationEmail(customerEmail, registrationUrl, validLanguage)
 
     return NextResponse.json({
       message: 'Order processed successfully',

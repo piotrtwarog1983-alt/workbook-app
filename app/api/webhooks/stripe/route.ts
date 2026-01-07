@@ -233,10 +233,17 @@ export async function POST(request: NextRequest) {
       const registrationUrl = `${appUrl?.replace(/\/$/, '') || 'http://localhost:3000'}/signup?token=${token}`
       console.log('🔗 Registration URL:', registrationUrl)
 
+      // Determine language from metadata or locale
+      // Priority: metadata.language > session.locale > default 'PL'
+      const rawLanguage = session.metadata?.language || session.locale || 'pl'
+      const language = rawLanguage.toUpperCase() as 'PL' | 'DE' | 'EN'
+      const validLanguage = ['PL', 'DE', 'EN'].includes(language) ? language : 'PL'
+      console.log('🌍 Email language:', validLanguage, '(from:', rawLanguage, ')')
+
       // Send registration email
       console.log('📧 Sending registration email...')
       try {
-        const emailSent = await sendRegistrationEmail(customerEmail, registrationUrl)
+        const emailSent = await sendRegistrationEmail(customerEmail, registrationUrl, validLanguage)
         console.log('📧 Email send result:', emailSent)
       } catch (emailError) {
         console.error('❌ Error sending email:', emailError)
