@@ -94,9 +94,10 @@ export async function POST(request: NextRequest) {
     // Determine language from custom_data or meta
     // Lemon Squeezy can pass custom data through checkout
     const customData = meta?.custom_data || order?.custom_data || {}
-    const rawLanguage = customData?.language || 'pl'
-    const language = rawLanguage.toUpperCase() as 'PL' | 'DE' | 'EN'
-    const validLanguage = ['PL', 'DE', 'EN'].includes(language) ? language : 'PL'
+    const rawLanguage = customData?.language || 'en'
+    const language = rawLanguage.toUpperCase() as 'PL' | 'EN' | 'DE' | 'IT' | 'FR' | 'ES'
+    const validLanguages = ['PL', 'EN', 'DE', 'IT', 'FR', 'ES']
+    const validLanguage = validLanguages.includes(language) ? language : 'EN'
     console.log('🌍 Email language:', validLanguage)
 
     await sendRegistrationEmail(customerEmail, registrationUrl, validLanguage)

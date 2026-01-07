@@ -234,10 +234,11 @@ export async function POST(request: NextRequest) {
       console.log('🔗 Registration URL:', registrationUrl)
 
       // Determine language from metadata or locale
-      // Priority: metadata.language > session.locale > default 'PL'
-      const rawLanguage = session.metadata?.language || session.locale || 'pl'
-      const language = rawLanguage.toUpperCase() as 'PL' | 'DE' | 'EN'
-      const validLanguage = ['PL', 'DE', 'EN'].includes(language) ? language : 'PL'
+      // Priority: metadata.language > session.locale > default 'EN'
+      const rawLanguage = session.metadata?.language || session.locale || 'en'
+      const language = rawLanguage.toUpperCase() as 'PL' | 'EN' | 'DE' | 'IT' | 'FR' | 'ES'
+      const validLanguages = ['PL', 'EN', 'DE', 'IT', 'FR', 'ES']
+      const validLanguage = validLanguages.includes(language) ? language : 'EN'
       console.log('🌍 Email language:', validLanguage, '(from:', rawLanguage, ')')
 
       // Send registration email

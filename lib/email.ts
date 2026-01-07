@@ -1,4 +1,5 @@
-import { Language, translations } from './translations'
+// Email language type - supported languages for emails
+export type EmailLanguage = 'PL' | 'EN' | 'DE' | 'IT' | 'FR' | 'ES'
 
 interface EmailOptions {
   to: string
@@ -125,6 +126,75 @@ const emailContent = {
       footer: 'Best regards,<br>The WorkBook Team',
     },
   },
+  IT: {
+    registration: {
+      subject: 'Accesso al corso WorkBook - Crea account',
+      greeting: 'Ciao!',
+      thanks: 'Grazie per aver acquistato il corso <strong>WorkBook</strong>.',
+      instruction: 'Per accedere alla piattaforma, crea un account cliccando il pulsante qui sotto:',
+      buttonText: 'Crea account',
+      copyLink: 'Oppure copia questo link nel tuo browser:',
+      validity: 'Il link è valido per 7 giorni.',
+      footer: 'Cordiali saluti,<br>Il Team WorkBook',
+    },
+    reset: {
+      subject: 'WorkBook - Reimpostazione password',
+      title: 'Reimpostazione password',
+      intro: 'Abbiamo ricevuto una richiesta di reimpostazione della password per il tuo account <strong>WorkBook</strong>.',
+      instruction: 'Clicca il pulsante qui sotto per impostare una nuova password:',
+      buttonText: 'Reimposta password',
+      copyLink: 'Oppure copia questo link nel tuo browser:',
+      warning: '⚠️ Importante:',
+      warningText: 'Questo link scade tra 1 ora. Se non hai richiesto la reimpostazione della password, ignora questo messaggio.',
+      footer: 'Cordiali saluti,<br>Il Team WorkBook',
+    },
+  },
+  FR: {
+    registration: {
+      subject: 'Accès au cours WorkBook - Créer un compte',
+      greeting: 'Bonjour !',
+      thanks: 'Merci d\'avoir acheté le cours <strong>WorkBook</strong>.',
+      instruction: 'Pour accéder à la plateforme, créez un compte en cliquant sur le bouton ci-dessous :',
+      buttonText: 'Créer un compte',
+      copyLink: 'Ou copiez ce lien dans votre navigateur :',
+      validity: 'Le lien est valable pendant 7 jours.',
+      footer: 'Cordialement,<br>L\'équipe WorkBook',
+    },
+    reset: {
+      subject: 'WorkBook - Réinitialisation du mot de passe',
+      title: 'Réinitialisation du mot de passe',
+      intro: 'Nous avons reçu une demande de réinitialisation du mot de passe de votre compte <strong>WorkBook</strong>.',
+      instruction: 'Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :',
+      buttonText: 'Réinitialiser le mot de passe',
+      copyLink: 'Ou copiez ce lien dans votre navigateur :',
+      warning: '⚠️ Important :',
+      warningText: 'Ce lien expire dans 1 heure. Si vous n\'avez pas demandé la réinitialisation du mot de passe, veuillez ignorer ce message.',
+      footer: 'Cordialement,<br>L\'équipe WorkBook',
+    },
+  },
+  ES: {
+    registration: {
+      subject: 'Acceso al curso WorkBook - Crear cuenta',
+      greeting: '¡Hola!',
+      thanks: 'Gracias por comprar el curso <strong>WorkBook</strong>.',
+      instruction: 'Para acceder a la plataforma, crea una cuenta haciendo clic en el botón de abajo:',
+      buttonText: 'Crear cuenta',
+      copyLink: 'O copia este enlace en tu navegador:',
+      validity: 'El enlace es válido durante 7 días.',
+      footer: 'Saludos cordiales,<br>El equipo de WorkBook',
+    },
+    reset: {
+      subject: 'WorkBook - Restablecimiento de contraseña',
+      title: 'Restablecimiento de contraseña',
+      intro: 'Hemos recibido una solicitud para restablecer la contraseña de tu cuenta de <strong>WorkBook</strong>.',
+      instruction: 'Haz clic en el botón de abajo para establecer una nueva contraseña:',
+      buttonText: 'Restablecer contraseña',
+      copyLink: 'O copia este enlace en tu navegador:',
+      warning: '⚠️ Importante:',
+      warningText: 'Este enlace expira en 1 hora. Si no solicitaste el restablecimiento de la contraseña, ignora este mensaje.',
+      footer: 'Saludos cordiales,<br>El equipo de WorkBook',
+    },
+  },
 }
 
 /**
@@ -133,7 +203,7 @@ const emailContent = {
 export async function sendRegistrationEmail(
   email: string,
   registrationUrl: string,
-  language: Language = 'PL'
+  language: EmailLanguage = 'EN'
 ): Promise<boolean> {
   const content = emailContent[language].registration
   const html = `
@@ -172,7 +242,7 @@ export async function sendRegistrationEmail(
 export async function sendPasswordResetEmail(
   email: string,
   resetUrl: string,
-  language: Language = 'PL'
+  language: EmailLanguage = 'EN'
 ): Promise<boolean> {
   const content = emailContent[language].reset
   const html = `
