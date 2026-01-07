@@ -48,12 +48,28 @@ export async function POST(request: NextRequest) {
   })
   
   try {
+    // CRITICAL: Get raw body as string BEFORE any processing
+    // Stripe signature verification requires the exact raw body
     const signature = request.headers.get('stripe-signature') || ''
-    const body = await request.text()
+    const body = await request.text() // This gives us the raw body string
 
-    console.log('📋 Webhook body length:', body.length)
-    console.log('🔑 Signature present:', !!signature)
+    console.log('📋 ========== Stripe Webhook Received ==========')
+    console.log('📋 Webhook body length:', body.length, 'bytes')
+    console.log('📋 Body preview (first 200 chars):', body.substring(0, 200))
+    console.log('🔑 Signature header present:', !!signature)
+    console.log('🔑 Signature header length:', signature?.length || 0)
     console.log('🔐 STRIPE_WEBHOOK_SECRET configured:', !!STRIPE_WEBHOOK_SECRET)
+    console.log('🔐 STRIPE_WEBHOOK_SECRET length:', STRIPE_WEBHOOK_SECRET?.length || 0)
+    
+    // Verify body is valid JSON (but don't parse yet - we need raw string for verification)
+    let bodyIsValidJson = false
+    try {
+      JSON.parse(body)
+      bodyIsValidJson = true
+      console.log('✅ Body is valid JSON')
+    } catch {
+      console.error('❌ Body is NOT valid JSON - this may cause issues')
+    }
 
     // Verify webhook signature (only if secret is configured)
     if (STRIPE_WEBHOOK_SECRET && STRIPE_WEBHOOK_SECRET.length > 0) {
