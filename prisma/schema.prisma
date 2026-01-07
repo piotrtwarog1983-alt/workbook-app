@@ -232,3 +232,20 @@ model ProgressPhoto {
   @@index([pageNumber])
 }
 
+// Webhook logs - do debugowania
+model WebhookLog {
+  id          String   @id @default(cuid())
+  source      String   // 'stripe' | 'lemonsqueezy'
+  eventType   String?  // Typ eventu np. 'checkout.session.completed'
+  eventId     String?  // ID eventu ze źródła
+  status      String   // 'received' | 'processing' | 'success' | 'error'
+  statusCode  Int?     // HTTP status code zwrócony
+  message     String?  // Opis lub błąd
+  payload     Json?    // Raw payload (opcjonalnie)
+  createdAt   DateTime @default(now())
+
+  @@index([source])
+  @@index([createdAt])
+  @@index([status])
+}
+

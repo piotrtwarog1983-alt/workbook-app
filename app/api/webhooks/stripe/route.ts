@@ -12,8 +12,40 @@ const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || ''
 
 export const dynamic = 'force-dynamic'
 
+// Helper function to log webhook to database
+async function logWebhook(data: {
+  eventType?: string
+  eventId?: string
+  status: string
+  statusCode?: number
+  message?: string
+  payload?: unknown
+}) {
+  try {
+    await prisma.webhookLog.create({
+      data: {
+        source: 'stripe',
+        eventType: data.eventType,
+        eventId: data.eventId,
+        status: data.status,
+        statusCode: data.statusCode,
+        message: data.message,
+        payload: data.payload ? JSON.parse(JSON.stringify(data.payload)) : null,
+      },
+    })
+  } catch (logError) {
+    console.error('Failed to log webhook:', logError)
+  }
+}
+
 export async function POST(request: NextRequest) {
   console.log('🔔 Stripe webhook received')
+  
+  // Log that we received a request
+  await logWebhook({
+    status: 'received',
+    message: 'Webhook request received',
+  })
   
   try {
     const signature = request.headers.get('stripe-signature') || ''
@@ -27,6 +59,11 @@ export async function POST(request: NextRequest) {
     if (STRIPE_WEBHOOK_SECRET && STRIPE_WEBHOOK_SECRET.length > 0) {
       if (!signature) {
         console.error('❌ Missing Stripe signature header')
+        await logWebhook({
+          status: 'error',
+          statusCode: 401,
+          message: 'Missing Stripe signature header',
+        })
         return NextResponse.json(
           { error: 'Missing signature' },
           { status: 401 }
@@ -38,6 +75,11 @@ export async function POST(request: NextRequest) {
       
       if (!isValid) {
         console.error('❌ Invalid Stripe signature')
+        await logWebhook({
+          status: 'error',
+          statusCode: 401,
+          message: 'Invalid Stripe signature',
+        })
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 }
@@ -45,6 +87,10 @@ export async function POST(request: NextRequest) {
       }
     } else {
       console.warn('⚠️ STRIPE_WEBHOOK_SECRET not configured - skipping signature verification (NOT RECOMMENDED FOR PRODUCTION)')
+      await logWebhook({
+        status: 'processing',
+        message: 'STRIPE_WEBHOOK_SECRET not configured - skipping signature verification',
+      })
     }
 
     let event: StripeWebhookEvent
@@ -52,8 +98,21 @@ export async function POST(request: NextRequest) {
       event = JSON.parse(body)
       console.log('📨 Event type:', event.type)
       console.log('📨 Event ID:', event.id)
+      
+      // Log parsed event
+      await logWebhook({
+        eventType: event.type,
+        eventId: event.id,
+        status: 'processing',
+        message: 'Event parsed successfully',
+      })
     } catch (parseError) {
       console.error('❌ Failed to parse webhook body:', parseError)
+      await logWebhook({
+        status: 'error',
+        statusCode: 400,
+        message: `Failed to parse webhook body: ${parseError}`,
+      })
       return NextResponse.json(
         { error: 'Invalid JSON body' },
         { status: 400 }
@@ -185,6 +244,15 @@ export async function POST(request: NextRequest) {
 
       console.log(`✅ Stripe order processed: ${session.id}, email: ${customerEmail}`)
 
+      // Log success
+      await logWebhook({
+        eventType: event.type,
+        eventId: event.id,
+        status: 'success',
+        statusCode: 200,
+        message: `Order processed: ${session.id}, email: ${customerEmail}`,
+      })
+
       return NextResponse.json({
         message: 'Order processed successfully',
         token: registrationToken.id,
@@ -194,14 +262,34 @@ export async function POST(request: NextRequest) {
     // Handle payment_intent.payment_failed for logging purposes
     if (event.type === 'payment_intent.payment_failed') {
       console.error('Payment failed:', event.data.object)
+      await logWebhook({
+        eventType: event.type,
+        eventId: event.id,
+        status: 'error',
+        statusCode: 200,
+        message: 'Payment failed',
+        payload: event.data.object,
+      })
       return NextResponse.json({ message: 'Payment failure logged' })
     }
 
     // Other events - just acknowledge receipt
+    await logWebhook({
+      eventType: event.type,
+      eventId: event.id,
+      status: 'success',
+      statusCode: 200,
+      message: 'Event received but not handled',
+    })
     return NextResponse.json({ message: 'Event received but not handled' })
 
   } catch (error) {
     console.error('Stripe webhook error:', error)
+    await logWebhook({
+      status: 'error',
+      statusCode: 500,
+      message: `Internal server error: ${error}`,
+    })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
