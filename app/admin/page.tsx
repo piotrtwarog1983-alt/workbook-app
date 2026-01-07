@@ -63,11 +63,15 @@ export default function AdminPage() {
   const [formData, setFormData] = useState({
     email: '',
     expiresInDays: 7,
+    language: 'EN' as 'PL' | 'EN' | 'DE' | 'IT' | 'FR' | 'ES',
+    sendEmail: false,
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [creating, setCreating] = useState(false)
   const [loadingTokens, setLoadingTokens] = useState(false)
+  const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null)
+  const [sendingEmailTokenId, setSendingEmailTokenId] = useState<string | null>(null)
   
   // Users state
   const [users, setUsers] = useState<UserAccount[]>([])
@@ -292,8 +296,38 @@ export default function AdminPage() {
         return
       }
 
-      setSuccess(`Token utworzony! Link: ${data.registrationUrl}`)
-      setFormData({ email: '', expiresInDays: 7 })
+      // If sendEmail is checked, send email for the newly created token
+      if (formData.sendEmail && data.token) {
+        // Find the token ID from the response or the tokens list after reload
+        const tokenResponse = await fetch('/api/admin/tokens', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const tokensData = await tokenResponse.json()
+        const newToken = tokensData.tokens?.find((t: RegistrationToken) => t.token === data.token)
+        
+        if (newToken) {
+          const emailResponse = await fetch(`/api/admin/tokens/${newToken.id}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ language: formData.language }),
+          })
+          
+          if (emailResponse.ok) {
+            setSuccess(`Token utworzony i email wysłany do ${formData.email}!`)
+          } else {
+            setSuccess(`Token utworzony! Link: ${data.registrationUrl} (email nie został wysłany)`)
+          }
+        } else {
+          setSuccess(`Token utworzony! Link: ${data.registrationUrl}`)
+        }
+      } else {
+        setSuccess(`Token utworzony! Link: ${data.registrationUrl}`)
+      }
+      
+      setFormData({ email: '', expiresInDays: 7, language: 'EN', sendEmail: false })
       loadTokens()
     } catch (err) {
       setError('Wystąpił błąd. Spróbuj ponownie.')
@@ -306,6 +340,73 @@ export default function AdminPage() {
     navigator.clipboard.writeText(text)
     setSuccess('Link skopiowany do schowka!')
     setTimeout(() => setSuccess(''), 3000)
+  }
+
+  const deleteToken = async (tokenId: string, tokenEmail: string) => {
+    if (!confirm(`Czy na pewno chcesz usunąć token dla ${tokenEmail}?`)) {
+      return
+    }
+
+    setDeletingTokenId(tokenId)
+    setError('')
+    setSuccess('')
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/admin/tokens/${tokenId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Błąd usuwania tokenu')
+        return
+      }
+
+      setSuccess(`Token dla ${tokenEmail} został usunięty`)
+      loadTokens()
+    } catch (error) {
+      setError('Wystąpił błąd podczas usuwania tokenu')
+      console.error('Error deleting token:', error)
+    } finally {
+      setDeletingTokenId(null)
+    }
+  }
+
+  const sendTokenEmail = async (tokenId: string, tokenEmail: string) => {
+    setSendingEmailTokenId(tokenId)
+    setError('')
+    setSuccess('')
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/admin/tokens/${tokenId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ language: 'EN' }), // Default to EN
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Błąd wysyłania emaila')
+        return
+      }
+
+      setSuccess(`Email został wysłany do ${tokenEmail}`)
+    } catch (error) {
+      setError('Wystąpił błąd podczas wysyłania emaila')
+      console.error('Error sending email:', error)
+    } finally {
+      setSendingEmailTokenId(null)
+    }
   }
 
   const selectConversation = async (conversation: Conversation) => {
@@ -544,12 +645,47 @@ export default function AdminPage() {
                   </p>
                 </div>
 
+                {/* Send email option */}
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.sendEmail}
+                      onChange={(e) => setFormData({ ...formData, sendEmail: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-600 bg-white/5 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-0"
+                    />
+                    <span className="text-sm text-gray-300">Wyślij email z linkiem do rejestracji</span>
+                  </label>
+                </div>
+
+                {/* Language selection (visible when sendEmail is checked) */}
+                {formData.sendEmail && (
+                  <div>
+                    <label htmlFor="language" className="block text-sm font-medium text-gray-400 mb-2">
+                      Język emaila
+                    </label>
+                    <select
+                      id="language"
+                      value={formData.language}
+                      onChange={(e) => setFormData({ ...formData, language: e.target.value as 'PL' | 'EN' | 'DE' | 'IT' | 'FR' | 'ES' })}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    >
+                      <option value="EN">English</option>
+                      <option value="PL">Polski</option>
+                      <option value="DE">Deutsch</option>
+                      <option value="IT">Italiano</option>
+                      <option value="FR">Français</option>
+                      <option value="ES">Español</option>
+                    </select>
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={creating}
                   className="w-full py-3 rounded-lg font-semibold bg-cyan-600 text-white hover:bg-cyan-500 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
                 >
-                  {creating ? 'Tworzenie...' : 'Utwórz token rejestracyjny'}
+                  {creating ? 'Tworzenie...' : formData.sendEmail ? 'Utwórz token i wyślij email' : 'Utwórz token rejestracyjny'}
                 </button>
               </form>
             </div>
@@ -619,14 +755,37 @@ export default function AdminPage() {
                               {new Date(token.expiresAt).toLocaleDateString('pl-PL')}
                             </td>
                             <td className="px-4 py-4 text-sm">
-                              {!token.used && !isExpired && (
+                              <div className="flex items-center gap-2">
+                                {!token.used && !isExpired && (
+                                  <>
+                                    <button
+                                      onClick={() => copyToClipboard(registrationUrl)}
+                                      className="text-cyan-400 hover:text-cyan-300 text-xs"
+                                      title="Kopiuj link"
+                                    >
+                                      Kopiuj
+                                    </button>
+                                    <span className="text-gray-600">|</span>
+                                    <button
+                                      onClick={() => sendTokenEmail(token.id, token.email)}
+                                      disabled={sendingEmailTokenId === token.id}
+                                      className="text-green-400 hover:text-green-300 text-xs disabled:opacity-50"
+                                      title="Wyślij email"
+                                    >
+                                      {sendingEmailTokenId === token.id ? 'Wysyłanie...' : 'Email'}
+                                    </button>
+                                    <span className="text-gray-600">|</span>
+                                  </>
+                                )}
                                 <button
-                                  onClick={() => copyToClipboard(registrationUrl)}
-                                  className="text-cyan-400 hover:text-cyan-300"
+                                  onClick={() => deleteToken(token.id, token.email)}
+                                  disabled={deletingTokenId === token.id}
+                                  className="text-red-400 hover:text-red-300 text-xs disabled:opacity-50"
+                                  title="Usuń token"
                                 >
-                                  Kopiuj link
+                                  {deletingTokenId === token.id ? 'Usuwanie...' : 'Usuń'}
                                 </button>
-                              )}
+                              </div>
                             </td>
                           </tr>
                         )
