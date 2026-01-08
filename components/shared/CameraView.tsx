@@ -347,7 +347,44 @@ export function CameraView({
   const handleSavePhoto = useCallback(async () => {
     if (!capturedImage) return
 
-    // Wywołaj callback z danymi zdjęcia (jeśli istnieje)
+    // Nazwa pliku z datą i numerem strony
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const fileName = pageNumber 
+      ? `TheOne-strona${pageNumber}-${timestamp}.jpg`
+      : `TheOne-${timestamp}.jpg`
+
+    // Konwertuj base64 na blob
+    const base64Response = await fetch(capturedImage)
+    const blob = await base64Response.blob()
+
+    // Wykryj iOS (Safari na iPhone/iPad)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    
+    // Zapisz do galerii urządzenia
+    if (isIOS && navigator.share && navigator.canShare) {
+      // Na iOS użyj Web Share API (jedyny sposób zapisu do galerii)
+      try {
+        const file = new File([blob], fileName, { type: 'image/jpeg' })
+        const shareData = { files: [file] }
+        
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData)
+        } else {
+          downloadViaLink(blob, fileName)
+        }
+      } catch (err) {
+        // Użytkownik anulował - ignoruj
+        if ((err as Error).name !== 'AbortError') {
+          downloadViaLink(blob, fileName)
+        }
+      }
+    } else {
+      // Android/Desktop - automatyczne pobieranie
+      downloadViaLink(blob, fileName)
+    }
+
+    // Wywołaj callback z danymi zdjęcia (upload na serwer)
     if (onCapture) {
       onCapture(capturedImage)
     }
@@ -358,7 +395,7 @@ export function CameraView({
     // Wyczyść podgląd i wróć do kamery
     setCapturedImage(null)
     startCamera()
-  }, [capturedImage, onCapture, startCamera])
+  }, [capturedImage, onCapture, startCamera, pageNumber, downloadViaLink])
 
   // Odrzucenie zdjęcia (po kliknięciu czerwonego krzyżyka)
   const handleDiscardPhoto = useCallback(() => {
