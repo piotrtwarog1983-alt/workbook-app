@@ -83,11 +83,9 @@ export function withDevice<P extends object>(
     if (isLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-black">
-          <video
-            src="/course/ikony/theone.mp4"
-            autoPlay
-            muted
-            playsInline
+          <img
+            src="/course/ikony/theone.png"
+            alt="Loading"
             className="w-32 h-32 object-contain"
           />
         </div>

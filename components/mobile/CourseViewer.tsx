@@ -600,11 +600,9 @@ useEffect(() => {
   if (loading) {
     return (
       <div className="flex items-center justify-center bg-black" style={{ minHeight: 'var(--vh, 100vh)' }}>
-        <video
-          src="/course/ikony/theone.mp4"
-          autoPlay
-          muted
-          playsInline
+        <img
+          src="/course/ikony/theone.png"
+          alt="Loading"
           className="w-32 h-32 object-contain"
         />
       </div>
