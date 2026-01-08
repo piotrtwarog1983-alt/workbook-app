@@ -43,7 +43,7 @@ const translations = {
   },
 }
 
-const evaluationPages = [16, 21, 30, 36, 41, 50]
+const evaluationPages = [14, 19, 28, 34, 39]
 const STORAGE_KEY = 'progressEvaluations'
 
 type StoredEvaluation = {
