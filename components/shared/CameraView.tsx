@@ -54,6 +54,8 @@ export function CameraView({
   
   // Podgląd zrobionego zdjęcia przed zapisaniem
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  // Czy zdjęcie pochodzi z galerii (true) czy z aparatu (false)
+  const [isFromGallery, setIsFromGallery] = useState(false)
   
   // Edytor zdjęć
   const [showEditor, setShowEditor] = useState(false)
@@ -334,6 +336,7 @@ export function CameraView({
     // Pobierz dane obrazu jako base64 i pokaż podgląd
     const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9)
     setCapturedImage(imageDataUrl)
+    setIsFromGallery(false) // Zdjęcie z aparatu
     
     // Zatrzymaj kamerę podczas podglądu (oszczędność zasobów)
     stopCamera()
@@ -400,6 +403,7 @@ export function CameraView({
   // Odrzucenie zdjęcia (po kliknięciu czerwonego krzyżyka)
   const handleDiscardPhoto = useCallback(() => {
     setCapturedImage(null)
+    setIsFromGallery(false)
     startCamera()
   }, [startCamera])
 
@@ -646,56 +650,122 @@ export function CameraView({
             />
           </div>
 
-          {/* Dolny panel z przyciskami zapisz/odrzuć */}
+          {/* Dolny panel z przyciskami */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-10">
-            <div className="flex items-center justify-center gap-12">
-              {/* Przycisk odrzuć (czerwony krzyżyk) */}
-              <button
-                onClick={handleDiscardPhoto}
-                className="w-16 h-16 flex items-center justify-center rounded-full bg-red-500/80 border-4 border-red-400/50 active:scale-95 transition-transform shadow-lg shadow-red-500/30"
-              >
-                <svg 
-                  viewBox="0 0 24 24" 
-                  className="w-8 h-8 text-white" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+            {isFromGallery ? (
+              /* ZDJĘCIE Z GALERII - tylko zamknij i prześlij */
+              <>
+                <div className="flex items-center justify-center gap-12">
+                  {/* Przycisk zamknij (biały krzyżyk) */}
+                  <button
+                    onClick={handleDiscardPhoto}
+                    className="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 border-4 border-white/30 active:scale-95 transition-transform"
+                  >
+                    <svg 
+                      viewBox="0 0 24 24" 
+                      className="w-8 h-8 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
 
-              {/* Przycisk zapisz (zielony haczyk) */}
-              <button
-                onClick={handleSavePhoto}
-                className="w-20 h-20 flex items-center justify-center rounded-full bg-green-500/80 border-4 border-green-400/50 active:scale-95 transition-transform shadow-lg shadow-green-500/30"
-              >
-                <svg 
-                  viewBox="0 0 24 24" 
-                  className="w-10 h-10 text-white" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
-            </div>
+                  {/* Przycisk prześlij (zielony haczyk) - tylko upload na serwer */}
+                  <button
+                    onClick={() => {
+                      // Tylko upload na serwer (zdjęcie jest już zapisane w galerii)
+                      if (onCapture && capturedImage) {
+                        onCapture(capturedImage)
+                      }
+                      setPhotoCount(prev => prev + 1)
+                      setCapturedImage(null)
+                      setIsFromGallery(false)
+                      startCamera()
+                    }}
+                    className="w-20 h-20 flex items-center justify-center rounded-full bg-green-500/80 border-4 border-green-400/50 active:scale-95 transition-transform shadow-lg shadow-green-500/30"
+                  >
+                    <svg 
+                      viewBox="0 0 24 24" 
+                      className="w-10 h-10 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+                </div>
 
-            {/* Etykiety */}
-            <div className="flex items-center justify-center gap-12 mt-3">
-              <span className="text-red-400 text-sm w-16 text-center font-medium">
-                {t.camera.discard || 'Odrzuć'}
-              </span>
-              <span className="text-green-400 text-sm w-20 text-center font-medium">
-                {t.camera.save || 'Zapisz'}
-              </span>
-            </div>
+                {/* Etykiety */}
+                <div className="flex items-center justify-center gap-12 mt-3">
+                  <span className="text-white/60 text-sm w-16 text-center font-medium">
+                    {t.common.close || 'Zamknij'}
+                  </span>
+                  <span className="text-green-400 text-sm w-20 text-center font-medium">
+                    {t.camera.upload || 'Prześlij'}
+                  </span>
+                </div>
+              </>
+            ) : (
+              /* ZDJĘCIE Z APARATU - odrzuć lub zapisz */
+              <>
+                <div className="flex items-center justify-center gap-12">
+                  {/* Przycisk odrzuć (czerwony krzyżyk) */}
+                  <button
+                    onClick={handleDiscardPhoto}
+                    className="w-16 h-16 flex items-center justify-center rounded-full bg-red-500/80 border-4 border-red-400/50 active:scale-95 transition-transform shadow-lg shadow-red-500/30"
+                  >
+                    <svg 
+                      viewBox="0 0 24 24" 
+                      className="w-8 h-8 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+
+                  {/* Przycisk zapisz (zielony haczyk) */}
+                  <button
+                    onClick={handleSavePhoto}
+                    className="w-20 h-20 flex items-center justify-center rounded-full bg-green-500/80 border-4 border-green-400/50 active:scale-95 transition-transform shadow-lg shadow-green-500/30"
+                  >
+                    <svg 
+                      viewBox="0 0 24 24" 
+                      className="w-10 h-10 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Etykiety */}
+                <div className="flex items-center justify-center gap-12 mt-3">
+                  <span className="text-red-400 text-sm w-16 text-center font-medium">
+                    {t.camera.discard || 'Odrzuć'}
+                  </span>
+                  <span className="text-green-400 text-sm w-20 text-center font-medium">
+                    {t.camera.save || 'Zapisz'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </>
       ) : (
@@ -935,6 +1005,7 @@ export function CameraView({
               reader.onloadend = () => {
                 const imageData = reader.result as string
                 setCapturedImage(imageData)
+                setIsFromGallery(true) // Zdjęcie z galerii
                 stopCamera()
               }
               reader.readAsDataURL(file)
