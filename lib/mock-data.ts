@@ -151,8 +151,7 @@ export const MOCK_COURSE = {
       pageNumber: 14,
       title: '',
       content: JSON.stringify({
-        type: 'simple-text',
-        textFile: '/api/course-content/14/PL',
+        type: 'progress-evaluation',
       }),
       tips: JSON.stringify([]),
     },
@@ -199,8 +198,7 @@ export const MOCK_COURSE = {
       pageNumber: 19,
       title: '',
       content: JSON.stringify({
-        type: 'simple-text',
-        textFile: '/api/course-content/19/PL',
+        type: 'progress-evaluation',
       }),
       tips: JSON.stringify([]),
     },
@@ -294,8 +292,7 @@ export const MOCK_COURSE = {
       pageNumber: 28,
       title: '',
       content: JSON.stringify({
-        type: 'simple-text',
-        textFile: '/api/course-content/28/PL',
+        type: 'progress-evaluation',
       }),
       tips: JSON.stringify([]),
     },
@@ -358,8 +355,7 @@ export const MOCK_COURSE = {
       pageNumber: 34,
       title: '',
       content: JSON.stringify({
-        type: 'simple-text',
-        textFile: '/api/course-content/34/PL',
+        type: 'progress-evaluation',
       }),
       tips: JSON.stringify([]),
     },
@@ -408,8 +404,7 @@ export const MOCK_COURSE = {
       pageNumber: 39,
       title: '',
       content: JSON.stringify({
-        type: 'simple-text',
-        textFile: '/api/course-content/39/PL',
+        type: 'progress-evaluation',
       }),
       tips: JSON.stringify([]),
     },

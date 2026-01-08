@@ -982,8 +982,8 @@ useEffect(() => {
                     <div 
                       className="absolute inset-0"
                     >
-                {/* MOBILE: Uproszczone wyświetlanie JPG dla wszystkich stron oprócz QR upload */}
-                {isMobile && !isQRUpload ? (
+                {/* MOBILE: Uproszczone wyświetlanie JPG dla wszystkich stron oprócz QR upload i oceny */}
+                {isMobile && !isQRUpload && !isProgressEvaluation ? (
                   <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
                     <img
                       src={`/course/strona ${currentPage.pageNumber}/Wersja/${langFolder}/${currentPage.pageNumber}.jpg`}
