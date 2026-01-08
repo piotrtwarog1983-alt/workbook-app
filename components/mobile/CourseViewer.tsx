@@ -90,13 +90,16 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null)
   const minSwipeDistance = 50 // Minimalna odległość swipe w pikselach
   
-  // Mapowanie języka z kontekstu na format folderów (PL, DE, EN Usa)
-  // langFolder - dla bezpośredniego dostępu do plików public
+  // Mapowanie języka z kontekstu na format folderów
+  // langFolder - dla bezpośredniego dostępu do plików public (JPG)
   // language - dla API routes (mają własne mapowanie)
   const langFolderMap: { [key: string]: string } = {
-    'EN': 'EN Usa',
+    'EN': 'EN',
     'PL': 'PL',
     'DE': 'DE',
+    'IT': 'IT',
+    'FR': 'FR',
+    'ES': 'ES',
   }
   const langFolder = langFolderMap[language] || language
 
@@ -979,7 +982,28 @@ useEffect(() => {
                     <div 
                       className="absolute inset-0"
                     >
-                {currentPage.pageNumber === 1 && isMobile ? (
+                {/* MOBILE: Uproszczone wyświetlanie JPG dla wszystkich stron oprócz QR upload */}
+                {isMobile && !isQRUpload ? (
+                  <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
+                    <img
+                      src={`/course/strona ${currentPage.pageNumber}/Wersja/${langFolder}/${currentPage.pageNumber}.jpg`}
+                      alt={`Strona ${currentPage.pageNumber}`}
+                      className="max-w-full max-h-full object-contain"
+                      style={{ 
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain'
+                      }}
+                      onError={(e) => {
+                        // Fallback do starego systemu jeśli JPG nie istnieje
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallbackContainer = target.parentElement?.querySelector('.fallback-content') as HTMLElement;
+                        if (fallbackContainer) fallbackContainer.style.display = 'block';
+                      }}
+                    />
+                  </div>
+                ) : currentPage.pageNumber === 1 && isMobile ? (
                   // Strona 1 - zdjęcie hero-mobile (1620x3150, proporcje 9:17.5)
                   <div className="absolute inset-0 w-full h-full">
                     <Image
