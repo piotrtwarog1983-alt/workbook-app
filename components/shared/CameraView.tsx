@@ -633,28 +633,16 @@ export function CameraView({
       {/* PODGLĄD ZDJĘCIA - widoczny po zrobieniu zdjęcia */}
       {capturedImage ? (
         <>
-          {/* Nagłówek podglądu */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
-            {/* Pusty element dla wyrównania (lewa strona) */}
-            <div className="w-10 h-10" />
-            
-            {/* Tytuł na środku */}
-            <span className="text-white text-lg font-medium">
-              {t.camera.preview || 'Podgląd zdjęcia'}
-            </span>
-            
-            {/* Przycisk zamknięcia (prawa strona) - tylko dla zdjęć z galerii */}
-            {isFromGallery ? (
-              <button
-                onClick={handleDiscardPhoto}
-                className="w-10 h-10 flex items-center justify-center text-white text-2xl"
-              >
-                ✕
-              </button>
-            ) : (
-              <div className="w-10 h-10" />
-            )}
-          </div>
+          {/* Przycisk zamknięcia (prawa strona) - tylko dla zdjęć z galerii */}
+          {isFromGallery && (
+            <button
+              onClick={handleDiscardPhoto}
+              className="absolute z-20 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full"
+              style={{ top: '5%', right: '4%' }}
+            >
+              ✕
+            </button>
+          )}
 
           {/* Podgląd zdjęcia */}
           <div className="flex-1 relative overflow-hidden flex items-center justify-center p-4">
