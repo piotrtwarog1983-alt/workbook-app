@@ -761,8 +761,8 @@ useEffect(() => {
         paddingBottom: isMobile ? '0' : '0' // Pasek jest fixed, więc nie potrzeba paddingu
       }}
     >
-      {/* Konfetti na stronie 51 (finał kursu) */}
-      {currentPage.pageNumber === 51 && <Confetti />}
+      {/* Konfetti na stronie 54 (finał kursu) */}
+      {currentPage.pageNumber === 54 && <Confetti />}
       
       {/* Main responsive layout */}
       <div 
