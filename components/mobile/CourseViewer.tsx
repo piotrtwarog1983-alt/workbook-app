@@ -984,7 +984,10 @@ useEffect(() => {
                     >
                 {/* MOBILE: Uproszczone wyświetlanie JPG dla wszystkich stron oprócz QR upload i oceny */}
                 {isMobile && !isQRUpload && !isProgressEvaluation ? (
-                  <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
+                  <div 
+                    key={`page-image-${currentPage.pageNumber}-${langFolder}`}
+                    className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
+                  >
                     <img
                       src={`/course/strona ${currentPage.pageNumber}/Wersja/${langFolder}/${currentPage.pageNumber}.jpg`}
                       alt={`Strona ${currentPage.pageNumber}`}
@@ -995,11 +998,9 @@ useEffect(() => {
                         objectFit: 'contain'
                       }}
                       onError={(e) => {
-                        // Fallback do starego systemu jeśli JPG nie istnieje
+                        // Fallback - ukryj obrazek jeśli nie istnieje
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        const fallbackContainer = target.parentElement?.querySelector('.fallback-content') as HTMLElement;
-                        if (fallbackContainer) fallbackContainer.style.display = 'block';
                       }}
                     />
                   </div>
