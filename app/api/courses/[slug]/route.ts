@@ -18,6 +18,11 @@ export async function GET(
     const resolvedParams = await Promise.resolve(params)
     const slug = resolvedParams.slug
 
+    // Zawsze używaj MOCK_COURSE dla kursu "theone" - dane są aktualizowane w mock-data.ts
+    if (slug === MOCK_COURSE.slug) {
+      return NextResponse.json(MOCK_COURSE)
+    }
+
     const course = await prisma.course.findUnique({
       where: { slug },
       include: {
@@ -29,10 +34,6 @@ export async function GET(
 
     if (course) {
       return NextResponse.json(course)
-    }
-
-    if (slug === MOCK_COURSE.slug) {
-      return NextResponse.json(MOCK_COURSE)
     }
 
     return NextResponse.json(
