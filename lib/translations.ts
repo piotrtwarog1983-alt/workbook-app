@@ -225,6 +225,9 @@ export const translations = {
       bokeh: 'Bokeh',
       photo: 'Zdjęcie',
       edit: 'Edycja',
+      preview: 'Podgląd zdjęcia',
+      discard: 'Odrzuć',
+      save: 'Zapisz',
     },
 
     // Edytor zdjęć
@@ -471,6 +474,9 @@ export const translations = {
       bokeh: 'Bokeh',
       photo: 'Foto',
       edit: 'Bearbeiten',
+      preview: 'Fotovorschau',
+      discard: 'Verwerfen',
+      save: 'Speichern',
     },
 
     // Fotoeditor
@@ -717,6 +723,9 @@ export const translations = {
       bokeh: 'Bokeh',
       photo: 'Photo',
       edit: 'Edit',
+      preview: 'Photo preview',
+      discard: 'Discard',
+      save: 'Save',
     },
 
     // Photo Editor

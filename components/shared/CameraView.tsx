@@ -52,6 +52,9 @@ export function CameraView({
   const [photoFlash, setPhotoFlash] = useState(false)
   const [photoCount, setPhotoCount] = useState(0)
   
+  // Podgląd zrobionego zdjęcia przed zapisaniem
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  
   // Edytor zdjęć
   const [showEditor, setShowEditor] = useState(false)
   
@@ -276,7 +279,7 @@ export function CameraView({
     }, 100)
   }, [])
 
-  // Robienie zdjęcia i zapisywanie na telefonie - przycięte do proporcji siatki 4:5
+  // Robienie zdjęcia - pokazuje podgląd przed zapisaniem
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return
 
@@ -328,52 +331,40 @@ export function CameraView({
       fastBlurTopRegion(ctx, canvas.width, canvas.height, bokehIntensity)
     }
 
-    // Pobierz dane obrazu jako base64
+    // Pobierz dane obrazu jako base64 i pokaż podgląd
     const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9)
+    setCapturedImage(imageDataUrl)
     
-    // Nazwa pliku z datą i numerem strony
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
-    const fileName = pageNumber 
-      ? `TheOne-strona${pageNumber}-${timestamp}.jpg`
-      : `TheOne-${timestamp}.jpg`
-
-    // Konwertuj base64 na blob
-    const base64Response = await fetch(imageDataUrl)
-    const blob = await base64Response.blob()
-
-    // Wykryj iOS (Safari na iPhone/iPad)
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    // Zatrzymaj kamerę podczas podglądu (oszczędność zasobów)
+    stopCamera()
     
-    // Na iOS użyj Web Share API (jedyny sposób zapisu do galerii), na innych platformach - automatyczne pobieranie
-    if (isIOS && navigator.share && navigator.canShare) {
-      try {
-        const file = new File([blob], fileName, { type: 'image/jpeg' })
-        const shareData = { files: [file] }
-        
-        if (navigator.canShare(shareData)) {
-          await navigator.share(shareData)
-        } else {
-          downloadViaLink(blob, fileName)
-        }
-      } catch (err) {
-        // Użytkownik anulował - ignoruj
-        if ((err as Error).name !== 'AbortError') {
-          downloadViaLink(blob, fileName)
-        }
-      }
-    } else {
-      // Android/Desktop - automatyczne pobieranie
-      downloadViaLink(blob, fileName)
-    }
-
-    // Krótka wizualna informacja o zapisaniu (flash ekranu)
+    // Flash efekt
     setPhotoFlash(true)
     setTimeout(() => setPhotoFlash(false), 200)
-    
+  }, [bokehEnabled, bokehIntensity, fastBlurTopRegion, stopCamera])
+
+  // Zapisanie zdjęcia (po kliknięciu zielonego haczyka)
+  const handleSavePhoto = useCallback(async () => {
+    if (!capturedImage) return
+
+    // Wywołaj callback z danymi zdjęcia (jeśli istnieje)
+    if (onCapture) {
+      onCapture(capturedImage)
+    }
+
     // Zwiększ licznik zdjęć
     setPhotoCount(prev => prev + 1)
-  }, [pageNumber, bokehEnabled, bokehIntensity, fastBlurTopRegion, downloadViaLink])
+    
+    // Wyczyść podgląd i wróć do kamery
+    setCapturedImage(null)
+    startCamera()
+  }, [capturedImage, onCapture, startCamera])
+
+  // Odrzucenie zdjęcia (po kliknięciu czerwonego krzyżyka)
+  const handleDiscardPhoto = useCallback(() => {
+    setCapturedImage(null)
+    startCamera()
+  }, [startCamera])
 
   // Przełączanie efektu sepii (zapisuje do localStorage)
   const toggleSepia = useCallback(() => {
@@ -598,106 +589,180 @@ export function CameraView({
         <div className="absolute inset-0 z-50 bg-white pointer-events-none animate-pulse" />
       )}
       
-      {/* Nagłówek */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
-        {/* Przycisk zamknięcia */}
-        <button
-          onClick={() => {
-            stopCamera()
-            onClose?.()
-          }}
-          className="w-10 h-10 flex items-center justify-center text-white text-2xl"
-        >
-          ✕
-        </button>
-
-        {/* Informacja o stronie lub licznik zdjęć */}
-        <span className="text-white text-sm opacity-70">
-          {pageNumber ? `${t.camera.page} ${pageNumber}` : ''}
-          {photoCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 bg-green-500/30 rounded-full text-green-400">
-              📷 {photoCount}
+      {/* PODGLĄD ZDJĘCIA - widoczny po zrobieniu zdjęcia */}
+      {capturedImage ? (
+        <>
+          {/* Nagłówek podglądu */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center p-4 bg-gradient-to-b from-black/70 to-transparent">
+            <span className="text-white text-lg font-medium">
+              {t.camera.preview || 'Podgląd zdjęcia'}
             </span>
-          )}
-        </span>
+          </div>
 
-        {/* Pusty element dla wyrównania */}
-        <div className="w-10 h-10" />
-      </div>
+          {/* Podgląd zdjęcia */}
+          <div className="flex-1 relative overflow-hidden flex items-center justify-center p-4">
+            <img
+              src={capturedImage}
+              alt="Podgląd"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              style={{ aspectRatio: '4/5' }}
+            />
+          </div>
 
-      {/* Podgląd kamery */}
-      <div 
-        className="flex-1 relative overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {error ? (
-          <div className="absolute inset-0 flex items-center justify-center p-8">
-            <div className="text-center">
-              <p className="text-red-400 text-lg mb-4">{error}</p>
-              
-              {/* Przycisk do ponownej próby */}
+          {/* Dolny panel z przyciskami zapisz/odrzuć */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-10">
+            <div className="flex items-center justify-center gap-12">
+              {/* Przycisk odrzuć (czerwony krzyżyk) */}
               <button
-                onClick={startCamera}
-                className="px-6 py-3 bg-white/20 rounded-full text-white mb-4"
+                onClick={handleDiscardPhoto}
+                className="w-16 h-16 flex items-center justify-center rounded-full bg-red-500/80 border-4 border-red-400/50 active:scale-95 transition-transform shadow-lg shadow-red-500/30"
               >
-                {t.camera.tryAgain}
-              </button>
-              
-              {/* Fallback - użyj natywnego aparatu */}
-              <div className="mt-4">
-                <p className="text-white/60 text-sm mb-3">{t.camera.orUseNative}</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file && onCapture) {
-                      const reader = new FileReader()
-                      reader.onloadend = () => {
-                        onCapture(reader.result as string)
-                      }
-                      reader.readAsDataURL(file)
-                    }
-                  }}
-                  className="hidden"
-                  id="camera-fallback-input"
-                />
-                <label
-                  htmlFor="camera-fallback-input"
-                  className="inline-block px-6 py-3 bg-blue-500 rounded-full text-white cursor-pointer hover:bg-blue-600 transition-colors"
+                <svg 
+                  viewBox="0 0 24 24" 
+                  className="w-8 h-8 text-white" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  📷 {t.camera.openCamera}
-                </label>
-              </div>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+
+              {/* Przycisk zapisz (zielony haczyk) */}
+              <button
+                onClick={handleSavePhoto}
+                className="w-20 h-20 flex items-center justify-center rounded-full bg-green-500/80 border-4 border-green-400/50 active:scale-95 transition-transform shadow-lg shadow-green-500/30"
+              >
+                <svg 
+                  viewBox="0 0 24 24" 
+                  className="w-10 h-10 text-white" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Etykiety */}
+            <div className="flex items-center justify-center gap-12 mt-3">
+              <span className="text-red-400 text-sm w-16 text-center font-medium">
+                {t.camera.discard || 'Odrzuć'}
+              </span>
+              <span className="text-green-400 text-sm w-20 text-center font-medium">
+                {t.camera.save || 'Zapisz'}
+              </span>
             </div>
           </div>
-        ) : (
-          <>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-              style={{ 
-                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+        </>
+      ) : (
+        <>
+          {/* Nagłówek */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
+            {/* Przycisk zamknięcia */}
+            <button
+              onClick={() => {
+                stopCamera()
+                onClose?.()
               }}
-            />
-            
-            {/* Grid overlay */}
-            {renderGridOverlay()}
-            
-            {/* Poziomnica */}
-            {renderLevel()}
-          </>
-        )}
-      </div>
+              className="w-10 h-10 flex items-center justify-center text-white text-2xl"
+            >
+              ✕
+            </button>
 
-      {/* Dolny panel z kontrolkami */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-8">
+            {/* Informacja o stronie lub licznik zdjęć */}
+            <span className="text-white text-sm opacity-70">
+              {pageNumber ? `${t.camera.page} ${pageNumber}` : ''}
+              {photoCount > 0 && (
+                <span className="ml-2 px-2 py-0.5 bg-green-500/30 rounded-full text-green-400">
+                  📷 {photoCount}
+                </span>
+              )}
+            </span>
+
+            {/* Pusty element dla wyrównania */}
+            <div className="w-10 h-10" />
+          </div>
+
+          {/* Podgląd kamery */}
+          <div 
+            className="flex-1 relative overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {error ? (
+              <div className="absolute inset-0 flex items-center justify-center p-8">
+                <div className="text-center">
+                  <p className="text-red-400 text-lg mb-4">{error}</p>
+                  
+                  {/* Przycisk do ponownej próby */}
+                  <button
+                    onClick={startCamera}
+                    className="px-6 py-3 bg-white/20 rounded-full text-white mb-4"
+                  >
+                    {t.camera.tryAgain}
+                  </button>
+                  
+                  {/* Fallback - użyj natywnego aparatu */}
+                  <div className="mt-4">
+                    <p className="text-white/60 text-sm mb-3">{t.camera.orUseNative}</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file && onCapture) {
+                          const reader = new FileReader()
+                          reader.onloadend = () => {
+                            onCapture(reader.result as string)
+                          }
+                          reader.readAsDataURL(file)
+                        }
+                      }}
+                      className="hidden"
+                      id="camera-fallback-input"
+                    />
+                    <label
+                      htmlFor="camera-fallback-input"
+                      className="inline-block px-6 py-3 bg-blue-500 rounded-full text-white cursor-pointer hover:bg-blue-600 transition-colors"
+                    >
+                      📷 {t.camera.openCamera}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{ 
+                    transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+                  }}
+                />
+                
+                {/* Grid overlay */}
+                {renderGridOverlay()}
+                
+                {/* Poziomnica */}
+                {renderLevel()}
+              </>
+            )}
+          </div>
+
+          {/* Dolny panel z kontrolkami */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-8">
         {/* Zoom: wskaźnik cyfrowy bezpośrednio nad suwakiem */}
         {maxZoom > minZoom && (
           <div className="mb-2.5">
@@ -817,6 +882,8 @@ export function CameraView({
           <span className="text-white/60 text-xs w-11 text-center">{t.camera.edit}</span>
         </div>
       </div>
+        </>
+      )}
 
       {/* Ukryty canvas do robienia zdjęć */}
       <canvas ref={canvasRef} className="hidden" />
