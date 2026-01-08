@@ -634,10 +634,26 @@ export function CameraView({
       {capturedImage ? (
         <>
           {/* Nagłówek podglądu */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center p-4 bg-gradient-to-b from-black/70 to-transparent">
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
+            {/* Pusty element dla wyrównania (lewa strona) */}
+            <div className="w-10 h-10" />
+            
+            {/* Tytuł na środku */}
             <span className="text-white text-lg font-medium">
               {t.camera.preview || 'Podgląd zdjęcia'}
             </span>
+            
+            {/* Przycisk zamknięcia (prawa strona) - tylko dla zdjęć z galerii */}
+            {isFromGallery ? (
+              <button
+                onClick={handleDiscardPhoto}
+                className="w-10 h-10 flex items-center justify-center text-white text-2xl"
+              >
+                ✕
+              </button>
+            ) : (
+              <div className="w-10 h-10" />
+            )}
           </div>
 
           {/* Podgląd zdjęcia */}
@@ -650,69 +666,11 @@ export function CameraView({
             />
           </div>
 
-          {/* Dolny panel z przyciskami */}
+          {/* Dolny panel z przyciskami - tylko dla zdjęć z aparatu */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-10">
             {isFromGallery ? (
-              /* ZDJĘCIE Z GALERII - tylko zamknij i prześlij */
-              <>
-                <div className="flex items-center justify-center gap-12">
-                  {/* Przycisk zamknij (biały krzyżyk) */}
-                  <button
-                    onClick={handleDiscardPhoto}
-                    className="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 border-4 border-white/30 active:scale-95 transition-transform"
-                  >
-                    <svg 
-                      viewBox="0 0 24 24" 
-                      className="w-8 h-8 text-white" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-
-                  {/* Przycisk prześlij (zielony haczyk) - tylko upload na serwer */}
-                  <button
-                    onClick={() => {
-                      // Tylko upload na serwer (zdjęcie jest już zapisane w galerii)
-                      if (onCapture && capturedImage) {
-                        onCapture(capturedImage)
-                      }
-                      setPhotoCount(prev => prev + 1)
-                      setCapturedImage(null)
-                      setIsFromGallery(false)
-                      startCamera()
-                    }}
-                    className="w-20 h-20 flex items-center justify-center rounded-full bg-green-500/80 border-4 border-green-400/50 active:scale-95 transition-transform shadow-lg shadow-green-500/30"
-                  >
-                    <svg 
-                      viewBox="0 0 24 24" 
-                      className="w-10 h-10 text-white" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Etykiety */}
-                <div className="flex items-center justify-center gap-12 mt-3">
-                  <span className="text-white/60 text-sm w-16 text-center font-medium">
-                    {t.common.close || 'Zamknij'}
-                  </span>
-                  <span className="text-green-400 text-sm w-20 text-center font-medium">
-                    {t.camera.upload || 'Prześlij'}
-                  </span>
-                </div>
-              </>
+              /* ZDJĘCIE Z GALERII - brak przycisków na dole, krzyżyk jest w nagłówku */
+              null
             ) : (
               /* ZDJĘCIE Z APARATU - odrzuć lub zapisz */
               <>
