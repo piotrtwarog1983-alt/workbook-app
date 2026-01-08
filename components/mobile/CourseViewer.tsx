@@ -3522,11 +3522,10 @@ useEffect(() => {
               const token = localStorage.getItem('token')
               if (!token) {
                 alert('Musisz być zalogowany')
-                setShowCamera(false)
                 return
               }
 
-              setShowCamera(false)
+              // Upload w tle - aparat pozostaje otwarty
               setQrUploading(true)
               setQrUploadStatus('idle')
 
