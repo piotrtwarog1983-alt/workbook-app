@@ -603,7 +603,6 @@ useEffect(() => {
         <video
           src="/course/ikony/theone.mp4"
           autoPlay
-          loop
           muted
           playsInline
           className="w-32 h-32 object-contain"

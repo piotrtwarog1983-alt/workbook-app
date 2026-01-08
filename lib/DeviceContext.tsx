@@ -82,8 +82,14 @@ export function withDevice<P extends object>(
 
     if (isLoading) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="animate-pulse text-gray-400">Ładowanie...</div>
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <video
+            src="/course/ikony/theone.mp4"
+            autoPlay
+            muted
+            playsInline
+            className="w-32 h-32 object-contain"
+          />
         </div>
       )
     }

@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useDevice } from '@/lib/DeviceContext'
 
-// Komponent loadera z animacją wideo
+// Komponent loadera z animacją wideo (odtwarza się tylko raz)
 const VideoLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-black">
     <video
       src="/course/ikony/theone.mp4"
       autoPlay
-      loop
       muted
       playsInline
       className="w-32 h-32 object-contain"
