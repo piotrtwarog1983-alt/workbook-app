@@ -60,3 +60,4 @@ export function useAppUpdate() {
  */
 export const currentClientVersion = APP_VERSION
 
+
