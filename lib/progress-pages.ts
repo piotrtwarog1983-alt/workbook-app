@@ -1,6 +1,6 @@
 // Strony kursu, na których użytkownik może uploadować zdjęcia postępów
 // To są strony z QR kodami do uploadu
-export const PROGRESS_PAGES = [14, 19, 28, 34, 39] as const
+export const PROGRESS_PAGES = [7, 13, 18, 27, 33, 38] as const
 
 export type ProgressPageNumber = typeof PROGRESS_PAGES[number]
 
@@ -14,11 +14,12 @@ export function isProgressPage(pageNumber: number): pageNumber is ProgressPageNu
 
 // Mapowanie stron na etapy kursu
 export const PAGE_TO_STAGE: Record<ProgressPageNumber, string> = {
-  14: 'światło',
-  19: 'horyzont',
-  28: 'kompozycja',
-  34: 'perspektywa',
-  39: 'proporcje'
+  7: 'światło',
+  13: 'horyzont',
+  18: 'kompozycja',
+  27: 'perspektywa',
+  33: 'proporcje',
+  38: 'finał'
 }
 
 // Pobierz etykietę etapu dla strony
