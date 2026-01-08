@@ -982,8 +982,8 @@ useEffect(() => {
                     <div 
                       className="absolute inset-0"
                     >
-                {/* MOBILE: Uproszczone wyświetlanie JPG dla wszystkich stron oprócz QR upload i oceny */}
-                {isMobile && !isQRUpload && !isProgressEvaluation ? (
+                {/* MOBILE: Uproszczone wyświetlanie JPG dla wszystkich stron oprócz oceny postępów */}
+                {isMobile && !isProgressEvaluation ? (
                   <div 
                     key={`page-image-${currentPage.pageNumber}-${langFolder}`}
                     className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
@@ -1003,6 +1003,36 @@ useEffect(() => {
                         target.style.display = 'none';
                       }}
                     />
+                    {/* Przycisk aparatu na stronach QR upload */}
+                    {isQRUpload && (
+                      <button
+                        onClick={() => {
+                          const token = localStorage.getItem('token')
+                          if (!token) {
+                            alert('Musisz być zalogowany')
+                            return
+                          }
+                          setShowCamera(true)
+                        }}
+                        disabled={qrUploading}
+                        className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 w-[100px] h-[100px] rounded-[28px] overflow-hidden transition-all duration-150 z-20 ${qrUploading ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.95] active:translate-y-1'}`}
+                        style={{ 
+                          boxShadow: '-8px 8px 25px rgba(150, 150, 150, 0.5), -12px 12px 40px rgba(120, 120, 120, 0.3), 3px -3px 15px rgba(150, 150, 150, 0.2)',
+                          padding: 0,
+                          border: 'none',
+                          backgroundImage: qrUploading ? 'none' : 'url(/course/ikony/aparat.png)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundColor: qrUploading ? '#333' : 'transparent'
+                        }}
+                      >
+                        {qrUploading && (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                          </div>
+                        )}
+                      </button>
+                    )}
                   </div>
                 ) : currentPage.pageNumber === 1 && isMobile ? (
                   // Strona 1 - zdjęcie hero-mobile (1620x3150, proporcje 9:17.5)

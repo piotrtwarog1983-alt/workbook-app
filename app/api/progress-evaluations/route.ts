@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getUserFromToken } from '@/lib/auth'
 import { z } from 'zod'
 
-const allowedPages = [16, 21, 30, 36, 41, 50]
+const allowedPages = [14, 19, 28, 34, 39]
 
 const evaluationSchema = z.object({
   pageNumber: z.number().int().refine((value) => allowedPages.includes(value), {
