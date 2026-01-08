@@ -817,8 +817,8 @@ export function CameraView({
         {/* Poziomnica - między zoomem a przyciskami */}
         {renderLevelIndicator()}
 
-        {/* Główne przyciski */}
-        <div className="flex items-center justify-center gap-6">
+        {/* Główne przyciski - 5 przycisków: 2 po lewej, foto na środku, 2 po prawej */}
+        <div className="flex items-center justify-center gap-4">
           {/* Przycisk sepii - podświetla środek siatki */}
           <button
             onClick={toggleSepia}
@@ -842,13 +842,28 @@ export function CameraView({
             <span className="text-lg">🔮</span>
           </button>
 
-          {/* Przycisk zdjęcia */}
+          {/* Przycisk zdjęcia - wycentrowany */}
           <button
             onClick={capturePhoto}
             disabled={!isActive}
             className="w-20 h-20 flex items-center justify-center rounded-full bg-white border-4 border-white/30 active:scale-95 transition-transform disabled:opacity-50"
           >
             <div className="w-16 h-16 rounded-full bg-white" />
+          </button>
+
+          {/* Przycisk galerii - otwiera wybór zdjęcia z urządzenia */}
+          <button
+            onClick={() => {
+              const input = document.getElementById('gallery-input') as HTMLInputElement
+              if (input) input.click()
+            }}
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
           </button>
 
           {/* Przycisk edycji zdjęć */}
@@ -870,8 +885,30 @@ export function CameraView({
           </button>
         </div>
 
+        {/* Ukryty input do wyboru zdjęć z galerii */}
+        <input
+          type="file"
+          accept="image/*"
+          id="gallery-input"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) {
+              const reader = new FileReader()
+              reader.onloadend = () => {
+                const imageData = reader.result as string
+                setCapturedImage(imageData)
+                stopCamera()
+              }
+              reader.readAsDataURL(file)
+            }
+            // Reset input value so the same file can be selected again
+            e.target.value = ''
+          }}
+        />
+
         {/* Etykiety */}
-        <div className="flex items-center justify-center gap-6 mt-2">
+        <div className="flex items-center justify-center gap-4 mt-2">
           <span className={`text-xs w-11 text-center ${sepiaEnabled ? 'text-amber-400' : 'text-white/60'}`}>
             {t.camera.focus}
           </span>
@@ -879,6 +916,7 @@ export function CameraView({
             {t.camera.bokeh}
           </span>
           <span className="text-white/60 text-xs w-20 text-center">{t.camera.photo}</span>
+          <span className="text-white/60 text-xs w-11 text-center">{t.camera.gallery || 'Galeria'}</span>
           <span className="text-white/60 text-xs w-11 text-center">{t.camera.edit}</span>
         </div>
       </div>

@@ -228,6 +228,7 @@ export const translations = {
       preview: 'Podgląd zdjęcia',
       discard: 'Odrzuć',
       save: 'Zapisz',
+      gallery: 'Galeria',
     },
 
     // Edytor zdjęć
@@ -477,6 +478,7 @@ export const translations = {
       preview: 'Fotovorschau',
       discard: 'Verwerfen',
       save: 'Speichern',
+      gallery: 'Galerie',
     },
 
     // Fotoeditor
@@ -726,6 +728,7 @@ export const translations = {
       preview: 'Photo preview',
       discard: 'Discard',
       save: 'Save',
+      gallery: 'Gallery',
     },
 
     // Photo Editor
