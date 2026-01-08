@@ -599,8 +599,15 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center" style={{ minHeight: 'var(--vh, 100vh)' }}>
-        <div className="text-lg text-white">{t.course.loadingCourse}</div>
+      <div className="flex items-center justify-center bg-black" style={{ minHeight: 'var(--vh, 100vh)' }}>
+        <video
+          src="/course/ikony/theone.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-32 h-32 object-contain"
+        />
       </div>
     )
   }
