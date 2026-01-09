@@ -8,7 +8,7 @@ interface PhotoEditorProps {
   onSave?: (imageData: string) => void
 }
 
-type EditorTab = 'adjust' | 'crop' | 'focus'
+type EditorTab = 'adjust' | 'crop' | 'focus' | 'dodge'
 
 export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   // Tłumaczenia
@@ -38,6 +38,17 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [isResizingFocusX, setIsResizingFocusX] = useState(false) // resize poziomy
   const [isResizingFocusY, setIsResizingFocusY] = useState(false) // resize pionowy
   const focusContainerRef = useRef<HTMLDivElement>(null)
+  
+  // Selektywne rozjaśnianie (Dodge) - rozjaśnianie wewnątrz elipsy
+  const [dodgeEnabled, setDodgeEnabled] = useState(false)
+  const [dodgeEllipse, setDodgeEllipse] = useState({ x: 0.5, y: 0.5, radiusX: 0.3, radiusY: 0.25 })
+  const [dodgeAmount, setDodgeAmount] = useState(50) // 0-100, siła rozjaśnienia
+  const [dodgeFeather, setDodgeFeather] = useState(30) // 0-100, rozmiar przejścia
+  const [dodgeInvert, setDodgeInvert] = useState(false) // false = rozjaśnienie wewnątrz, true = rozjaśnienie na zewnątrz
+  const [isDraggingDodge, setIsDraggingDodge] = useState(false)
+  const [isResizingDodgeX, setIsResizingDodgeX] = useState(false)
+  const [isResizingDodgeY, setIsResizingDodgeY] = useState(false)
+  const dodgeContainerRef = useRef<HTMLDivElement>(null)
   
   
   // Kadrowanie - współrzędne w pikselach względem wyświetlanego obrazu
@@ -118,6 +129,11 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setFocusSharpness(50)
         setFocusFeather(30)
         setFocusInvert(false)
+        setDodgeEnabled(false)
+        setDodgeEllipse({ x: 0.5, y: 0.5, radiusX: 0.3, radiusY: 0.25 })
+        setDodgeAmount(50)
+        setDodgeFeather(30)
+        setDodgeInvert(false)
         setActiveTab('adjust')
         
         // Pobierz wymiary obrazu
@@ -294,6 +310,61 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
       }
     }
 
+    // Selektywne rozjaśnianie (Dodge) - rozjaśnianie wewnątrz elipsy
+    if ((dodgeEnabled || activeTab === 'dodge') && dodgeAmount > 0) {
+      const currentImageData = ctx.getImageData(0, 0, width, height)
+      const resultData = ctx.createImageData(width, height)
+      
+      // Parametry elipsy w pikselach
+      const centerX = dodgeEllipse.x * width
+      const centerY = dodgeEllipse.y * height
+      const radiusXPx = dodgeEllipse.radiusX * width
+      const radiusYPx = dodgeEllipse.radiusY * height
+      const avgRadius = (radiusXPx + radiusYPx) / 2
+      const featherPx = (dodgeFeather / 100) * avgRadius
+      
+      // Siła rozjaśnienia (0.0 - 1.0)
+      const strength = dodgeAmount / 100
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4
+          
+          // Znormalizowana odległość od środka elipsy
+          const normalizedDist = Math.sqrt(
+            ((x - centerX) / radiusXPx) ** 2 + ((y - centerY) / radiusYPx) ** 2
+          )
+          
+          const featherRatio = featherPx / avgRadius
+          
+          // Oblicz współczynnik rozjaśnienia
+          let dodgeFactor: number
+          if (normalizedDist <= 1 - featherRatio) {
+            dodgeFactor = 1
+          } else if (normalizedDist >= 1 + featherRatio) {
+            dodgeFactor = 0
+          } else {
+            dodgeFactor = 1 - (normalizedDist - (1 - featherRatio)) / (2 * featherRatio)
+            dodgeFactor = dodgeFactor * dodgeFactor * (3 - 2 * dodgeFactor)
+          }
+          
+          if (dodgeInvert) {
+            dodgeFactor = 1 - dodgeFactor
+          }
+          
+          // Zastosuj rozjaśnienie
+          const brightenAmount = strength * dodgeFactor * 100
+          
+          resultData.data[idx] = Math.min(255, currentImageData.data[idx] + brightenAmount)
+          resultData.data[idx + 1] = Math.min(255, currentImageData.data[idx + 1] + brightenAmount)
+          resultData.data[idx + 2] = Math.min(255, currentImageData.data[idx + 2] + brightenAmount)
+          resultData.data[idx + 3] = 255
+        }
+      }
+      
+      ctx.putImageData(resultData, 0, 0)
+    }
+
     // Globalna ostrość/rozmycie (jeśli focus nie jest włączony)
     if (!focusEnabled && sharpness !== 100) {
       const tempCanvas = document.createElement('canvas')
@@ -380,7 +451,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         }
       }
     }
-  }, [brightness, temperature, tint, sharpness, focusEnabled, focusEllipse, focusSharpness, focusFeather, focusInvert, activeTab])
+  }, [brightness, temperature, tint, sharpness, focusEnabled, focusEllipse, focusSharpness, focusFeather, focusInvert, dodgeEnabled, dodgeEllipse, dodgeAmount, dodgeFeather, dodgeInvert, activeTab])
   
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
@@ -573,6 +644,11 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setFocusSharpness(50)
     setFocusFeather(30)
     setFocusInvert(false)
+    setDodgeEnabled(false)
+    setDodgeEllipse({ x: 0.5, y: 0.5, radiusX: 0.3, radiusY: 0.25 })
+    setDodgeAmount(50)
+    setDodgeFeather(30)
+    setDodgeInvert(false)
   }, [])
 
   // === OBSŁUGA DOTYKU DLA KADROWANIA ===
@@ -1153,6 +1229,83 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setIsResizingFocusY(false)
   }, [])
 
+  // Obsługa dotyku dla Dodge (rozjaśnianie)
+  const handleDodgeTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!dodgeContainerRef.current) return
+    e.preventDefault()
+    
+    const rect = dodgeContainerRef.current.getBoundingClientRect()
+    const touch = e.touches[0]
+    const touchX = (touch.clientX - rect.left) / rect.width
+    const touchY = (touch.clientY - rect.top) / rect.height
+    
+    const normalizedDist = Math.sqrt(
+      ((touchX - dodgeEllipse.x) / dodgeEllipse.radiusX) ** 2 + 
+      ((touchY - dodgeEllipse.y) / dodgeEllipse.radiusY) ** 2
+    )
+    
+    const edgeThreshold = 0.15
+    
+    const isNearLeftRight = Math.abs(touchX - dodgeEllipse.x) > dodgeEllipse.radiusX * 0.7 &&
+                            Math.abs(touchY - dodgeEllipse.y) < dodgeEllipse.radiusY * 0.5
+    
+    const isNearTopBottom = Math.abs(touchY - dodgeEllipse.y) > dodgeEllipse.radiusY * 0.7 &&
+                            Math.abs(touchX - dodgeEllipse.x) < dodgeEllipse.radiusX * 0.5
+    
+    if (Math.abs(normalizedDist - 1) < edgeThreshold) {
+      if (isNearLeftRight) {
+        setIsResizingDodgeX(true)
+        setIsResizingDodgeY(false)
+        setIsDraggingDodge(false)
+      } else if (isNearTopBottom) {
+        setIsResizingDodgeY(true)
+        setIsResizingDodgeX(false)
+        setIsDraggingDodge(false)
+      } else {
+        setIsResizingDodgeX(true)
+        setIsResizingDodgeY(true)
+        setIsDraggingDodge(false)
+      }
+    } else if (normalizedDist < 1) {
+      setIsDraggingDodge(true)
+      setIsResizingDodgeX(false)
+      setIsResizingDodgeY(false)
+    }
+  }, [dodgeEllipse])
+
+  const handleDodgeTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!dodgeContainerRef.current) return
+    e.preventDefault()
+    
+    const rect = dodgeContainerRef.current.getBoundingClientRect()
+    const touch = e.touches[0]
+    const touchX = (touch.clientX - rect.left) / rect.width
+    const touchY = (touch.clientY - rect.top) / rect.height
+    
+    if (isDraggingDodge) {
+      setDodgeEllipse(prev => ({
+        ...prev,
+        x: Math.max(0.1, Math.min(0.9, touchX)),
+        y: Math.max(0.1, Math.min(0.9, touchY))
+      }))
+    } else if (isResizingDodgeX || isResizingDodgeY) {
+      const deltaX = Math.abs(touchX - dodgeEllipse.x)
+      const deltaY = Math.abs(touchY - dodgeEllipse.y)
+      
+      setDodgeEllipse(prev => ({
+        ...prev,
+        radiusX: isResizingDodgeX ? Math.max(0.08, Math.min(0.45, deltaX)) : prev.radiusX,
+        radiusY: isResizingDodgeY ? Math.max(0.08, Math.min(0.45, deltaY)) : prev.radiusY
+      }))
+    }
+  }, [isDraggingDodge, isResizingDodgeX, isResizingDodgeY, dodgeEllipse.x, dodgeEllipse.y])
+
+  const handleDodgeTouchEnd = useCallback(() => {
+    setIsDraggingDodge(false)
+    setIsResizingDodgeX(false)
+    setIsResizingDodgeY(false)
+  }, [])
+
   // Renderowanie zakładki Focus
   const renderFocusUI = () => {
     if (!selectedImage) return null
@@ -1301,6 +1454,154 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     )
   }
 
+  // Renderowanie zakładki Dodge (rozjaśnianie)
+  const renderDodgeUI = () => {
+    if (!selectedImage) return null
+    
+    const aspectRatio = imageSize.width / imageSize.height || 4/5
+    
+    return (
+      <div className="flex flex-col h-full">
+        <p className="text-white/70 text-sm text-center mb-2">
+          {t.editor.dodgeHint || 'Przeciągnij środek • Krawędź zmienia rozmiar'}
+        </p>
+        
+        {/* Kontener obrazu z elipsą dodge */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          <div 
+            ref={dodgeContainerRef}
+            className="relative bg-black"
+            style={{ 
+              width: '100%',
+              maxWidth: '400px',
+              aspectRatio: aspectRatio,
+              maxHeight: 'calc(100vh - 450px)',
+              touchAction: 'none'
+            }}
+            onTouchStart={handleDodgeTouchStart}
+            onTouchMove={handleDodgeTouchMove}
+            onTouchEnd={handleDodgeTouchEnd}
+          >
+            {/* Obraz z zastosowanymi filtrami */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+            
+            {/* Wizualizacja elipsy dodge */}
+            <div 
+              className="absolute border-2 border-yellow-400 rounded-full pointer-events-none"
+              style={{
+                left: `${(dodgeEllipse.x - dodgeEllipse.radiusX) * 100}%`,
+                top: `${(dodgeEllipse.y - dodgeEllipse.radiusY) * 100}%`,
+                width: `${dodgeEllipse.radiusX * 200}%`,
+                height: `${dodgeEllipse.radiusY * 200}%`,
+                boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)'
+              }}
+            >
+              {/* Punkt środkowy */}
+              <div 
+                className="absolute w-5 h-5 bg-yellow-400 rounded-full border-2 border-white"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+              {/* Wskaźniki zmiany rozmiaru pionowego */}
+              <div className="absolute top-0 left-1/2 w-3 h-3 bg-orange-400 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white" />
+              <div className="absolute bottom-0 left-1/2 w-3 h-3 bg-orange-400 rounded-full -translate-x-1/2 translate-y-1/2 border border-white" />
+              {/* Wskaźniki zmiany rozmiaru poziomego */}
+              <div className="absolute left-0 top-1/2 w-3 h-3 bg-yellow-300 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white" />
+              <div className="absolute right-0 top-1/2 w-3 h-3 bg-yellow-300 rounded-full translate-x-1/2 -translate-y-1/2 border border-white" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Kontrolki */}
+        <div className="mt-3 space-y-3">
+          {/* Siła rozjaśnienia */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">{t.editor.dodgeStrength || 'Siła rozjaśnienia'}</span>
+              <span className="text-yellow-400 font-mono">{dodgeAmount}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={dodgeAmount}
+              onChange={(e) => setDodgeAmount(parseInt(e.target.value))}
+              className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
+            />
+          </div>
+          
+          {/* Rozmiar przejścia */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">{t.editor.feather || 'Przejście'}</span>
+              <span className="text-yellow-400 font-mono">{dodgeFeather}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={dodgeFeather}
+              onChange={(e) => setDodgeFeather(parseInt(e.target.value))}
+              className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
+            />
+          </div>
+          
+          {/* Przełącznik odwrócenia */}
+          <button
+            onClick={() => setDodgeInvert(!dodgeInvert)}
+            className={`w-full py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              dodgeInvert ? 'bg-yellow-600 text-white' : 'bg-white/10 text-white/70'
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a10 10 0 0110 10" fill={dodgeInvert ? 'currentColor' : 'none'} />
+            </svg>
+            {dodgeInvert 
+              ? (t.editor.dodgeOutside || 'Rozjaśnienie na zewnątrz')
+              : (t.editor.dodgeInside || 'Rozjaśnienie wewnątrz')
+            }
+          </button>
+        </div>
+        
+        {/* Przyciski */}
+        <div className="flex gap-4 mt-4">
+          <button
+            onClick={() => {
+              setDodgeEnabled(false)
+              setActiveTab('adjust')
+            }}
+            className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform flex items-center justify-center gap-2"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            {t.editor.cancel}
+          </button>
+          <button
+            onClick={() => {
+              setDodgeEnabled(true)
+              setActiveTab('adjust')
+            }}
+            className="flex-1 py-3 bg-yellow-600 rounded-xl text-white font-medium active:scale-95 transition-transform flex items-center justify-center gap-2"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="20,6 9,17 4,12" />
+            </svg>
+            {t.editor.apply || 'Zastosuj'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
       {/* Nagłówek */}
@@ -1335,6 +1636,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
               renderCropUI()
             ) : activeTab === 'focus' ? (
               renderFocusUI()
+            ) : activeTab === 'dodge' ? (
+              renderDodgeUI()
             ) : (
               <>
                 {/* Podgląd obrazu z filtrami */}
@@ -1369,7 +1672,20 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
                       <circle cx="12" cy="12" r="7" opacity="0.5" />
                       <circle cx="12" cy="12" r="10" opacity="0.3" />
                     </svg>
-                    {t.editor.focus || 'Focus'}
+                    {t.editor.focus || 'Tekstura'}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('dodge')}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                      dodgeEnabled ? 'bg-yellow-600 text-white' : 'bg-white/5 text-white/60'
+                    }`}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.3" />
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeLinecap="round" />
+                    </svg>
+                    {t.editor.dodge || 'Światło'}
                   </button>
                   <button
                     onClick={() => setActiveTab('crop')}
