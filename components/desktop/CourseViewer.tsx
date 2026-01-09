@@ -89,6 +89,9 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
     'EN': 'EN Usa',
     'PL': 'PL',
     'DE': 'DE',
+    'IT': 'IT',
+    'FR': 'FR',
+    'ES': 'ES',
   }
   const langFolder = langFolderMap[language] || language
 

@@ -7,6 +7,9 @@ const langFolderMap: { [key: string]: string } = {
   'EN': 'EN Usa',
   'PL': 'PL',
   'DE': 'DE',
+  'IT': 'IT',
+  'FR': 'FR',
+  'ES': 'ES',
 }
 
 export async function GET(

@@ -94,7 +94,7 @@ export function CourseViewer({ courseSlug }: CourseViewerProps) {
   // langFolder - dla bezpośredniego dostępu do plików public (JPG)
   // language - dla API routes (mają własne mapowanie)
   const langFolderMap: { [key: string]: string } = {
-    'EN': 'EN',
+    'EN': 'EN Usa',
     'PL': 'PL',
     'DE': 'DE',
     'IT': 'IT',
