@@ -637,8 +637,8 @@ export function CameraView({
           {isFromGallery && (
             <button
               onClick={handleDiscardPhoto}
-              className="absolute z-20 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full"
-              style={{ top: '5%', right: '4%' }}
+              className="fixed z-30 w-12 h-12 flex items-center justify-center text-white text-3xl bg-black/70 hover:bg-black/90 rounded-full shadow-lg transition-all"
+              style={{ top: 'calc(5vh)', right: 'calc(4vw)' }}
             >
               ✕
             </button>
