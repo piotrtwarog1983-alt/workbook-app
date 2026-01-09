@@ -721,7 +721,7 @@ export function CameraView({
             </span>
           </div>
 
-          {/* Przycisk zamknięcia - nad prawą linią siatki trójpodziału */}
+          {/* Przycisk zamknięcia - przesunięty w prawo i obniżony względem wskaźnika kąta */}
           <button
             onClick={() => {
               stopCamera()
@@ -729,8 +729,8 @@ export function CameraView({
             }}
             className="absolute z-20 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full"
             style={{ 
-              top: '2%',
-              right: '36.67vw' // Pozycja nad prawą linią siatki: siatka max-w-[80vw] wyśrodkowana, prawa linia na 2/3 = 63.33vw od lewej = 36.67vw od prawej
+              top: '80px', // Obniżony względem wskaźnika kąta (który jest na top-16 = 64px)
+              right: '15vw' // Przesunięty bardziej w prawo
             }}
           >
             ✕
