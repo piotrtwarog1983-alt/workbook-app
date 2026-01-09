@@ -78,7 +78,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zrób zdjęcie potrawy', 'Wykorzystaj wiedzę o świetle']),
+      tips: JSON.stringify([]),
     },
     {
       id: '8',
@@ -109,7 +109,7 @@ export const MOCK_COURSE = {
         type: 'formatted-text',
         textFile: '/api/course-content/10/PL',
       }),
-      tips: JSON.stringify(['Zapoznaj się dokładnie z ustawieniami swojego aparatu']),
+      tips: JSON.stringify([]),
     },
     {
       id: '11',
@@ -133,9 +133,7 @@ export const MOCK_COURSE = {
         textFile: '/api/course-content/12/PL',
         textPosition: 'top',
       }),
-      tips: JSON.stringify([
-        'Styropian sprawdza się świetnie, ponieważ jest sztywny i łatwo można go ustawić na stole',
-      ]),
+      tips: JSON.stringify([]),
     },
     {
       id: '13',
@@ -144,7 +142,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zrób zdjęcie potrawy', 'Zwróć uwagę na horyzont']),
+      tips: JSON.stringify([]),
     },
     {
       id: '14',
@@ -192,7 +190,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zrób zdjęcie potrawy', 'Zastosuj zasady kompozycji']),
+      tips: JSON.stringify([]),
     },
     {
       id: '19',
@@ -287,7 +285,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zrób zdjęcie potrawy', 'Eksperymentuj z perspektywą']),
+      tips: JSON.stringify([]),
     },
     {
       id: '28',
@@ -351,7 +349,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zrób zdjęcie potrawy', 'Zadbaj o proporcje']),
+      tips: JSON.stringify([]),
     },
     {
       id: '34',
@@ -401,7 +399,7 @@ export const MOCK_COURSE = {
       content: JSON.stringify({
         type: 'qr-upload',
       }),
-      tips: JSON.stringify(['Zrób zdjęcie finałowe', 'Wykorzystaj wszystko czego się nauczyłeś']),
+      tips: JSON.stringify([]),
     },
     {
       id: '39',
