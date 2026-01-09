@@ -896,14 +896,17 @@ export function CameraView({
           >
             <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
               {/* Ikona przysłony aparatu - aperture */}
-              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 2l2.5 8.5" strokeLinecap="round" />
-                <path d="M21 8l-7.5 4" strokeLinecap="round" />
-                <path d="M21 16l-7.5-1.5" strokeLinecap="round" />
-                <path d="M12 22l-2.5-8.5" strokeLinecap="round" />
-                <path d="M3 16l7.5-4" strokeLinecap="round" />
-                <path d="M3 8l7.5 1.5" strokeLinecap="round" />
+              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="8" strokeWidth="2" />
+                {/* Płatki przysłony */}
+                <path d="M12 4l1.5 6" strokeLinecap="round" strokeWidth="2" />
+                <path d="M20 10l-5 3" strokeLinecap="round" strokeWidth="2" />
+                <path d="M20 14l-5-1" strokeLinecap="round" strokeWidth="2" />
+                <path d="M12 20l-1.5-6" strokeLinecap="round" strokeWidth="2" />
+                <path d="M4 14l5-3" strokeLinecap="round" strokeWidth="2" />
+                <path d="M4 10l5 1" strokeLinecap="round" strokeWidth="2" />
+                {/* Centralny otwór */}
+                <circle cx="12" cy="12" r="3" fill="currentColor" />
               </svg>
             </div>
           </button>
@@ -931,15 +934,15 @@ export function CameraView({
           >
             <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
               {/* Ikona galerii - stos zdjęć */}
-              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="2">
                 {/* Tylne zdjęcie */}
-                <rect x="4" y="4" width="14" height="14" rx="2" fill="currentColor" opacity="0.3" />
+                <rect x="4" y="4" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.5" />
                 {/* Przednie zdjęcie */}
-                <rect x="6" y="6" width="14" height="14" rx="2" fill="white" stroke="currentColor" />
-                {/* Słońce */}
-                <circle cx="11" cy="11" r="2" fill="currentColor" />
-                {/* Góry */}
-                <path d="M6 18l4-5 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="6" y="6" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                {/* Góry/krajobraz */}
+                <path d="M8 18l3-4 2 2 4-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                {/* Słońce/kółko */}
+                <circle cx="12" cy="12" r="2" fill="currentColor" />
               </svg>
             </div>
           </button>
