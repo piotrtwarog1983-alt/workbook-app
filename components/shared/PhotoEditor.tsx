@@ -8,7 +8,7 @@ interface PhotoEditorProps {
   onSave?: (imageData: string) => void
 }
 
-type EditorTab = 'adjust' | 'crop'
+type EditorTab = 'adjust' | 'crop' | 'focus'
 
 export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   // Tłumaczenia
@@ -27,6 +27,16 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [temperature, setTemperature] = useState(0)
   const [tint, setTint] = useState(0)
   const [sharpness, setSharpness] = useState(100) // 0-200, 100 = normal, >100 = wyostrzenie, <100 = rozmycie
+  
+  // Selektywna ostrość (Focus)
+  const [focusEnabled, setFocusEnabled] = useState(false)
+  const [focusCircle, setFocusCircle] = useState({ x: 0.5, y: 0.5, radius: 0.25 }) // wartości 0-1 (proporcje obrazu)
+  const [focusBlurAmount, setFocusBlurAmount] = useState(50) // 0-100, siła rozmycia poza okręgiem
+  const [focusFeather, setFocusFeather] = useState(30) // 0-100, rozmiar przejścia
+  const [focusInvert, setFocusInvert] = useState(false) // false = środek ostry, true = środek rozmyty
+  const [isDraggingFocus, setIsDraggingFocus] = useState(false)
+  const [isResizingFocus, setIsResizingFocus] = useState(false)
+  const focusContainerRef = useRef<HTMLDivElement>(null)
   
   
   // Kadrowanie - współrzędne w pikselach względem wyświetlanego obrazu
@@ -102,6 +112,11 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setTint(0)
         setSharpness(100)
         setRotation(0)
+        setFocusEnabled(false)
+        setFocusCircle({ x: 0.5, y: 0.5, radius: 0.25 })
+        setFocusBlurAmount(50)
+        setFocusFeather(30)
+        setFocusInvert(false)
         setActiveTab('adjust')
         
         // Pobierz wymiary obrazu
@@ -140,6 +155,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
 
     let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     let data = imageData.data
+    const width = canvas.width
+    const height = canvas.height
 
     // Najpierw podstawowe filtry kolorów
     for (let i = 0; i < data.length; i += 4) {
@@ -173,8 +190,71 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
 
     ctx.putImageData(imageData, 0, 0)
 
-    // Teraz wyostrzenie/rozmycie (tekstura)
-    if (sharpness !== 100) {
+    // Selektywna ostrość (Focus) - używa CSS blur dla wydajności
+    if (focusEnabled && focusBlurAmount > 0) {
+      // Stwórz rozmytą wersję
+      const blurCanvas = document.createElement('canvas')
+      blurCanvas.width = width
+      blurCanvas.height = height
+      const blurCtx = blurCanvas.getContext('2d')
+      if (blurCtx) {
+        // Użyj CSS filter dla rozmycia (szybsze)
+        const blurRadius = Math.round(focusBlurAmount / 10) // 0-10px blur
+        blurCtx.filter = `blur(${blurRadius}px)`
+        blurCtx.drawImage(canvas, 0, 0)
+        blurCtx.filter = 'none'
+        
+        // Pobierz dane z obu canvas
+        const sharpData = ctx.getImageData(0, 0, width, height)
+        const blurData = blurCtx.getImageData(0, 0, width, height)
+        const resultData = ctx.createImageData(width, height)
+        
+        // Parametry okręgu w pikselach
+        const centerX = focusCircle.x * width
+        const centerY = focusCircle.y * height
+        const radiusPx = focusCircle.radius * Math.min(width, height)
+        const featherPx = (focusFeather / 100) * radiusPx // rozmiar przejścia
+        
+        // Połącz obrazy z gradientem
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4
+            
+            // Odległość od środka okręgu
+            const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2)
+            
+            // Oblicz współczynnik mieszania (0 = ostry, 1 = rozmyty)
+            let blendFactor: number
+            if (dist <= radiusPx - featherPx) {
+              blendFactor = 0 // Wewnątrz - ostry
+            } else if (dist >= radiusPx + featherPx) {
+              blendFactor = 1 // Zewnątrz - rozmyty
+            } else {
+              // Strefa przejścia - gładki gradient
+              blendFactor = (dist - (radiusPx - featherPx)) / (2 * featherPx)
+              // Smooth step dla bardziej naturalnego przejścia
+              blendFactor = blendFactor * blendFactor * (3 - 2 * blendFactor)
+            }
+            
+            // Odwróć jeśli focusInvert jest true
+            if (focusInvert) {
+              blendFactor = 1 - blendFactor
+            }
+            
+            // Mieszaj piksele
+            resultData.data[idx] = Math.round(sharpData.data[idx] * (1 - blendFactor) + blurData.data[idx] * blendFactor)
+            resultData.data[idx + 1] = Math.round(sharpData.data[idx + 1] * (1 - blendFactor) + blurData.data[idx + 1] * blendFactor)
+            resultData.data[idx + 2] = Math.round(sharpData.data[idx + 2] * (1 - blendFactor) + blurData.data[idx + 2] * blendFactor)
+            resultData.data[idx + 3] = 255
+          }
+        }
+        
+        ctx.putImageData(resultData, 0, 0)
+      }
+    }
+
+    // Globalna ostrość/rozmycie (jeśli focus nie jest włączony)
+    if (!focusEnabled && sharpness !== 100) {
       const tempCanvas = document.createElement('canvas')
       tempCanvas.width = canvas.width
       tempCanvas.height = canvas.height
@@ -187,8 +267,6 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           const strength = (sharpness - 100) / 100 // 0.0 - 1.0
           imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
           const tempData = tempCtx.getImageData(0, 0, canvas.width, canvas.height)
-          const width = canvas.width
-          const height = canvas.height
           
           // Kernel unsharp mask (wyostrzanie)
           const kernel = [
@@ -224,15 +302,13 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           imageData.data.set(newData)
           ctx.putImageData(imageData, 0, 0)
         } else if (sharpness < 100) {
-          // Rozmycie (sharpness < 100) - zmniejsza teksturę
+          // Rozmycie (sharpness < 100)
           const blurAmount = (100 - sharpness) / 100 // 0.0 - 1.0
           const radius = Math.round(blurAmount * 3) // max 3px blur
           
           if (radius > 0) {
             imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
             const tempData = tempCtx.getImageData(0, 0, canvas.width, canvas.height)
-            const width = canvas.width
-            const height = canvas.height
             
             const newData = new Uint8ClampedArray(imageData.data)
             
@@ -263,7 +339,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         }
       }
     }
-  }, [brightness, temperature, tint, sharpness])
+  }, [brightness, temperature, tint, sharpness, focusEnabled, focusCircle, focusBlurAmount, focusFeather, focusInvert])
   
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
@@ -451,6 +527,11 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setTint(0)
     setSharpness(100)
     setRotation(0)
+    setFocusEnabled(false)
+    setFocusCircle({ x: 0.5, y: 0.5, radius: 0.25 })
+    setFocusBlurAmount(50)
+    setFocusFeather(30)
+    setFocusInvert(false)
   }, [])
 
   // === OBSŁUGA DOTYKU DLA KADROWANIA ===
@@ -949,6 +1030,207 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     )
   }
 
+  // Obsługa dotyku dla Focus
+  const handleFocusTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!focusContainerRef.current) return
+    e.preventDefault()
+    
+    const rect = focusContainerRef.current.getBoundingClientRect()
+    const touch = e.touches[0]
+    const touchX = (touch.clientX - rect.left) / rect.width
+    const touchY = (touch.clientY - rect.top) / rect.height
+    
+    // Sprawdź czy dotyk jest na krawędzi okręgu (resize) czy w środku (drag)
+    const dist = Math.sqrt((touchX - focusCircle.x) ** 2 + (touchY - focusCircle.y) ** 2)
+    const edgeThreshold = 0.05
+    
+    if (Math.abs(dist - focusCircle.radius) < edgeThreshold) {
+      setIsResizingFocus(true)
+      setIsDraggingFocus(false)
+    } else if (dist < focusCircle.radius) {
+      setIsDraggingFocus(true)
+      setIsResizingFocus(false)
+    }
+  }, [focusCircle])
+
+  const handleFocusTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!focusContainerRef.current) return
+    e.preventDefault()
+    
+    const rect = focusContainerRef.current.getBoundingClientRect()
+    const touch = e.touches[0]
+    const touchX = (touch.clientX - rect.left) / rect.width
+    const touchY = (touch.clientY - rect.top) / rect.height
+    
+    if (isDraggingFocus) {
+      // Przesuń środek okręgu
+      setFocusCircle(prev => ({
+        ...prev,
+        x: Math.max(0.1, Math.min(0.9, touchX)),
+        y: Math.max(0.1, Math.min(0.9, touchY))
+      }))
+    } else if (isResizingFocus) {
+      // Zmień rozmiar okręgu
+      const newRadius = Math.sqrt((touchX - focusCircle.x) ** 2 + (touchY - focusCircle.y) ** 2)
+      setFocusCircle(prev => ({
+        ...prev,
+        radius: Math.max(0.1, Math.min(0.5, newRadius))
+      }))
+    }
+  }, [isDraggingFocus, isResizingFocus, focusCircle.x, focusCircle.y])
+
+  const handleFocusTouchEnd = useCallback(() => {
+    setIsDraggingFocus(false)
+    setIsResizingFocus(false)
+  }, [])
+
+  // Renderowanie zakładki Focus
+  const renderFocusUI = () => {
+    if (!selectedImage) return null
+    
+    const aspectRatio = imageSize.width / imageSize.height || 4/5
+    
+    return (
+      <div className="flex flex-col h-full">
+        <p className="text-white/70 text-sm text-center mb-2">
+          {t.editor.focusHint || 'Przeciągnij środek • Krawędź zmienia rozmiar'}
+        </p>
+        
+        {/* Kontener obrazu z okręgiem focus */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          <div 
+            ref={focusContainerRef}
+            className="relative bg-black"
+            style={{ 
+              width: '100%',
+              maxWidth: '400px',
+              aspectRatio: aspectRatio,
+              maxHeight: 'calc(100vh - 450px)',
+              touchAction: 'none'
+            }}
+            onTouchStart={handleFocusTouchStart}
+            onTouchMove={handleFocusTouchMove}
+            onTouchEnd={handleFocusTouchEnd}
+          >
+            {/* Obraz z zastosowanymi filtrami */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+            
+            {/* Wizualizacja okręgu focus */}
+            <div 
+              className="absolute border-2 border-white rounded-full pointer-events-none"
+              style={{
+                left: `${(focusCircle.x - focusCircle.radius) * 100}%`,
+                top: `${(focusCircle.y - focusCircle.radius) * 100}%`,
+                width: `${focusCircle.radius * 200}%`,
+                height: `${focusCircle.radius * 200}%`,
+                boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)'
+              }}
+            >
+              {/* Punkt środkowy */}
+              <div 
+                className="absolute w-4 h-4 bg-white rounded-full"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+              {/* Wskaźniki zmiany rozmiaru */}
+              <div className="absolute top-0 left-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
+              <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 translate-y-1/2" />
+              <div className="absolute left-0 top-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
+              <div className="absolute right-0 top-1/2 w-2 h-2 bg-white rounded-full translate-x-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Kontrolki */}
+        <div className="mt-3 space-y-3">
+          {/* Siła rozmycia */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">{t.editor.blurStrength || 'Siła rozmycia'}</span>
+              <span className="text-yellow-400 font-mono">{focusBlurAmount}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={focusBlurAmount}
+              onChange={(e) => setFocusBlurAmount(parseInt(e.target.value))}
+              className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
+            />
+          </div>
+          
+          {/* Rozmiar przejścia */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">{t.editor.feather || 'Przejście'}</span>
+              <span className="text-yellow-400 font-mono">{focusFeather}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={focusFeather}
+              onChange={(e) => setFocusFeather(parseInt(e.target.value))}
+              className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
+            />
+          </div>
+          
+          {/* Przełącznik odwrócenia */}
+          <button
+            onClick={() => setFocusInvert(!focusInvert)}
+            className={`w-full py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              focusInvert ? 'bg-purple-600 text-white' : 'bg-white/10 text-white/70'
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a10 10 0 0110 10" fill={focusInvert ? 'currentColor' : 'none'} />
+            </svg>
+            {focusInvert 
+              ? (t.editor.focusInside || 'Rozmycie w środku')
+              : (t.editor.focusOutside || 'Rozmycie na zewnątrz')
+            }
+          </button>
+        </div>
+        
+        {/* Przyciski */}
+        <div className="flex gap-4 mt-4">
+          <button
+            onClick={() => {
+              setFocusEnabled(false)
+              setActiveTab('adjust')
+            }}
+            className="flex-1 py-3 bg-white/10 rounded-xl text-white font-medium active:scale-95 transition-transform flex items-center justify-center gap-2"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            {t.editor.cancel}
+          </button>
+          <button
+            onClick={() => {
+              setFocusEnabled(true)
+              setActiveTab('adjust')
+            }}
+            className="flex-1 py-3 bg-green-600 rounded-xl text-white font-medium active:scale-95 transition-transform flex items-center justify-center gap-2"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="20,6 9,17 4,12" />
+            </svg>
+            {t.editor.apply || 'Zastosuj'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
       {/* Nagłówek */}
@@ -981,6 +1263,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           <>
             {activeTab === 'crop' ? (
               renderCropUI()
+            ) : activeTab === 'focus' ? (
+              renderFocusUI()
             ) : (
               <>
                 {/* Podgląd obrazu z filtrami */}
@@ -1003,6 +1287,19 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
                       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" />
                     </svg>
                     {t.editor.adjust}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('focus')}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                      focusEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-white/60'
+                    }`}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="3" />
+                      <circle cx="12" cy="12" r="7" opacity="0.5" />
+                      <circle cx="12" cy="12" r="10" opacity="0.3" />
+                    </svg>
+                    {t.editor.focus || 'Focus'}
                   </button>
                   <button
                     onClick={() => setActiveTab('crop')}
