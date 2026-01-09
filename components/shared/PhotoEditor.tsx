@@ -28,12 +28,12 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [tint, setTint] = useState(0)
   const [sharpness, setSharpness] = useState(100) // 0-200, 100 = normal, >100 = wyostrzenie, <100 = rozmycie
   
-  // Selektywna ostrość (Focus)
+  // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz okręgu
   const [focusEnabled, setFocusEnabled] = useState(false)
   const [focusCircle, setFocusCircle] = useState({ x: 0.5, y: 0.5, radius: 0.25 }) // wartości 0-1 (proporcje obrazu)
-  const [focusBlurAmount, setFocusBlurAmount] = useState(50) // 0-100, siła rozmycia poza okręgiem
+  const [focusSharpness, setFocusSharpness] = useState(50) // 0-100, siła wyostrzenia wewnątrz okręgu
   const [focusFeather, setFocusFeather] = useState(30) // 0-100, rozmiar przejścia
-  const [focusInvert, setFocusInvert] = useState(false) // false = środek ostry, true = środek rozmyty
+  const [focusInvert, setFocusInvert] = useState(false) // false = wyostrzenie wewnątrz, true = wyostrzenie na zewnątrz
   const [isDraggingFocus, setIsDraggingFocus] = useState(false)
   const [isResizingFocus, setIsResizingFocus] = useState(false)
   const focusContainerRef = useRef<HTMLDivElement>(null)
@@ -114,7 +114,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setRotation(0)
         setFocusEnabled(false)
         setFocusCircle({ x: 0.5, y: 0.5, radius: 0.25 })
-        setFocusBlurAmount(50)
+        setFocusSharpness(50)
         setFocusFeather(30)
         setFocusInvert(false)
         setActiveTab('adjust')
@@ -190,23 +190,19 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
 
     ctx.putImageData(imageData, 0, 0)
 
-    // Selektywna ostrość (Focus) - używa CSS blur dla wydajności
-    if (focusEnabled && focusBlurAmount > 0) {
-      // Stwórz rozmytą wersję
-      const blurCanvas = document.createElement('canvas')
-      blurCanvas.width = width
-      blurCanvas.height = height
-      const blurCtx = blurCanvas.getContext('2d')
-      if (blurCtx) {
-        // Użyj CSS filter dla rozmycia (szybsze)
-        const blurRadius = Math.round(focusBlurAmount / 10) // 0-10px blur
-        blurCtx.filter = `blur(${blurRadius}px)`
-        blurCtx.drawImage(canvas, 0, 0)
-        blurCtx.filter = 'none'
+    // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz okręgu
+    if (focusEnabled && focusSharpness > 0) {
+      // Stwórz wyostrzoną wersję obrazu
+      const sharpCanvas = document.createElement('canvas')
+      sharpCanvas.width = width
+      sharpCanvas.height = height
+      const sharpCtx = sharpCanvas.getContext('2d')
+      if (sharpCtx) {
+        sharpCtx.drawImage(canvas, 0, 0)
         
-        // Pobierz dane z obu canvas
-        const sharpData = ctx.getImageData(0, 0, width, height)
-        const blurData = blurCtx.getImageData(0, 0, width, height)
+        // Pobierz dane
+        const originalData = ctx.getImageData(0, 0, width, height)
+        const tempData = sharpCtx.getImageData(0, 0, width, height)
         const resultData = ctx.createImageData(width, height)
         
         // Parametry okręgu w pikselach
@@ -215,7 +211,17 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         const radiusPx = focusCircle.radius * Math.min(width, height)
         const featherPx = (focusFeather / 100) * radiusPx // rozmiar przejścia
         
-        // Połącz obrazy z gradientem
+        // Siła wyostrzenia (0.0 - 2.0)
+        const strength = focusSharpness / 50
+        
+        // Kernel unsharp mask dla wyostrzania
+        const kernel = [
+          0, -1 * strength, 0,
+          -1 * strength, 1 + 4 * strength, -1 * strength,
+          0, -1 * strength, 0
+        ]
+        
+        // Przetwórz każdy piksel
         for (let y = 0; y < height; y++) {
           for (let x = 0; x < width; x++) {
             const idx = (y * width + x) * 4
@@ -223,28 +229,54 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
             // Odległość od środka okręgu
             const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2)
             
-            // Oblicz współczynnik mieszania (0 = ostry, 1 = rozmyty)
-            let blendFactor: number
+            // Oblicz współczynnik wyostrzenia (1 = pełne wyostrzenie, 0 = brak)
+            let sharpenFactor: number
             if (dist <= radiusPx - featherPx) {
-              blendFactor = 0 // Wewnątrz - ostry
+              sharpenFactor = 1 // Wewnątrz - pełne wyostrzenie
             } else if (dist >= radiusPx + featherPx) {
-              blendFactor = 1 // Zewnątrz - rozmyty
+              sharpenFactor = 0 // Zewnątrz - brak wyostrzenia
             } else {
               // Strefa przejścia - gładki gradient
-              blendFactor = (dist - (radiusPx - featherPx)) / (2 * featherPx)
+              sharpenFactor = 1 - (dist - (radiusPx - featherPx)) / (2 * featherPx)
               // Smooth step dla bardziej naturalnego przejścia
-              blendFactor = blendFactor * blendFactor * (3 - 2 * blendFactor)
+              sharpenFactor = sharpenFactor * sharpenFactor * (3 - 2 * sharpenFactor)
             }
             
-            // Odwróć jeśli focusInvert jest true
+            // Odwróć jeśli focusInvert jest true (wyostrzenie na zewnątrz)
             if (focusInvert) {
-              blendFactor = 1 - blendFactor
+              sharpenFactor = 1 - sharpenFactor
             }
             
-            // Mieszaj piksele
-            resultData.data[idx] = Math.round(sharpData.data[idx] * (1 - blendFactor) + blurData.data[idx] * blendFactor)
-            resultData.data[idx + 1] = Math.round(sharpData.data[idx + 1] * (1 - blendFactor) + blurData.data[idx + 1] * blendFactor)
-            resultData.data[idx + 2] = Math.round(sharpData.data[idx + 2] * (1 - blendFactor) + blurData.data[idx + 2] * blendFactor)
+            // Jeśli jesteśmy w strefie wyostrzenia i nie na krawędzi
+            if (sharpenFactor > 0 && y > 0 && y < height - 1 && x > 0 && x < width - 1) {
+              // Zastosuj kernel konwolucji
+              let r = 0, g = 0, b = 0
+              for (let ky = -1; ky <= 1; ky++) {
+                for (let kx = -1; kx <= 1; kx++) {
+                  const kidx = ((y + ky) * width + (x + kx)) * 4
+                  const kIdx = (ky + 1) * 3 + (kx + 1)
+                  r += tempData.data[kidx] * kernel[kIdx]
+                  g += tempData.data[kidx + 1] * kernel[kIdx]
+                  b += tempData.data[kidx + 2] * kernel[kIdx]
+                }
+              }
+              
+              // Mieszaj oryginalny z wyostrzonym według sharpenFactor
+              resultData.data[idx] = Math.max(0, Math.min(255, Math.round(
+                originalData.data[idx] * (1 - sharpenFactor) + r * sharpenFactor
+              )))
+              resultData.data[idx + 1] = Math.max(0, Math.min(255, Math.round(
+                originalData.data[idx + 1] * (1 - sharpenFactor) + g * sharpenFactor
+              )))
+              resultData.data[idx + 2] = Math.max(0, Math.min(255, Math.round(
+                originalData.data[idx + 2] * (1 - sharpenFactor) + b * sharpenFactor
+              )))
+            } else {
+              // Poza strefą wyostrzenia - oryginalny obraz
+              resultData.data[idx] = originalData.data[idx]
+              resultData.data[idx + 1] = originalData.data[idx + 1]
+              resultData.data[idx + 2] = originalData.data[idx + 2]
+            }
             resultData.data[idx + 3] = 255
           }
         }
@@ -339,7 +371,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         }
       }
     }
-  }, [brightness, temperature, tint, sharpness, focusEnabled, focusCircle, focusBlurAmount, focusFeather, focusInvert])
+  }, [brightness, temperature, tint, sharpness, focusEnabled, focusCircle, focusSharpness, focusFeather, focusInvert])
   
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
@@ -529,7 +561,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setRotation(0)
     setFocusEnabled(false)
     setFocusCircle({ x: 0.5, y: 0.5, radius: 0.25 })
-    setFocusBlurAmount(50)
+    setFocusSharpness(50)
     setFocusFeather(30)
     setFocusInvert(false)
   }, [])
@@ -1149,18 +1181,18 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         
         {/* Kontrolki */}
         <div className="mt-3 space-y-3">
-          {/* Siła rozmycia */}
+          {/* Siła wyostrzenia */}
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-white/70">{t.editor.blurStrength || 'Siła rozmycia'}</span>
-              <span className="text-yellow-400 font-mono">{focusBlurAmount}%</span>
+              <span className="text-white/70">{t.editor.sharpnessStrength || 'Siła wyostrzenia'}</span>
+              <span className="text-yellow-400 font-mono">{focusSharpness}%</span>
             </div>
             <input
               type="range"
               min={0}
               max={100}
-              value={focusBlurAmount}
-              onChange={(e) => setFocusBlurAmount(parseInt(e.target.value))}
+              value={focusSharpness}
+              onChange={(e) => setFocusSharpness(parseInt(e.target.value))}
               className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
             />
           </div>
@@ -1193,8 +1225,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
               <path d="M12 2a10 10 0 0110 10" fill={focusInvert ? 'currentColor' : 'none'} />
             </svg>
             {focusInvert 
-              ? (t.editor.focusInside || 'Rozmycie w środku')
-              : (t.editor.focusOutside || 'Rozmycie na zewnątrz')
+              ? (t.editor.sharpnessOutside || 'Wyostrzenie na zewnątrz')
+              : (t.editor.sharpnessInside || 'Wyostrzenie wewnątrz')
             }
           </button>
         </div>
