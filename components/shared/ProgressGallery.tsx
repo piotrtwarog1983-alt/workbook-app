@@ -181,8 +181,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
   if (loading) {
     return (
-      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.course.yourProgress}</h3>
+      <div className="w-full lg:w-[32rem] h-full p-4 bg-white rounded-2xl">
+        <h3 className="text-sm font-medium text-gray-600 tracking-wider mb-4">{t.course.yourProgress}</h3>
         <div className="text-center py-8 text-gray-500">{t.common.loading}</div>
       </div>
     )
@@ -190,8 +190,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
   if (error) {
     return (
-      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.course.yourProgress}</h3>
+      <div className="w-full lg:w-[32rem] h-full p-4 bg-white rounded-2xl">
+        <h3 className="text-sm font-medium text-gray-600 tracking-wider mb-4">{t.course.yourProgress}</h3>
         <div className="text-center py-8">
           <p className="text-gray-500 text-sm">
             {error === 'notLoggedIn' && 'Zaloguj się, aby zobaczyć postępy'}
@@ -206,18 +206,18 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
 
   if (progressImages.length === 0) {
     return (
-      <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl">
-        <h3 className="text-sm font-medium text-gray-400 tracking-wider mb-4">{t.course.yourProgress}</h3>
+      <div className="w-full lg:w-[32rem] h-full p-4 bg-white rounded-2xl">
+        <h3 className="text-sm font-medium text-gray-600 tracking-wider mb-4">{t.course.yourProgress}</h3>
       </div>
     )
   }
 
   return (
-    <div className="w-full lg:w-[32rem] h-full p-4 panel-elegant panel-glow rounded-2xl flex flex-col">
-      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
+    <div className="w-full lg:w-[32rem] h-full p-4 bg-white rounded-2xl flex flex-col">
+      <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wider mb-4">{t.course.yourProgress}</h3>
       
-      {/* Kontener ze zdjęciem */}
-      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-black/20 flex-shrink-0">
+      {/* Kontener ze zdjęciem - proporcje 4:5 */}
+      <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-white flex-shrink-0">
         <Image
           src={progressImages[currentIndex].url}
           alt={`${t.gallery.title} ${currentIndex + 1}`}
@@ -230,11 +230,11 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
         {currentIndex > 0 && (
           <button
             onClick={goToPrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 transition-all z-10"
             aria-label={t.common.previous}
           >
             <svg
-              className="w-5 h-5 text-white"
+              className="w-5 h-5 text-gray-700"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -253,11 +253,11 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
         {currentIndex < progressImages.length - 1 && (
           <button
             onClick={goToNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 transition-all z-10"
             aria-label={t.common.next}
           >
             <svg
-              className="w-5 h-5 text-white"
+              className="w-5 h-5 text-gray-700"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -273,13 +273,13 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
         )}
 
         {/* Numer strony */}
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+        <div className="absolute bottom-2 right-2 bg-white/90 text-gray-700 text-xs px-2 py-1 rounded shadow-lg">
           {t.common.page} {progressImages[currentIndex].page}
         </div>
       </div>
 
       {/* Wskaźnik (np. 1/7) */}
-      <div className="mt-3 text-center text-sm text-gray-400">
+      <div className="mt-3 text-center text-sm text-gray-600">
         {currentIndex + 1} / {progressImages.length}
       </div>
 
@@ -292,8 +292,8 @@ export function ProgressGallery({ uploadId, onProgressUpdate }: ProgressGalleryP
               onClick={() => setCurrentIndex(index)}
               className={`relative w-14 h-14 rounded overflow-hidden border-2 flex-shrink-0 transition-all ${
                 index === currentIndex
-                  ? 'border-primary-500 ring-2 ring-primary-500/30'
-                  : 'border-white/20 opacity-60 hover:opacity-100'
+                  ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-lg'
+                  : 'border-gray-300 opacity-60 hover:opacity-100'
               }`}
             >
               <Image
