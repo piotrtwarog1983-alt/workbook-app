@@ -729,8 +729,8 @@ export function CameraView({
             }}
             className="absolute z-20 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full"
             style={{ 
-              top: '80px', // Obniżony względem wskaźnika kąta (który jest na top-16 = 64px)
-              right: '5vw' // Przesunięty o 10% bardziej w prawo (z 15vw na 5vw)
+              top: 'calc(80px + 10vh)', // Obniżony o 10% wysokości ekranu
+              right: 'max(0vw, calc(5vw - 10vw))' // Przesunięty o 10% szerokości ekranu w prawo
             }}
           >
             ✕
