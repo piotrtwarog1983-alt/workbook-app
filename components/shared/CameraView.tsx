@@ -633,23 +633,15 @@ export function CameraView({
       {/* PODGLĄD ZDJĘCIA - widoczny po zrobieniu zdjęcia */}
       {capturedImage ? (
         <>
-          {/* Przycisk zamknięcia (prawa strona) - tylko dla zdjęć z galerii */}
-          {isFromGallery && (
-            <button
-              onClick={handleDiscardPhoto}
-              className="absolute z-30 w-12 h-12 flex items-center justify-center text-white text-3xl bg-black/70 hover:bg-black/90 rounded-full shadow-lg transition-all"
-              style={{ top: '5vh', right: '4vw' }}
-            >
-              ✕
-            </button>
-          )}
-
           {/* Podgląd zdjęcia */}
-          <div className="flex-1 relative overflow-hidden flex items-center justify-center p-4">
+          <div 
+            className="flex-1 relative overflow-hidden flex items-center justify-center p-4"
+            onClick={isFromGallery ? handleDiscardPhoto : undefined}
+          >
             <img
               src={capturedImage}
               alt="Podgląd"
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              className={`max-w-full max-h-full object-contain rounded-lg shadow-2xl ${isFromGallery ? 'cursor-pointer' : ''}`}
               style={{ aspectRatio: '4/5' }}
             />
           </div>
@@ -657,7 +649,7 @@ export function CameraView({
           {/* Dolny panel z przyciskami - tylko dla zdjęć z aparatu */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 pb-10">
             {isFromGallery ? (
-              /* ZDJĘCIE Z GALERII - brak przycisków na dole, krzyżyk jest w nagłówku */
+              /* ZDJĘCIE Z GALERII - kliknij na zdjęcie aby zamknąć */
               null
             ) : (
               /* ZDJĘCIE Z APARATU - odrzuć lub zapisz */
