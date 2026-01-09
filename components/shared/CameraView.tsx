@@ -729,7 +729,7 @@ export function CameraView({
             }}
             className="absolute z-20 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full"
             style={{ 
-              top: '80px', // Przesunięty o 10% w górę (z calc(80px + 10vh) na 80px)
+              top: 'calc(80px + 5vh)', // Przesunięty o 5% w dół
               right: 'max(0vw, calc(5vw - 10vw))' // Przesunięty o 10% szerokości ekranu w prawo
             }}
           >
