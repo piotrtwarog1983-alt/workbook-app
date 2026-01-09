@@ -603,11 +603,7 @@ useEffect(() => {
   if (loading) {
     return (
       <div className="flex items-center justify-center bg-black" style={{ minHeight: 'var(--vh, 100vh)' }}>
-        <img
-          src="/course/ikony/theone.png"
-          alt="Loading"
-          className="w-32 h-32 object-contain"
-        />
+        <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     )
   }

@@ -19,16 +19,14 @@ const LogoLoader = () => (
 const DesktopCourseViewer = dynamic(
   () => import('./desktop/CourseViewer').then(mod => mod.CourseViewer),
   { 
-    ssr: false,
-    loading: () => <LogoLoader />
+    ssr: false
   }
 )
 
 const MobileCourseViewer = dynamic(
   () => import('./mobile/CourseViewer').then(mod => mod.CourseViewer),
   { 
-    ssr: false,
-    loading: () => <LogoLoader />
+    ssr: false
   }
 )
 

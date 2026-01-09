@@ -81,15 +81,7 @@ export function withDevice<P extends object>(
     const { device, isLoading } = useDevice()
 
     if (isLoading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-black">
-          <img
-            src="/course/ikony/theone.png"
-            alt="Loading"
-            className="w-32 h-32 object-contain"
-          />
-        </div>
-      )
+      return null
     }
 
     if (device === 'mobile') {
