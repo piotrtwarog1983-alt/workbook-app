@@ -28,14 +28,15 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [tint, setTint] = useState(0)
   const [sharpness, setSharpness] = useState(100) // 0-200, 100 = normal, >100 = wyostrzenie, <100 = rozmycie
   
-  // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz okręgu
+  // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz elipsy
   const [focusEnabled, setFocusEnabled] = useState(false)
-  const [focusCircle, setFocusCircle] = useState({ x: 0.5, y: 0.5, radius: 0.25 }) // wartości 0-1 (proporcje obrazu)
-  const [focusSharpness, setFocusSharpness] = useState(50) // 0-100, siła wyostrzenia wewnątrz okręgu
+  const [focusEllipse, setFocusEllipse] = useState({ x: 0.5, y: 0.5, radiusX: 0.3, radiusY: 0.25 }) // wartości 0-1 (proporcje obrazu)
+  const [focusSharpness, setFocusSharpness] = useState(50) // 0-100, siła wyostrzenia wewnątrz
   const [focusFeather, setFocusFeather] = useState(30) // 0-100, rozmiar przejścia
   const [focusInvert, setFocusInvert] = useState(false) // false = wyostrzenie wewnątrz, true = wyostrzenie na zewnątrz
   const [isDraggingFocus, setIsDraggingFocus] = useState(false)
-  const [isResizingFocus, setIsResizingFocus] = useState(false)
+  const [isResizingFocusX, setIsResizingFocusX] = useState(false) // resize poziomy
+  const [isResizingFocusY, setIsResizingFocusY] = useState(false) // resize pionowy
   const focusContainerRef = useRef<HTMLDivElement>(null)
   
   
@@ -113,7 +114,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setSharpness(100)
         setRotation(0)
         setFocusEnabled(false)
-        setFocusCircle({ x: 0.5, y: 0.5, radius: 0.25 })
+        setFocusEllipse({ x: 0.5, y: 0.5, radiusX: 0.3, radiusY: 0.25 })
         setFocusSharpness(50)
         setFocusFeather(30)
         setFocusInvert(false)
@@ -190,7 +191,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
 
     ctx.putImageData(imageData, 0, 0)
 
-    // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz okręgu
+    // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz elipsy
     // Pokazuj podgląd zarówno gdy focusEnabled, jak i gdy jesteśmy w trybie focus (activeTab === 'focus')
     if ((focusEnabled || activeTab === 'focus') && focusSharpness > 0) {
       // Stwórz wyostrzoną wersję obrazu
@@ -206,11 +207,13 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         const tempData = sharpCtx.getImageData(0, 0, width, height)
         const resultData = ctx.createImageData(width, height)
         
-        // Parametry okręgu w pikselach
-        const centerX = focusCircle.x * width
-        const centerY = focusCircle.y * height
-        const radiusPx = focusCircle.radius * Math.min(width, height)
-        const featherPx = (focusFeather / 100) * radiusPx // rozmiar przejścia
+        // Parametry elipsy w pikselach
+        const centerX = focusEllipse.x * width
+        const centerY = focusEllipse.y * height
+        const radiusXPx = focusEllipse.radiusX * width
+        const radiusYPx = focusEllipse.radiusY * height
+        const avgRadius = (radiusXPx + radiusYPx) / 2
+        const featherPx = (focusFeather / 100) * avgRadius // rozmiar przejścia
         
         // Siła wyostrzenia (0.0 - 2.0)
         const strength = focusSharpness / 50
@@ -227,18 +230,23 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
           for (let x = 0; x < width; x++) {
             const idx = (y * width + x) * 4
             
-            // Odległość od środka okręgu
-            const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2)
+            // Znormalizowana odległość od środka elipsy (0 = środek, 1 = krawędź elipsy)
+            const normalizedDist = Math.sqrt(
+              ((x - centerX) / radiusXPx) ** 2 + ((y - centerY) / radiusYPx) ** 2
+            )
+            
+            // Feather jako proporcja promienia
+            const featherRatio = featherPx / avgRadius
             
             // Oblicz współczynnik wyostrzenia (1 = pełne wyostrzenie, 0 = brak)
             let sharpenFactor: number
-            if (dist <= radiusPx - featherPx) {
+            if (normalizedDist <= 1 - featherRatio) {
               sharpenFactor = 1 // Wewnątrz - pełne wyostrzenie
-            } else if (dist >= radiusPx + featherPx) {
+            } else if (normalizedDist >= 1 + featherRatio) {
               sharpenFactor = 0 // Zewnątrz - brak wyostrzenia
             } else {
               // Strefa przejścia - gładki gradient
-              sharpenFactor = 1 - (dist - (radiusPx - featherPx)) / (2 * featherPx)
+              sharpenFactor = 1 - (normalizedDist - (1 - featherRatio)) / (2 * featherRatio)
               // Smooth step dla bardziej naturalnego przejścia
               sharpenFactor = sharpenFactor * sharpenFactor * (3 - 2 * sharpenFactor)
             }
@@ -372,7 +380,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         }
       }
     }
-  }, [brightness, temperature, tint, sharpness, focusEnabled, focusCircle, focusSharpness, focusFeather, focusInvert, activeTab])
+  }, [brightness, temperature, tint, sharpness, focusEnabled, focusEllipse, focusSharpness, focusFeather, focusInvert, activeTab])
   
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
@@ -561,7 +569,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setSharpness(100)
     setRotation(0)
     setFocusEnabled(false)
-    setFocusCircle({ x: 0.5, y: 0.5, radius: 0.25 })
+    setFocusEllipse({ x: 0.5, y: 0.5, radiusX: 0.3, radiusY: 0.25 })
     setFocusSharpness(50)
     setFocusFeather(30)
     setFocusInvert(false)
@@ -1063,7 +1071,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     )
   }
 
-  // Obsługa dotyku dla Focus
+  // Obsługa dotyku dla Focus (elipsa)
   const handleFocusTouchStart = useCallback((e: React.TouchEvent) => {
     if (!focusContainerRef.current) return
     e.preventDefault()
@@ -1073,18 +1081,43 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     const touchX = (touch.clientX - rect.left) / rect.width
     const touchY = (touch.clientY - rect.top) / rect.height
     
-    // Sprawdź czy dotyk jest na krawędzi okręgu (resize) czy w środku (drag)
-    const dist = Math.sqrt((touchX - focusCircle.x) ** 2 + (touchY - focusCircle.y) ** 2)
-    const edgeThreshold = 0.05
+    // Znormalizowana odległość od środka elipsy
+    const normalizedDist = Math.sqrt(
+      ((touchX - focusEllipse.x) / focusEllipse.radiusX) ** 2 + 
+      ((touchY - focusEllipse.y) / focusEllipse.radiusY) ** 2
+    )
     
-    if (Math.abs(dist - focusCircle.radius) < edgeThreshold) {
-      setIsResizingFocus(true)
-      setIsDraggingFocus(false)
-    } else if (dist < focusCircle.radius) {
+    const edgeThreshold = 0.15
+    
+    // Sprawdź czy dotyk jest na lewej/prawej krawędzi (resize X)
+    const isNearLeftRight = Math.abs(touchX - focusEllipse.x) > focusEllipse.radiusX * 0.7 &&
+                            Math.abs(touchY - focusEllipse.y) < focusEllipse.radiusY * 0.5
+    
+    // Sprawdź czy dotyk jest na górnej/dolnej krawędzi (resize Y)
+    const isNearTopBottom = Math.abs(touchY - focusEllipse.y) > focusEllipse.radiusY * 0.7 &&
+                            Math.abs(touchX - focusEllipse.x) < focusEllipse.radiusX * 0.5
+    
+    if (Math.abs(normalizedDist - 1) < edgeThreshold) {
+      if (isNearLeftRight) {
+        setIsResizingFocusX(true)
+        setIsResizingFocusY(false)
+        setIsDraggingFocus(false)
+      } else if (isNearTopBottom) {
+        setIsResizingFocusY(true)
+        setIsResizingFocusX(false)
+        setIsDraggingFocus(false)
+      } else {
+        // Krawędź ukośna - resize proporcjonalny
+        setIsResizingFocusX(true)
+        setIsResizingFocusY(true)
+        setIsDraggingFocus(false)
+      }
+    } else if (normalizedDist < 1) {
       setIsDraggingFocus(true)
-      setIsResizingFocus(false)
+      setIsResizingFocusX(false)
+      setIsResizingFocusY(false)
     }
-  }, [focusCircle])
+  }, [focusEllipse])
 
   const handleFocusTouchMove = useCallback((e: React.TouchEvent) => {
     if (!focusContainerRef.current) return
@@ -1096,25 +1129,28 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     const touchY = (touch.clientY - rect.top) / rect.height
     
     if (isDraggingFocus) {
-      // Przesuń środek okręgu
-      setFocusCircle(prev => ({
+      // Przesuń środek elipsy
+      setFocusEllipse(prev => ({
         ...prev,
         x: Math.max(0.1, Math.min(0.9, touchX)),
         y: Math.max(0.1, Math.min(0.9, touchY))
       }))
-    } else if (isResizingFocus) {
-      // Zmień rozmiar okręgu
-      const newRadius = Math.sqrt((touchX - focusCircle.x) ** 2 + (touchY - focusCircle.y) ** 2)
-      setFocusCircle(prev => ({
+    } else if (isResizingFocusX || isResizingFocusY) {
+      const deltaX = Math.abs(touchX - focusEllipse.x)
+      const deltaY = Math.abs(touchY - focusEllipse.y)
+      
+      setFocusEllipse(prev => ({
         ...prev,
-        radius: Math.max(0.1, Math.min(0.5, newRadius))
+        radiusX: isResizingFocusX ? Math.max(0.08, Math.min(0.45, deltaX)) : prev.radiusX,
+        radiusY: isResizingFocusY ? Math.max(0.08, Math.min(0.45, deltaY)) : prev.radiusY
       }))
     }
-  }, [isDraggingFocus, isResizingFocus, focusCircle.x, focusCircle.y])
+  }, [isDraggingFocus, isResizingFocusX, isResizingFocusY, focusEllipse.x, focusEllipse.y])
 
   const handleFocusTouchEnd = useCallback(() => {
     setIsDraggingFocus(false)
-    setIsResizingFocus(false)
+    setIsResizingFocusX(false)
+    setIsResizingFocusY(false)
   }, [])
 
   // Renderowanie zakładki Focus
@@ -1151,31 +1187,32 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
               className="absolute inset-0 w-full h-full object-contain"
             />
             
-            {/* Wizualizacja okręgu focus */}
+            {/* Wizualizacja elipsy focus */}
             <div 
               className="absolute border-2 border-white rounded-full pointer-events-none"
               style={{
-                left: `${(focusCircle.x - focusCircle.radius) * 100}%`,
-                top: `${(focusCircle.y - focusCircle.radius) * 100}%`,
-                width: `${focusCircle.radius * 200}%`,
-                height: `${focusCircle.radius * 200}%`,
+                left: `${(focusEllipse.x - focusEllipse.radiusX) * 100}%`,
+                top: `${(focusEllipse.y - focusEllipse.radiusY) * 100}%`,
+                width: `${focusEllipse.radiusX * 200}%`,
+                height: `${focusEllipse.radiusY * 200}%`,
                 boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)'
               }}
             >
               {/* Punkt środkowy */}
               <div 
-                className="absolute w-4 h-4 bg-white rounded-full"
+                className="absolute w-5 h-5 bg-white rounded-full border-2 border-gray-400"
                 style={{
                   left: '50%',
                   top: '50%',
                   transform: 'translate(-50%, -50%)'
                 }}
               />
-              {/* Wskaźniki zmiany rozmiaru */}
-              <div className="absolute top-0 left-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-              <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 translate-y-1/2" />
-              <div className="absolute left-0 top-1/2 w-2 h-2 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-              <div className="absolute right-0 top-1/2 w-2 h-2 bg-white rounded-full translate-x-1/2 -translate-y-1/2" />
+              {/* Wskaźniki zmiany rozmiaru pionowego (góra/dół) */}
+              <div className="absolute top-0 left-1/2 w-3 h-3 bg-yellow-400 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white" />
+              <div className="absolute bottom-0 left-1/2 w-3 h-3 bg-yellow-400 rounded-full -translate-x-1/2 translate-y-1/2 border border-white" />
+              {/* Wskaźniki zmiany rozmiaru poziomego (lewo/prawo) */}
+              <div className="absolute left-0 top-1/2 w-3 h-3 bg-blue-400 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white" />
+              <div className="absolute right-0 top-1/2 w-3 h-3 bg-blue-400 rounded-full translate-x-1/2 -translate-y-1/2 border border-white" />
             </div>
           </div>
         </div>
