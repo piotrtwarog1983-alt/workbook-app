@@ -33,7 +33,7 @@ export function NavigationButtons({
       </button>
       
       {/* Page indicator */}
-      <div className="text-white/60 text-sm font-medium">
+      <div className="bg-white px-3 py-2 rounded-full text-black text-sm font-medium shadow-lg">
         {currentPageIndex + 1} / {totalPages}
       </div>
       

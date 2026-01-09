@@ -26,6 +26,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
   const [brightness, setBrightness] = useState(100)
   const [temperature, setTemperature] = useState(0)
   const [tint, setTint] = useState(0)
+  const [sharpness, setSharpness] = useState(100) // 0-200, 100 = normal, >100 = wyostrzenie, <100 = rozmycie
   
   
   // Kadrowanie - współrzędne w pikselach względem wyświetlanego obrazu
@@ -99,6 +100,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setBrightness(100)
         setTemperature(0)
         setTint(0)
+        setSharpness(100)
         setRotation(0)
         setActiveTab('adjust')
         
@@ -136,9 +138,10 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     canvas.height = img.naturalHeight
     ctx.drawImage(img, 0, 0)
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const data = imageData.data
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    let data = imageData.data
 
+    // Najpierw podstawowe filtry kolorów
     for (let i = 0; i < data.length; i += 4) {
       let r = data[i]
       let g = data[i + 1]
@@ -169,7 +172,98 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     }
 
     ctx.putImageData(imageData, 0, 0)
-  }, [brightness, temperature, tint])
+
+    // Teraz wyostrzenie/rozmycie (tekstura)
+    if (sharpness !== 100) {
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = canvas.width
+      tempCanvas.height = canvas.height
+      const tempCtx = tempCanvas.getContext('2d')
+      if (tempCtx) {
+        tempCtx.drawImage(canvas, 0, 0)
+        
+        if (sharpness > 100) {
+          // Wyostrzanie (sharpness > 100)
+          const strength = (sharpness - 100) / 100 // 0.0 - 1.0
+          imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+          const tempData = tempCtx.getImageData(0, 0, canvas.width, canvas.height)
+          const width = canvas.width
+          const height = canvas.height
+          
+          // Kernel unsharp mask (wyostrzanie)
+          const kernel = [
+            0, -1 * strength, 0,
+            -1 * strength, 1 + 4 * strength, -1 * strength,
+            0, -1 * strength, 0
+          ]
+          
+          const newData = new Uint8ClampedArray(imageData.data)
+          
+          for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+              let r = 0, g = 0, b = 0
+              
+              for (let ky = -1; ky <= 1; ky++) {
+                for (let kx = -1; kx <= 1; kx++) {
+                  const idx = ((y + ky) * width + (x + kx)) * 4
+                  const kIdx = (ky + 1) * 3 + (kx + 1)
+                  
+                  r += tempData.data[idx] * kernel[kIdx]
+                  g += tempData.data[idx + 1] * kernel[kIdx]
+                  b += tempData.data[idx + 2] * kernel[kIdx]
+                }
+              }
+              
+              const idx = (y * width + x) * 4
+              newData[idx] = Math.max(0, Math.min(255, r))
+              newData[idx + 1] = Math.max(0, Math.min(255, g))
+              newData[idx + 2] = Math.max(0, Math.min(255, b))
+            }
+          }
+          
+          imageData.data.set(newData)
+          ctx.putImageData(imageData, 0, 0)
+        } else if (sharpness < 100) {
+          // Rozmycie (sharpness < 100) - zmniejsza teksturę
+          const blurAmount = (100 - sharpness) / 100 // 0.0 - 1.0
+          const radius = Math.round(blurAmount * 3) // max 3px blur
+          
+          if (radius > 0) {
+            imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+            const tempData = tempCtx.getImageData(0, 0, canvas.width, canvas.height)
+            const width = canvas.width
+            const height = canvas.height
+            
+            const newData = new Uint8ClampedArray(imageData.data)
+            
+            for (let y = radius; y < height - radius; y++) {
+              for (let x = radius; x < width - radius; x++) {
+                let r = 0, g = 0, b = 0, count = 0
+                
+                for (let ky = -radius; ky <= radius; ky++) {
+                  for (let kx = -radius; kx <= radius; kx++) {
+                    const idx = ((y + ky) * width + (x + kx)) * 4
+                    r += tempData.data[idx]
+                    g += tempData.data[idx + 1]
+                    b += tempData.data[idx + 2]
+                    count++
+                  }
+                }
+                
+                const idx = (y * width + x) * 4
+                newData[idx] = Math.round(r / count)
+                newData[idx + 1] = Math.round(g / count)
+                newData[idx + 2] = Math.round(b / count)
+              }
+            }
+            
+            imageData.data.set(newData)
+            ctx.putImageData(imageData, 0, 0)
+          }
+        }
+      }
+    }
+  }, [brightness, temperature, tint, sharpness])
   
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
@@ -245,6 +339,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setBrightness(100)
         setTemperature(0)
         setTint(0)
+        setSharpness(100)
         setRotation(0)
         setActiveTab('adjust')
       }
@@ -278,6 +373,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         setBrightness(100)
         setTemperature(0)
         setTint(0)
+        setSharpness(100)
         setActiveTab('adjust')
       }
       croppedImage.src = croppedImageData
@@ -353,6 +449,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     setBrightness(100)
     setTemperature(0)
     setTint(0)
+    setSharpness(100)
     setRotation(0)
   }, [])
 
@@ -789,6 +886,36 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
               onChange={(e) => setTint(parseInt(e.target.value))}
               className="relative w-full h-2 bg-transparent rounded-full appearance-none cursor-pointer"
             />
+          </div>
+        </div>
+
+        {/* Ostrość/tekstura */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-white/70 flex items-center gap-2">
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v6M12 17v6M23 12h-6M7 12H1" strokeLinecap="round" />
+                <circle cx="12" cy="12" r="8" opacity="0.5" />
+              </svg>
+              {t.editor.sharpness || 'Ostrość'}
+            </span>
+            <span className="text-yellow-400 font-mono">
+              {sharpness > 100 ? '+' : ''}{sharpness - 100}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={200}
+            value={sharpness}
+            onChange={(e) => setSharpness(parseInt(e.target.value))}
+            className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-white/40">
+            <span>Rozmycie</span>
+            <span>Normal</span>
+            <span>Ostrość</span>
           </div>
         </div>
 

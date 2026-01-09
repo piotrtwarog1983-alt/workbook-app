@@ -14,21 +14,21 @@ export function MobileProgressBar({ pages, currentPageIndex, onMenuClick }: Mobi
   return (
     <div className="lg:hidden fixed bottom-4 left-0 right-0 flex justify-center items-center gap-3 z-40 px-4">
       {/* Instagram-style progress dots/bars */}
-      <div className="bg-gray-900/70 backdrop-blur-sm px-3 py-2 rounded-full flex items-center gap-1">
+      <div className="bg-white backdrop-blur-sm px-3 py-2 rounded-full flex items-center gap-1 shadow-lg">
         {visiblePages.map((_, idx) => (
           <div
             key={idx}
             className={`h-1 rounded-full transition-all duration-300 ${
               idx === currentPageIndex 
-                ? 'w-4 bg-orange-500' 
+                ? 'w-4 bg-black' 
                 : idx < currentPageIndex 
-                  ? 'w-1.5 bg-white/60' 
-                  : 'w-1.5 bg-white/30'
+                  ? 'w-1.5 bg-gray-600' 
+                  : 'w-1.5 bg-gray-300'
             }`}
           />
         ))}
         {hasMore && (
-          <span className="text-white/50 text-[10px] ml-1">+{pages.length - maxDots}</span>
+          <span className="text-black text-[10px] ml-1 font-medium">+{pages.length - maxDots}</span>
         )}
       </div>
       
