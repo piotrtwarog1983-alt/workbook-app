@@ -709,18 +709,7 @@ export function CameraView({
       ) : (
         <>
           {/* Nagłówek */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
-            {/* Przycisk zamknięcia */}
-            <button
-              onClick={() => {
-                stopCamera()
-                onClose?.()
-              }}
-              className="w-10 h-10 flex items-center justify-center text-white text-2xl"
-            >
-              ✕
-            </button>
-
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center p-4 bg-gradient-to-b from-black/70 to-transparent">
             {/* Informacja o stronie lub licznik zdjęć */}
             <span className="text-white text-sm opacity-70">
               {pageNumber ? `${t.camera.page} ${pageNumber}` : ''}
@@ -730,10 +719,22 @@ export function CameraView({
                 </span>
               )}
             </span>
-
-            {/* Pusty element dla wyrównania */}
-            <div className="w-10 h-10" />
           </div>
+
+          {/* Przycisk zamknięcia - nad prawą linią siatki trójpodziału */}
+          <button
+            onClick={() => {
+              stopCamera()
+              onClose?.()
+            }}
+            className="absolute z-20 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full"
+            style={{ 
+              top: '2%',
+              right: '36.67vw' // Pozycja nad prawą linią siatki: siatka max-w-[80vw] wyśrodkowana, prawa linia na 2/3 = 63.33vw od lewej = 36.67vw od prawej
+            }}
+          >
+            ✕
+          </button>
 
           {/* Podgląd kamery */}
           <div 
