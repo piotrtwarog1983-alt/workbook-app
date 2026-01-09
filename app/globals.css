@@ -644,3 +644,135 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Neumorphism white buttons - białe tło z białym przyciskiem i kolorową obwódką */
+.btn-neumorphism-white {
+  background: white;
+  border: 2px solid;
+  border-radius: 12px;
+  position: relative;
+  overflow: visible;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+  padding: 2px;
+}
+
+/* Kolorowa obwódka - różne kolory dla różnych przycisków */
+.btn-neumorphism-white.gallery {
+  border-color: #f97316; /* Orange */
+}
+
+.btn-neumorphism-white.chat {
+  border-color: #3b82f6; /* Blue */
+}
+
+.btn-neumorphism-white.video {
+  border-color: #8b5cf6; /* Purple */
+}
+
+.btn-neumorphism-white.language {
+  border-color: #10b981; /* Green */
+}
+
+.btn-neumorphism-white.logout {
+  border-color: #ef4444; /* Red */
+}
+
+.btn-neumorphism-white.close {
+  border-color: #6b7280; /* Gray */
+}
+
+/* Wewnętrzny biały przycisk */
+.btn-neumorphism-white-inner {
+  background: white;
+  border: none;
+  border-radius: 10px;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.8),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+/* Małe przyciski ikonowe (bez tekstu) */
+.btn-neumorphism-white.language .btn-neumorphism-white-inner,
+.btn-neumorphism-white.logout .btn-neumorphism-white-inner,
+.btn-neumorphism-white.close .btn-neumorphism-white-inner {
+  padding: 0.5rem;
+  gap: 0.25rem;
+}
+
+/* Symbol na przycisku - przyjmuje kolor obwódki */
+.btn-neumorphism-white.gallery .btn-neumorphism-white-inner svg {
+  color: #f97316;
+}
+
+.btn-neumorphism-white.chat .btn-neumorphism-white-inner svg {
+  color: #3b82f6;
+}
+
+.btn-neumorphism-white.video .btn-neumorphism-white-inner svg {
+  color: #8b5cf6;
+}
+
+.btn-neumorphism-white.language .btn-neumorphism-white-inner svg,
+.btn-neumorphism-white.language .btn-neumorphism-white-inner {
+  color: #10b981;
+}
+
+.btn-neumorphism-white.logout .btn-neumorphism-white-inner svg {
+  color: #ef4444;
+}
+
+.btn-neumorphism-white.close .btn-neumorphism-white-inner svg {
+  color: #6b7280;
+}
+
+/* Active state - przycisk wciśnięty */
+.btn-neumorphism-white.active .btn-neumorphism-white-inner {
+  background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.1),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Hover state */
+.btn-neumorphism-white:hover {
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-neumorphism-white:hover .btn-neumorphism-white-inner {
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.08),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Active hover */
+.btn-neumorphism-white.active:hover .btn-neumorphism-white-inner {
+  background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+}
+
+/* Pressed state */
+.btn-neumorphism-white:active .btn-neumorphism-white-inner {
+  transform: scale(0.98);
+  box-shadow: 
+    inset 0 3px 8px rgba(0, 0, 0, 0.12),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+}
