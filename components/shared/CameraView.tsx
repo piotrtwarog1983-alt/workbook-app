@@ -624,25 +624,26 @@ export function CameraView({
   }
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black flex flex-col">
+    <div className="fixed inset-0 z-[200] bg-black flex flex-col relative">
       {/* Flash przy robieniu zdjęcia */}
       {photoFlash && (
         <div className="absolute inset-0 z-50 bg-white pointer-events-none animate-pulse" />
       )}
       
+      {/* Przycisk zamknięcia (prawa strona, 5% od góry) - tylko dla zdjęć z galerii */}
+      {capturedImage && isFromGallery && (
+        <button
+          onClick={handleDiscardPhoto}
+          className="absolute z-30 w-12 h-12 flex items-center justify-center text-white text-3xl bg-black/70 hover:bg-black/90 rounded-full shadow-lg transition-all"
+          style={{ top: '5%', right: '4%' }}
+        >
+          ✕
+        </button>
+      )}
+      
       {/* PODGLĄD ZDJĘCIA - widoczny po zrobieniu zdjęcia */}
       {capturedImage ? (
         <>
-          {/* Przycisk zamknięcia (prawa strona) - tylko dla zdjęć z galerii */}
-          {isFromGallery && (
-            <button
-              onClick={handleDiscardPhoto}
-              className="fixed z-30 w-12 h-12 flex items-center justify-center text-white text-3xl bg-black/70 hover:bg-black/90 rounded-full shadow-lg transition-all"
-              style={{ top: 'calc(5vh)', right: 'calc(4vw)' }}
-            >
-              ✕
-            </button>
-          )}
 
           {/* Podgląd zdjęcia */}
           <div className="flex-1 relative overflow-hidden flex items-center justify-center p-4">
