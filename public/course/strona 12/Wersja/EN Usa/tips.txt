@@ -1,0 +1,3 @@
+Notice that the shadow starts to compete with the dish.
+---
+Hard light and a sheet reflecting it from the other side will result in not one, but two hard shadows.

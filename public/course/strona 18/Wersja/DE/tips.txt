@@ -1,0 +1,1 @@
+In der App wird eine Meldung über einen schiefen Rahmen angezeigt.
