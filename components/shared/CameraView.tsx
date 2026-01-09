@@ -864,16 +864,24 @@ export function CameraView({
         {renderLevelIndicator()}
 
         {/* Główne przyciski - 5 przycisków: 2 po lewej, foto na środku, 2 po prawej */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-3 p-3 rounded-2xl" style={{ background: 'white' }}>
           {/* Przycisk sepii - podświetla środek siatki */}
           <button
             onClick={toggleSepia}
-            className={`w-11 h-11 flex items-center justify-center rounded-full ${sepiaEnabled ? 'bg-amber-600/60' : 'bg-white/10'}`}
+            className={`btn-neumorphism-white focus ${sepiaEnabled ? 'active' : ''}`}
+            style={{ width: '48px', height: '48px' }}
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" fill={sepiaEnabled ? "currentColor" : "none"} />
-              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
-            </svg>
+            <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
+              {/* Ikona celownika/focus - krzyż z okręgiem */}
+              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" fill="currentColor" />
+                <line x1="12" y1="2" x2="12" y2="6" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="2" y1="12" x2="6" y2="12" />
+                <line x1="18" y1="12" x2="22" y2="12" />
+              </svg>
+            </div>
           </button>
 
           {/* Przycisk bokeh - rozmycie tła */}
@@ -883,18 +891,33 @@ export function CameraView({
               setBokehEnabled(newValue)
               localStorage.setItem('cameraBokehEnabled', String(newValue))
             }}
-            className={`w-11 h-11 flex items-center justify-center rounded-full ${bokehEnabled ? 'bg-purple-600/60' : 'bg-white/10'}`}
+            className={`btn-neumorphism-white bokeh ${bokehEnabled ? 'active' : ''}`}
+            style={{ width: '48px', height: '48px' }}
           >
-            <span className="text-lg">🔮</span>
+            <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
+              {/* Ikona przysłony aparatu - aperture */}
+              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2l2.5 8.5" strokeLinecap="round" />
+                <path d="M21 8l-7.5 4" strokeLinecap="round" />
+                <path d="M21 16l-7.5-1.5" strokeLinecap="round" />
+                <path d="M12 22l-2.5-8.5" strokeLinecap="round" />
+                <path d="M3 16l7.5-4" strokeLinecap="round" />
+                <path d="M3 8l7.5 1.5" strokeLinecap="round" />
+              </svg>
+            </div>
           </button>
 
           {/* Przycisk zdjęcia - wycentrowany */}
           <button
             onClick={capturePhoto}
             disabled={!isActive}
-            className="w-20 h-20 flex items-center justify-center rounded-full bg-white border-4 border-white/30 active:scale-95 transition-transform disabled:opacity-50"
+            className="btn-neumorphism-white photo"
+            style={{ width: '70px', height: '70px' }}
           >
-            <div className="w-16 h-16 rounded-full bg-white" />
+            <div className="btn-neumorphism-white-inner" style={{ padding: '8px' }}>
+              <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(145deg, #ffffff, #e0e0e0)', boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.1), inset -2px -2px 4px rgba(255,255,255,0.9)' }} />
+            </div>
           </button>
 
           {/* Przycisk galerii - otwiera wybór zdjęcia z urządzenia */}
@@ -903,13 +926,22 @@ export function CameraView({
               const input = document.getElementById('gallery-input') as HTMLInputElement
               if (input) input.click()
             }}
-            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10"
+            className="btn-neumorphism-white gallery-cam"
+            style={{ width: '48px', height: '48px' }}
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
+            <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
+              {/* Ikona galerii - stos zdjęć */}
+              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="1.5">
+                {/* Tylne zdjęcie */}
+                <rect x="4" y="4" width="14" height="14" rx="2" fill="currentColor" opacity="0.3" />
+                {/* Przednie zdjęcie */}
+                <rect x="6" y="6" width="14" height="14" rx="2" fill="white" stroke="currentColor" />
+                {/* Słońce */}
+                <circle cx="11" cy="11" r="2" fill="currentColor" />
+                {/* Góry */}
+                <path d="M6 18l4-5 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           </button>
 
           {/* Przycisk edycji zdjęć */}
@@ -918,16 +950,23 @@ export function CameraView({
               stopCamera() // Zatrzymaj kamerę żeby zwolnić zasoby
               setShowEditor(true)
             }}
-            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10"
+            className="btn-neumorphism-white edit"
+            style={{ width: '48px', height: '48px' }}
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <circle cx="8" cy="6" r="2" fill="currentColor" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <circle cx="14" cy="12" r="2" fill="currentColor" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-              <circle cx="10" cy="18" r="2" fill="currentColor" />
-            </svg>
+            <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
+              {/* Ikona edycji - suwaki regulacji */}
+              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }} fill="none" stroke="currentColor" strokeWidth="2">
+                {/* Suwak 1 */}
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <circle cx="8" cy="6" r="2" fill="currentColor" />
+                {/* Suwak 2 */}
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <circle cx="16" cy="12" r="2" fill="currentColor" />
+                {/* Suwak 3 */}
+                <line x1="4" y1="18" x2="20" y2="18" />
+                <circle cx="11" cy="18" r="2" fill="currentColor" />
+              </svg>
+            </div>
           </button>
         </div>
 
@@ -955,16 +994,16 @@ export function CameraView({
         />
 
         {/* Etykiety */}
-        <div className="flex items-center justify-center gap-4 mt-2">
-          <span className={`text-xs w-11 text-center ${sepiaEnabled ? 'text-amber-400' : 'text-white/60'}`}>
+        <div className="flex items-center justify-center gap-3 mt-2 p-2 rounded-xl" style={{ background: 'white' }}>
+          <span className={`text-xs w-12 text-center font-medium ${sepiaEnabled ? 'text-amber-500' : 'text-gray-500'}`}>
             {t.camera.focus}
           </span>
-          <span className={`text-xs w-11 text-center ${bokehEnabled ? 'text-purple-400' : 'text-white/60'}`}>
+          <span className={`text-xs w-12 text-center font-medium ${bokehEnabled ? 'text-purple-500' : 'text-gray-500'}`}>
             {t.camera.bokeh}
           </span>
-          <span className="text-white/60 text-xs w-20 text-center">{t.camera.photo}</span>
-          <span className="text-white/60 text-xs w-11 text-center">{t.camera.gallery || 'Galeria'}</span>
-          <span className="text-white/60 text-xs w-11 text-center">{t.camera.edit}</span>
+          <span className="text-gray-500 text-xs w-16 text-center font-medium">{t.camera.photo}</span>
+          <span className="text-gray-500 text-xs w-12 text-center font-medium">{t.camera.gallery || 'Galeria'}</span>
+          <span className="text-gray-500 text-xs w-12 text-center font-medium">{t.camera.edit}</span>
         </div>
       </div>
         </>

@@ -999,36 +999,6 @@ useEffect(() => {
                         target.style.display = 'none';
                       }}
                     />
-                    {/* Przycisk aparatu na stronach QR upload */}
-                    {isQRUpload && (
-                      <button
-                        onClick={() => {
-                          const token = localStorage.getItem('token')
-                          if (!token) {
-                            alert('Musisz być zalogowany')
-                            return
-                          }
-                          setShowCamera(true)
-                        }}
-                        disabled={qrUploading}
-                        className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 w-[100px] h-[100px] rounded-[28px] overflow-hidden transition-all duration-150 z-20 ${qrUploading ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.95] active:translate-y-1'}`}
-                        style={{ 
-                          boxShadow: '-8px 8px 25px rgba(150, 150, 150, 0.5), -12px 12px 40px rgba(120, 120, 120, 0.3), 3px -3px 15px rgba(150, 150, 150, 0.2)',
-                          padding: 0,
-                          border: 'none',
-                          backgroundImage: qrUploading ? 'none' : 'url(/course/ikony/aparat.png)',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          backgroundColor: qrUploading ? '#333' : 'transparent'
-                        }}
-                      >
-                        {qrUploading && (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                          </div>
-                        )}
-                      </button>
-                    )}
                   </div>
                 ) : currentPage.pageNumber === 1 && isMobile ? (
                   // Strona 1 - zdjęcie hero-mobile (1620x3150, proporcje 9:17.5)
@@ -1627,50 +1597,19 @@ useEffect(() => {
                             setShowCamera(true)
                           }}
                           disabled={qrUploading}
-                          className={`relative w-[120px] h-[120px] rounded-[32px] overflow-hidden transition-all duration-150 ${qrUploading ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.95] active:translate-y-1'}`}
-                          style={{ 
-                            boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
-                            padding: 0,
-                            border: 'none',
-                            backgroundImage: qrUploading ? 'none' : 'url(/course/ikony/aparat.png)',
-                            backgroundSize: '100% 100%',
-                            backgroundPosition: 'center',
-                            backgroundRepeat: 'no-repeat'
-                          }}
-                          onMouseDown={(e) => {
-                            if (!qrUploading) {
-                              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                            }
-                          }}
-                          onMouseUp={(e) => {
-                            if (!qrUploading) {
-                              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!qrUploading) {
-                              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                            }
-                          }}
-                          onTouchStart={(e) => {
-                            if (!qrUploading) {
-                              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-                            }
-                          }}
-                          onTouchEnd={(e) => {
-                            if (!qrUploading) {
-                              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-                            }
-                          }}
+                          className={`btn-neumorphism-white camera ${qrUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          style={{ width: '100px', height: '100px' }}
                         >
-                          {qrUploading ? (
-                            <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a]">
-                              <svg className="animate-spin h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <div className="btn-neumorphism-white-inner" style={{ padding: '16px' }}>
+                            {qrUploading ? (
+                              <div className="w-14 h-14 border-4 border-cyan-200 border-t-cyan-500 rounded-full animate-spin" />
+                            ) : (
+                              <svg style={{ width: '60px', height: '60px' }} fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z"/>
+                                <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
                               </svg>
-                            </div>
-                          ) : null}
+                            )}
+                          </div>
                         </button>
 
                         {/* Przycisk galerii - otwiera galerię i uploaduje - ukryty na stronach 7, 15, 20, 29, 35, 40 */}
@@ -3176,8 +3115,8 @@ useEffect(() => {
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                           language === 'PL' 
-                            ? 'text-cyan-400 bg-cyan-500/10' 
-                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                            ? 'text-green-600 bg-green-50 font-medium' 
+                            : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
                         <span>🇵🇱</span>
@@ -3195,8 +3134,8 @@ useEffect(() => {
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                           language === 'DE' 
-                            ? 'text-cyan-400 bg-cyan-500/10' 
-                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                            ? 'text-green-600 bg-green-50 font-medium' 
+                            : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
                         <span>🇩🇪</span>
@@ -3214,8 +3153,8 @@ useEffect(() => {
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                           language === 'EN' 
-                            ? 'text-cyan-400 bg-cyan-500/10' 
-                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                            ? 'text-green-600 bg-green-50 font-medium' 
+                            : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
                         <span>🇺🇸</span>
@@ -3306,12 +3245,48 @@ useEffect(() => {
         </div>
       </div>
 
+      {/* Przycisk aparatu na stronach QR upload (7, 13, 18, 27, 33, 38) - nad dolnym paskiem */}
+      {isMobile && currentPage && [7, 13, 18, 27, 33, 38].includes(currentPage.pageNumber) && (
+        <button
+          onClick={() => {
+            const token = localStorage.getItem('token')
+            if (!token) {
+              alert('Musisz być zalogowany')
+              return
+            }
+            setShowCamera(true)
+          }}
+          disabled={qrUploading}
+          className={`lg:hidden btn-neumorphism-white camera ${qrUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          style={{ 
+            width: '80px', 
+            height: '80px',
+            position: 'fixed',
+            bottom: '110px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 60
+          }}
+        >
+          <div className="btn-neumorphism-white-inner" style={{ padding: '12px' }}>
+            {qrUploading ? (
+              <div className="w-10 h-10 border-4 border-cyan-200 border-t-cyan-500 rounded-full animate-spin" />
+            ) : (
+              <svg style={{ width: '48px', height: '48px' }} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z"/>
+                <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+              </svg>
+            )}
+          </div>
+        </button>
+      )}
+
       {/* Mobile: Instagram-style progress bar + menu button */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ background: '#1a1a1a', height: '80px', padding: '16px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', borderTop: 'none' }}>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ background: 'white', height: '90px', padding: '16px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', borderTop: 'none' }}>
         {/* Przyciski dolnego paska - aparat na środku, menu po prawej */}
         <div className="flex justify-between items-center px-4" style={{ marginTop: '-5px' }}>
           {/* Lewa strona - pusta */}
-          <div className="w-[40px] h-[40px]"></div>
+          <div className="w-[56px] h-[56px]"></div>
           
           {/* Środek - przycisk aparatu */}
           <button
@@ -3323,62 +3298,29 @@ useEffect(() => {
               }
               setShowCamera(true)
             }}
-            className="relative w-[50px] h-[50px] rounded-[14px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
-            style={{ 
-              boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
-              padding: 0,
-              border: 'none',
-              backgroundImage: 'url(/course/ikony/aparat.png)',
-              backgroundSize: '100% 100%',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-            onMouseDown={(e) => {
-              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-            }}
-            onTouchStart={(e) => {
-              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-            }}
-            onTouchEnd={(e) => {
-              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-            }}
-          />
+            className="btn-neumorphism-white camera"
+            style={{ width: '60px', height: '60px' }}
+          >
+            <div className="btn-neumorphism-white-inner" style={{ padding: '10px' }}>
+              <svg style={{ width: '40px', height: '40px' }} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z"/>
+                <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+              </svg>
+            </div>
+          </button>
           
           {/* Prawa strona - przycisk menu */}
           <button
             onClick={() => setShowMobileMenu(true)}
-            className="relative w-[40px] h-[40px] rounded-[10px] overflow-hidden transition-all duration-150 active:scale-[0.95] active:translate-y-1"
-            style={{ 
-              boxShadow: '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)',
-              padding: 0,
-              border: 'none',
-              backgroundImage: 'url(/course/ikony/strzałka.png)',
-              backgroundSize: '100% 100%',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-            onMouseDown={(e) => {
-              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-            }}
-            onTouchStart={(e) => {
-              e.currentTarget.style.boxShadow = 'inset 0 2px 10px rgba(0, 0, 0, 0.3), -5px 5px 20px rgba(150, 150, 150, 0.3), -10px 10px 40px rgba(120, 120, 120, 0.2)'
-            }}
-            onTouchEnd={(e) => {
-              e.currentTarget.style.boxShadow = '-10px 10px 30px rgba(150, 150, 150, 0.5), -15px 15px 50px rgba(120, 120, 120, 0.3), 3px -3px 20px rgba(150, 150, 150, 0.2)'
-            }}
-          />
+            className="btn-neumorphism-white menu"
+            style={{ width: '56px', height: '56px' }}
+          >
+            <div className="btn-neumorphism-white-inner" style={{ padding: '12px' }}>
+              <svg style={{ width: '32px', height: '32px' }} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+              </svg>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -3387,7 +3329,7 @@ useEffect(() => {
         <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}>
           <div 
             className="fixed inset-0 p-4 overflow-hidden flex flex-col"
-            style={{ background: '#1a1a1a' }}
+            style={{ background: 'white' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Zawartość menu - zawsze widoczne */}
@@ -3396,113 +3338,110 @@ useEffect(() => {
                 <ProgressGallery onProgressUpdate={setCompletedPages} />
               )}
               {menuActivePanel === 'chat' && (
-                <div className="w-full h-full p-4 bg-gray-800 rounded-xl overflow-auto">
+                <div className="w-full h-full p-4 bg-gray-50 border border-gray-200 rounded-xl overflow-auto">
                   <ChatBox />
                 </div>
               )}
       </div>
 
             {/* Pasek dolny z przyciskami - fixed na dole */}
-            <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center gap-3 py-6 px-4" style={{ background: '#1a1a1a', paddingBottom: 'calc(24px + env(safe-area-inset-bottom))', minHeight: '100px' }}>
+            <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center gap-3 py-6 px-4" style={{ background: 'white', paddingBottom: 'calc(24px + env(safe-area-inset-bottom))', minHeight: '100px' }}>
               {/* Star - Twoje postępy */}
               <button
                 onClick={() => setMenuActivePanel('gallery')}
-                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
-                style={{ 
-                  width: '50px',
-                  height: '50px',
-                  aspectRatio: '1/1',
-                  padding: 0,
-                  border: 'none',
-                  borderRadius: 0,
-                  backgroundImage: 'url(/course/ikony/Star.png)',
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundColor: 'transparent'
-                }}
-              />
+                className={`btn-neumorphism-white gallery ${menuActivePanel === 'gallery' ? 'active' : ''}`}
+                style={{ width: '56px', height: '56px' }}
+              >
+                <div className="btn-neumorphism-white-inner" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24" 
+                    style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      minWidth: '40px',
+                      minHeight: '40px',
+                      maxWidth: '40px',
+                      maxHeight: '40px',
+                      flexShrink: 0,
+                      display: 'block'
+                    }}
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                </div>
+              </button>
               
               {/* Chat */}
               <button
                 onClick={() => setMenuActivePanel('chat')}
-                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
-                style={{ 
-                  width: '50px',
-                  height: '50px',
-                  aspectRatio: '1/1',
-                  padding: 0,
-                  border: 'none',
-                  borderRadius: 0,
-                  backgroundImage: 'url(/course/ikony/Chat.png)',
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundColor: 'transparent'
-                }}
-              />
+                className={`btn-neumorphism-white chat ${menuActivePanel === 'chat' ? 'active' : ''}`}
+                style={{ width: '56px', height: '56px' }}
+              >
+                <div className="btn-neumorphism-white-inner" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24" 
+                    style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      minWidth: '40px',
+                      minHeight: '40px',
+                      maxWidth: '40px',
+                      maxHeight: '40px',
+                      flexShrink: 0,
+                      display: 'block'
+                    }}
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" />
+                  </svg>
+                </div>
+              </button>
               
               {/* cofnij - zamyka menu */}
               <button
                 onClick={() => setShowMobileMenu(false)}
-                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
-                style={{ 
-                  width: '50px',
-                  height: '50px',
-                  aspectRatio: '1/1',
-                  padding: 0,
-                  border: 'none',
-                  borderRadius: 0,
-                  backgroundImage: 'url(/course/ikony/cofnij.png)',
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundColor: 'transparent'
-                }}
-              />
+                className="btn-neumorphism-white close"
+                style={{ width: '56px', height: '56px' }}
+              >
+                <div className="btn-neumorphism-white-inner" style={{ padding: '12px' }}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                </div>
+              </button>
               
               {/* ustawienia - zmiana języka */}
               <button
                 onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
-                style={{ 
-                  width: '50px',
-                  height: '50px',
-                  aspectRatio: '1/1',
-                  padding: 0,
-                  border: 'none',
-                  borderRadius: 0,
-                  backgroundImage: 'url(/course/ikony/ustawienia.png)',
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundColor: 'transparent'
-                }}
-              />
+                className={`btn-neumorphism-white language ${showLanguageMenu ? 'active' : ''}`}
+                style={{ width: '56px', height: '56px' }}
+              >
+                <div className="btn-neumorphism-white-inner" style={{ padding: '12px' }}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+              </button>
               
               {/* Logout - wylogowanie konta */}
               <button
                 onClick={handleLogout}
-                className="relative overflow-hidden transition-all duration-150 active:scale-[0.95]"
-                style={{ 
-                  width: '50px',
-                  height: '50px',
-                  aspectRatio: '1/1',
-                  padding: 0,
-                  border: 'none',
-                  borderRadius: 0,
-                  backgroundImage: 'url(/course/ikony/Logout.png)',
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundColor: 'transparent'
-                }}
-              />
+                className="btn-neumorphism-white logout"
+                style={{ width: '56px', height: '56px' }}
+              >
+                <div className="btn-neumorphism-white-inner" style={{ padding: '12px' }}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </div>
+              </button>
             </div>
             
             {/* Menu wyboru języka */}
             {showLanguageMenu && (
-              <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 py-2 w-36 bg-gray-800 rounded-lg shadow-2xl z-50">
+              <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 py-2 w-40 bg-white rounded-xl shadow-2xl z-50 border-2 border-green-500">
                 <button
                   onClick={() => {
                     setLanguage('PL')
@@ -3510,14 +3449,14 @@ useEffect(() => {
                   }}
                   className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                     language === 'PL' 
-                      ? 'text-cyan-400 bg-cyan-500/10' 
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      ? 'text-green-600 bg-green-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <span>🇵🇱</span>
                   <span>Polski</span>
                   {language === 'PL' && (
-                    <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 ml-auto text-green-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                   )}
@@ -3529,8 +3468,8 @@ useEffect(() => {
                   }}
                   className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                     language === 'DE' 
-                      ? 'text-cyan-400 bg-cyan-500/10' 
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      ? 'text-green-600 bg-green-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <span>🇩🇪</span>
@@ -3548,8 +3487,8 @@ useEffect(() => {
                   }}
                   className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                     language === 'EN' 
-                      ? 'text-cyan-400 bg-cyan-500/10' 
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      ? 'text-green-600 bg-green-50 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <span>🇬🇧</span>
