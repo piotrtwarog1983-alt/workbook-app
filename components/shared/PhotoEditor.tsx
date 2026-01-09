@@ -191,7 +191,8 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
     ctx.putImageData(imageData, 0, 0)
 
     // Selektywna ostrość (Focus) - wyostrzanie tekstury wewnątrz okręgu
-    if (focusEnabled && focusSharpness > 0) {
+    // Pokazuj podgląd zarówno gdy focusEnabled, jak i gdy jesteśmy w trybie focus (activeTab === 'focus')
+    if ((focusEnabled || activeTab === 'focus') && focusSharpness > 0) {
       // Stwórz wyostrzoną wersję obrazu
       const sharpCanvas = document.createElement('canvas')
       sharpCanvas.width = width
@@ -371,7 +372,7 @@ export function PhotoEditor({ onClose, onSave }: PhotoEditorProps) {
         }
       }
     }
-  }, [brightness, temperature, tint, sharpness, focusEnabled, focusCircle, focusSharpness, focusFeather, focusInvert])
+  }, [brightness, temperature, tint, sharpness, focusEnabled, focusCircle, focusSharpness, focusFeather, focusInvert, activeTab])
   
   // Aktualizuj filtry gdy zmieni się obraz, wymiary lub parametry
   useEffect(() => {
