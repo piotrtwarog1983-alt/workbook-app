@@ -11,42 +11,42 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  name          String?
-  uploadId      String    @unique @default(cuid()) // Unikalny identyfikator do uploadu zdjęć
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  enrollments   Enrollment[]
-  registrationTokens RegistrationToken[]
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  password            String
+  name                String?
+  uploadId            String               @unique @default(cuid()) // Unikalny identyfikator do uploadu zdjÄ™Ä‡
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  enrollments         Enrollment[]
+  registrationTokens  RegistrationToken[]
   progressEvaluations ProgressEvaluation[]
-  conversations Conversation[]
-  consents      UserConsent[]
+  conversations       Conversation[]
+  consents            UserConsent[]
 }
 
 model Course {
-  id          String      @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String?
-  slug        String      @unique
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   enrollments Enrollment[]
   pages       CoursePage[]
 }
 
 model CoursePage {
-  id          String   @id @default(cuid())
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  pageNumber  Int
-  title       String?
-  content     String?  // JSON content
-  imageUrl    String?
-  tips        String?  // JSON array of tips
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  pageNumber Int
+  title      String?
+  content    String? // JSON content
+  imageUrl   String?
+  tips       String? // JSON array of tips
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([courseId, pageNumber])
   @@index([courseId])
@@ -59,7 +59,7 @@ model Enrollment {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  progress  Json?    // Store progress data
+  progress  Json? // Store progress data
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -67,52 +67,53 @@ model Enrollment {
 }
 
 model RegistrationToken {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String   @unique
-  email     String
-  courseId  String?
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id                String             @id @default(cuid())
+  userId            String?
+  user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token             String             @unique
+  email             String
+  courseId          String?
+  expiresAt         DateTime
+  used              Boolean            @default(false)
+  createdAt         DateTime           @default(now())
   lemonSqueezyOrder LemonSqueezyOrder?
-  stripeOrder       StripeOrder? @relation(name: "StripeRegistration")
+  stripeOrder       StripeOrder?       @relation(name: "StripeRegistration")
+  fastSpringOrder   FastSpringOrder?   @relation(name: "FastSpringRegistration")
 
   @@index([token])
   @@index([email])
 }
 
 model LemonSqueezyOrder {
-  id              String   @id @default(cuid())
-  orderId         String   @unique // Lemon Squeezy order ID
-  customerEmail   String
-  status          String
-  total           Float?
-  currency        String?
-  orderData       Json     // Full webhook data
-  registrationTokenId String? @unique
-  registrationToken RegistrationToken? @relation(fields: [registrationTokenId], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  String             @id @default(cuid())
+  orderId             String             @unique // Lemon Squeezy order ID
+  customerEmail       String
+  status              String
+  total               Float?
+  currency            String?
+  orderData           Json // Full webhook data
+  registrationTokenId String?            @unique
+  registrationToken   RegistrationToken? @relation(fields: [registrationTokenId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@index([orderId])
   @@index([customerEmail])
 }
 
 model StripeOrder {
-  id              String   @id @default(cuid())
-  sessionId       String   @unique // Stripe Checkout Session ID
-  paymentIntentId String?  @unique // Stripe Payment Intent ID
-  customerEmail   String
-  status          String
-  total           Float?
-  currency        String?
-  orderData       Json     // Full webhook data
-  registrationTokenId String? @unique
-  registrationToken RegistrationToken? @relation(fields: [registrationTokenId], references: [id], name: "StripeRegistration")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  String             @id @default(cuid())
+  sessionId           String             @unique // Stripe Checkout Session ID
+  paymentIntentId     String?            @unique // Stripe Payment Intent ID
+  customerEmail       String
+  status              String
+  total               Float?
+  currency            String?
+  orderData           Json // Full webhook data
+  registrationTokenId String?            @unique
+  registrationToken   RegistrationToken? @relation(fields: [registrationTokenId], references: [id], name: "StripeRegistration")
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@index([sessionId])
   @@index([paymentIntentId])
@@ -120,26 +121,26 @@ model StripeOrder {
 }
 
 model GlossaryTerm {
-  id          String   @id @default(cuid())
-  term        String
-  definition  String
-  language    String   @default("pl")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  term       String
+  definition String
+  language   String   @default("pl")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([term, language])
   @@index([language])
 }
 
 model ProgressEvaluation {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pageNumber Int     // Numer strony oceny (16, 21, 30, 36, 41, 50)
-  evaluation Int     // -1 = gorzej, 0 = tak samo, 1 = lepiej
-  cumulativeScore Int // Skumulowany wynik względem punktu odniesienia (-6 do +6)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pageNumber      Int // Numer strony oceny (16, 21, 30, 36, 41, 50)
+  evaluation      Int // -1 = gorzej, 0 = tak samo, 1 = lepiej
+  cumulativeScore Int // Skumulowany wynik wzglÄ™dem punktu odniesienia (-6 do +6)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@unique([userId, pageNumber])
   @@index([userId])
@@ -151,10 +152,10 @@ model Conversation {
   id            String    @id @default(cuid())
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject       String?   // Opcjonalny temat konwersacji
+  subject       String? // Opcjonalny temat konwersacji
   lastMessageAt DateTime  @default(now())
-  unreadByAdmin Boolean   @default(true)  // Czy admin ma nieprzeczytane wiadomości
-  unreadByUser  Boolean   @default(false) // Czy user ma nieprzeczytane wiadomości
+  unreadByAdmin Boolean   @default(true) // Czy admin ma nieprzeczytane wiadomoÅ›ci
+  unreadByUser  Boolean   @default(false) // Czy user ma nieprzeczytane wiadomoÅ›ci
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   messages      Message[]
@@ -167,7 +168,7 @@ model Message {
   id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         String       // 'user' lub 'admin'
+  sender         String // 'user' lub 'admin'
   text           String
   status         String       @default("sent") // 'sending', 'sent', 'delivered', 'read'
   createdAt      DateTime     @default(now())
@@ -201,51 +202,68 @@ model LoginAttempt {
   @@index([ip, createdAt])
 }
 
-// Zgody użytkownika (RODO/Regulamin)
+// Zgody uÅ¼ytkownika (RODO/Regulamin)
 model UserConsent {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  consentType   String   // 'terms', 'privacy', 'marketing', 'newsletter'
-  version       String   // Wersja regulaminu np. "2024-12-14"
-  accepted      Boolean  @default(true)
-  ipAddress     String?
-  userAgent     String?
-  acceptedAt    DateTime @default(now())
-  
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentType String // 'terms', 'privacy', 'marketing', 'newsletter'
+  version     String // Wersja regulaminu np. "2024-12-14"
+  accepted    Boolean  @default(true)
+  ipAddress   String?
+  userAgent   String?
+  acceptedAt  DateTime @default(now())
+
   @@unique([userId, consentType])
   @@index([userId])
   @@index([consentType])
 }
 
-// Zdjęcia postępów - przechowuje URL zdjęć uploadowanych przez użytkowników
+// ZdjÄ™cia postÄ™pÃ³w - przechowuje URL zdjÄ™Ä‡ uploadowanych przez uÅ¼ytkownikÃ³w
 model ProgressPhoto {
   id         String   @id @default(cuid())
-  uploadId   String   // uploadId użytkownika
-  pageNumber Int      // Numer strony kursu
-  imageUrl   String   // URL zdjęcia w Blob Storage
+  uploadId   String // uploadId uÅ¼ytkownika
+  pageNumber Int // Numer strony kursu
+  imageUrl   String // URL zdjÄ™cia w Blob Storage
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@unique([uploadId, pageNumber]) // Jedno zdjęcie na stronę
+  @@unique([uploadId, pageNumber]) // Jedno zdjÄ™cie na stronÄ™
   @@index([uploadId])
   @@index([pageNumber])
 }
 
 // Webhook logs - do debugowania
 model WebhookLog {
-  id          String   @id @default(cuid())
-  source      String   // 'stripe' | 'lemonsqueezy'
-  eventType   String?  // Typ eventu np. 'checkout.session.completed'
-  eventId     String?  // ID eventu ze źródła
-  status      String   // 'received' | 'processing' | 'success' | 'error'
-  statusCode  Int?     // HTTP status code zwrócony
-  message     String?  // Opis lub błąd
-  payload     Json?    // Raw payload (opcjonalnie)
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  source     String // 'stripe' | 'lemonsqueezy'
+  eventType  String? // Typ eventu np. 'checkout.session.completed'
+  eventId    String? // ID eventu ze ÅºrÃ³dÅ‚a
+  status     String // 'received' | 'processing' | 'success' | 'error'
+  statusCode Int? // HTTP status code zwrÃ³cony
+  message    String? // Opis lub bÅ‚Ä…d
+  payload    Json? // Raw payload (opcjonalnie)
+  createdAt  DateTime @default(now())
 
   @@index([source])
   @@index([createdAt])
   @@index([status])
 }
 
+// FastSpring Orders
+model FastSpringOrder {
+  id                  String             @id @default(cuid())
+  orderId             String             @unique // FastSpring order ID
+  customerEmail       String
+  status              String
+  total               Float?
+  currency            String             @default("PLN")
+  orderData           Json? // Full webhook data
+  registrationTokenId String?            @unique
+  registrationToken   RegistrationToken? @relation(fields: [registrationTokenId], references: [id], name: "FastSpringRegistration")
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([orderId])
+  @@index([customerEmail])
+}
